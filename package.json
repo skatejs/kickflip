@@ -1,0 +1,32 @@
+{
+  "name": "kickflip",
+  "version": "0.0.0",
+  "description": "Functional SkateJS inspired by you-know-who.",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skatejs/kickflip.git"
+  },
+  "keywords": [
+    "functional",
+    "ui",
+    "web",
+    "component",
+    "custom",
+    "element"
+  ],
+  "author": "Trey Shugart <treshugart@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/skatejs/kickflip/issues"
+  },
+  "homepage": "https://github.com/skatejs/kickflip#readme",
+  "devDependencies": {
+    "eslint": "1.10.3",
+    "gulp": "gulpjs/gulp#73eced0",
+    "skatejs-build": "skatejs/build#feda154"
+  }
+}
