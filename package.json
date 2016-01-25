@@ -34,6 +34,6 @@
     "object-assign": "^4.0.1",
     "skatejs": "skatejs/skatejs#d1c7d6c",
     "skatejs-dom-diff": "skatejs/dom-diff#c1bef56",
-    "skatejs-named-slots": "skatejs/named-slots#534002c"
+    "skatejs-named-slots": "skatejs/named-slots#653bb3e"
   }
 }
