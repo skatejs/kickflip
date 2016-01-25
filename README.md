@@ -26,14 +26,57 @@ npm install kickflip
 
 ## Usage
 
+Here's some working examples of how to build components with Kickflip.
+
 
 
 ### Hello
 
-<iframe src="http://jsbin.com/tataweq/1/embed"></iframe>
+http://jsbin.com/tataweq/1
+
+```html
+<x-hello name="John"></x-hello>
+```
+
+```js
+kickflip.register('x-hello', {
+  properties: {
+    textContent: {}
+  },
+  render (elem, vdom) {
+    return vdom.createElement('div', null, 'Hello, ', elem.textContent, '!');
+  }
+});
+```
 
 
 
 ### Counter
 
-<iframe src="http://jsbin.com/cetidi/1/embed"></iframe>
+http://jsbin.com/cetidi/1
+
+```html
+<x-counter></x-counter>
+```
+
+```js
+const intervals = new WeakMap();
+
+
+kickflip.register('x-counter', {
+  properties: {
+    count: { default: 0 }
+  },
+  attached (elem) {
+    intervals.set(elem, setInterval(function () {
+      kickflip.state(elem, { count: elem.count + 1 });
+    }, 1000));
+  },
+  detached (elem) {
+    clearInterval(intervals.get(elem));
+  },
+  render (elem, vdom) {
+    return vdom.createElement('div', null, ['Count: ', elem.count.toString()]);
+  }
+});
+```
