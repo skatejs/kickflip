@@ -84,6 +84,8 @@ kickflip.register('x-counter', {
 
 ### Todos
 
+http://jsbin.com/basego/3
+
 ```html
 <x-todos>
   <x-item>Item 1</x-item>
@@ -93,5 +95,35 @@ kickflip.register('x-counter', {
 ```
 
 ```js
+kickflip.register('x-todos', {
+  slots: ['content'],
+  render (elem, vdom) {
+    function add (e) {
+      if (e.keyCode === 13) {
+        kickflip.state(elem, {
+          content: elem.content.concat(vdom.createElement('x-item', null, e.target.value)),
+          value: ''
+        });
+      }
+    }
 
+    function remove (index) {
+      return function () {
+        kickflip.state(elem, {
+          content: elem.content.slice(0, index).concat(elem.content.slice(index + 1))
+        });
+      };
+    }
+
+    const items = elem.content.map(function (item, index) {
+      const delbtn = vdom.createElement('button', { onclick: remove(index) }, 'x');
+      return vdom.createElement('li', null, [item, ' ', delbtn]);
+    });
+
+    return vdom.createElement('div', null, [
+      vdom.createElement('input', { onkeyup: add, value: elem.value }),
+      items.length ? vdom.createElement('ul', null, items) : vdom.createElement('p', null, 'There are no items.')
+    ]);
+  }
+});
 ```
