@@ -18,9 +18,7 @@ register('x-counter', {
   },
   attached (elem) {
     intervals.set(elem, setInterval(function () {
-      state(elem, {
-        count: elem.count + 1
-      })
+      state(elem, { count: elem.count + 1 })
     }, 1000));
   },
   detached (elem) {
