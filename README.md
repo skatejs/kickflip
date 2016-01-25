@@ -1,4 +1,4 @@
-# kickflip
+# Kickflip
 
 Functional web components using [SkateJS](https://github.com/skatejs/skatejs) and [Virtual DOM](https://github.com/Matt-Esch/virtual-dom).
 
