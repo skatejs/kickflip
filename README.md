@@ -32,19 +32,19 @@ Here's some working examples of how to build components with Kickflip.
 
 ### Hello
 
-http://jsbin.com/tataweq/1
+http://jsbin.com/tataweq/2
 
 ```html
-<x-hello>John</x-hello>
+<x-hello name="John"></x-hello>
 ```
 
 ```js
 kickflip.register('x-hello', {
   properties: {
-    textContent: {}
+    name: {}
   },
   render (elem, vdom) {
-    return vdom.createElement('div', null, 'Hello, ', elem.textContent, '!');
+    return vdom.createElement('div', null, 'Hello, ', elem.name, '!');
   }
 });
 ```
