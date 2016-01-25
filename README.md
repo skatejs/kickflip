@@ -1,6 +1,6 @@
 # Kickflip
 
-Functional web components using [SkateJS](https://github.com/skatejs/skatejs) and [Virtual DOM](https://github.com/Matt-Esch/virtual-dom).
+Functional web components using [SkateJS](https://github.com/skatejs/skatejs) and [SkateJS DOM Diff](https://github.com/skatejs-dom-diff).
 
 - Custom elements backed by [SkateJS](https://github.com/skatejs/skatejs).
 - Uses native [custom element](http://w3c.github.io/webcomponents/spec/custom/) support if available.
