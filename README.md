@@ -22,6 +22,8 @@ npm install kickflip
 
 ## Usage
 
+Here's a [JSBin](http://jsbin.com/cetidi/1) of the following example.
+
 ```js
 import kickflip from 'kickflip';
 
