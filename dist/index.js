@@ -748,10 +748,12 @@
 	    if (mapPatch.get(elem)) {
 	      fn(elem);
 	    } else {
-	      var ch = [].slice.call(elem.childNodes);
+	      var chs = [].slice.call(elem.childNodes);
 	      fn(elem);
 	      polyfill(elem);
-	      ch.forEach(elem.appendChild(ch));
+	      chs.forEach(function (ch) {
+	        return elem.appendChild(ch);
+	      });
 	    }
 	  };
 	}
