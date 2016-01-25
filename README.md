@@ -35,7 +35,7 @@ Here's some working examples of how to build components with Kickflip.
 http://jsbin.com/tataweq/1
 
 ```html
-<x-hello name="John"></x-hello>
+<x-hello>John</x-hello>
 ```
 
 ```js
