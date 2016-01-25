@@ -5,7 +5,7 @@ Kickflip gives you a simple, opinionated wrapper around Skate to write functiona
 - Custom elements backed by [SkateJS](https://github.com/skatejs/skatejs).
 - Uses native [custom element](http://w3c.github.io/webcomponents/spec/custom/) support if available.
 - Uni-directional rendering pipeline using [SkateJS DOM Diff](https://github.com/skatejs-dom-diff).
-- Public API exposed through partial-polyfilling of the [Shadow DOM Spec](https://w3c.github.io/webcomponents/spec/shadow/).
+- Public API exposed through partial-polyfilling of the [Shadow DOM Spec](https://w3c.github.io/webcomponents/spec/shadow/) using [named slots](https://github.com/skatejs/named-slots).
 
 
 
