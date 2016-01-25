@@ -16,51 +16,6 @@
 	var __commonjs_global = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : this;
 	function __commonjs(fn, module) { return module = { exports: {} }, fn(module, module.exports, __commonjs_global), module.exports; }
 
-	var index = __commonjs(function (module) {
-	/* eslint-disable no-unused-vars */
-	'use strict';
-
-	var hasOwnProperty = Object.prototype.hasOwnProperty;
-	var propIsEnumerable = Object.prototype.propertyIsEnumerable;
-
-	function toObject(val) {
-		if (val === null || val === undefined) {
-			throw new TypeError('Object.assign cannot be called with null or undefined');
-		}
-
-		return Object(val);
-	}
-
-	module.exports = Object.assign || function (target, source) {
-		var from;
-		var to = toObject(target);
-		var symbols;
-
-		for (var s = 1; s < arguments.length; s++) {
-			from = Object(arguments[s]);
-
-			for (var key in from) {
-				if (hasOwnProperty.call(from, key)) {
-					to[key] = from[key];
-				}
-			}
-
-			if (Object.getOwnPropertySymbols) {
-				symbols = Object.getOwnPropertySymbols(from);
-				for (var i = 0; i < symbols.length; i++) {
-					if (propIsEnumerable.call(from, symbols[i])) {
-						to[symbols[i]] = from[symbols[i]];
-					}
-				}
-			}
-		}
-
-		return to;
-	};
-	});
-
-	var require$$3 = (index && typeof index === 'object' && 'default' in index ? index['default'] : index);
-
 	var index$9 = __commonjs(function (module, exports, global) {
 	'use strict';
 
@@ -81,12 +36,12 @@
 	}
 	});
 
-	var require$$0$31 = (index$9 && typeof index$9 === 'object' && 'default' in index$9 ? index$9['default'] : index$9);
+	var require$$0$27 = (index$9 && typeof index$9 === 'object' && 'default' in index$9 ? index$9['default'] : index$9);
 
 	var oneVersion = __commonjs(function (module) {
 	'use strict';
 
-	var Individual = require$$0$31;
+	var Individual = require$$0$27;
 
 	module.exports = OneVersion;
 
@@ -104,12 +59,12 @@
 	}
 	});
 
-	var require$$0$30 = (oneVersion && typeof oneVersion === 'object' && 'default' in oneVersion ? oneVersion['default'] : oneVersion);
+	var require$$0$26 = (oneVersion && typeof oneVersion === 'object' && 'default' in oneVersion ? oneVersion['default'] : oneVersion);
 
 	var index$7 = __commonjs(function (module) {
 	'use strict';
 
-	var OneVersionConstraint = require$$0$30;
+	var OneVersionConstraint = require$$0$26;
 
 	var MY_VERSION = '7';
 	OneVersionConstraint('ev-store', MY_VERSION);
@@ -129,12 +84,12 @@
 	}
 	});
 
-	var require$$0$25 = (index$7 && typeof index$7 === 'object' && 'default' in index$7 ? index$7['default'] : index$7);
+	var require$$0$21 = (index$7 && typeof index$7 === 'object' && 'default' in index$7 ? index$7['default'] : index$7);
 
 	var evHook = __commonjs(function (module) {
 	'use strict';
 
-	var EvStore = require$$0$25;
+	var EvStore = require$$0$21;
 
 	module.exports = EvHook;
 
@@ -161,7 +116,7 @@
 	};
 	});
 
-	var require$$0$12 = (evHook && typeof evHook === 'object' && 'default' in evHook ? evHook['default'] : evHook);
+	var require$$0$19 = (evHook && typeof evHook === 'object' && 'default' in evHook ? evHook['default'] : evHook);
 
 	var softSetHook = __commonjs(function (module) {
 	'use strict';
@@ -183,7 +138,7 @@
 	};
 	});
 
-	var require$$1$5 = (softSetHook && typeof softSetHook === 'object' && 'default' in softSetHook ? softSetHook['default'] : softSetHook);
+	var require$$1$8 = (softSetHook && typeof softSetHook === 'object' && 'default' in softSetHook ? softSetHook['default'] : softSetHook);
 
 	var index$4 = __commonjs(function (module) {
 	/*!
@@ -300,12 +255,12 @@
 	}();
 	});
 
-	var require$$0$24 = (index$4 && typeof index$4 === 'object' && 'default' in index$4 ? index$4['default'] : index$4);
+	var require$$0$20 = (index$4 && typeof index$4 === 'object' && 'default' in index$4 ? index$4['default'] : index$4);
 
 	var parseTag = __commonjs(function (module) {
 	'use strict';
 
-	var split = require$$0$24;
+	var split = require$$0$20;
 
 	var classIdSplit = /([\.#]?[a-zA-Z0-9\u007F-\uFFFF_:-]+)/;
 	var notClassId = /^\.|#/;
@@ -359,7 +314,7 @@
 	}
 	});
 
-	var require$$2$5 = (parseTag && typeof parseTag === 'object' && 'default' in parseTag ? parseTag['default'] : parseTag);
+	var require$$2$6 = (parseTag && typeof parseTag === 'object' && 'default' in parseTag ? parseTag['default'] : parseTag);
 
 	var isThunk = __commonjs(function (module) {
 	module.exports = isThunk;
@@ -369,7 +324,7 @@
 	}
 	});
 
-	var require$$0$13 = (isThunk && typeof isThunk === 'object' && 'default' in isThunk ? isThunk['default'] : isThunk);
+	var require$$1$7 = (isThunk && typeof isThunk === 'object' && 'default' in isThunk ? isThunk['default'] : isThunk);
 
 	var isVhook = __commonjs(function (module) {
 	module.exports = isHook;
@@ -379,7 +334,7 @@
 	}
 	});
 
-	var require$$0$14 = (isVhook && typeof isVhook === 'object' && 'default' in isVhook ? isVhook['default'] : isVhook);
+	var require$$0$15 = (isVhook && typeof isVhook === 'object' && 'default' in isVhook ? isVhook['default'] : isVhook);
 
 	var isWidget = __commonjs(function (module) {
 	module.exports = isWidget;
@@ -389,16 +344,16 @@
 	}
 	});
 
-	var require$$0$15 = (isWidget && typeof isWidget === 'object' && 'default' in isWidget ? isWidget['default'] : isWidget);
+	var require$$2$5 = (isWidget && typeof isWidget === 'object' && 'default' in isWidget ? isWidget['default'] : isWidget);
 
 	var version$1 = __commonjs(function (module) {
 	module.exports = "2";
 	});
 
-	var require$$0$16 = (version$1 && typeof version$1 === 'object' && 'default' in version$1 ? version$1['default'] : version$1);
+	var require$$4$3 = (version$1 && typeof version$1 === 'object' && 'default' in version$1 ? version$1['default'] : version$1);
 
 	var isVtext = __commonjs(function (module) {
-	var version = require$$0$16;
+	var version = require$$4$3;
 
 	module.exports = isVirtualText;
 
@@ -407,10 +362,10 @@
 	}
 	});
 
-	var require$$2$6 = (isVtext && typeof isVtext === 'object' && 'default' in isVtext ? isVtext['default'] : isVtext);
+	var require$$6$2 = (isVtext && typeof isVtext === 'object' && 'default' in isVtext ? isVtext['default'] : isVtext);
 
 	var isVnode = __commonjs(function (module) {
-	var version = require$$0$16;
+	var version = require$$4$3;
 
 	module.exports = isVirtualNode;
 
@@ -422,7 +377,7 @@
 	var require$$3$4 = (isVnode && typeof isVnode === 'object' && 'default' in isVnode ? isVnode['default'] : isVnode);
 
 	var vtext = __commonjs(function (module) {
-	var version = require$$0$16;
+	var version = require$$4$3;
 
 	module.exports = VirtualText;
 
@@ -437,11 +392,11 @@
 	var require$$8 = (vtext && typeof vtext === 'object' && 'default' in vtext ? vtext['default'] : vtext);
 
 	var vnode = __commonjs(function (module) {
-	var version = require$$0$16;
+	var version = require$$4$3;
 	var isVNode = require$$3$4;
-	var isWidget = require$$0$15;
-	var isThunk = require$$0$13;
-	var isVHook = require$$0$14;
+	var isWidget = require$$2$5;
+	var isThunk = require$$1$7;
+	var isVHook = require$$0$15;
 
 	module.exports = VirtualNode;
 
@@ -524,24 +479,24 @@
 	}
 	});
 
-	var require$$3$5 = (index$5 && typeof index$5 === 'object' && 'default' in index$5 ? index$5['default'] : index$5);
+	var require$$10$1 = (index$5 && typeof index$5 === 'object' && 'default' in index$5 ? index$5['default'] : index$5);
 
 	var index$3 = __commonjs(function (module) {
 	'use strict';
 
-	var isArray = require$$3$5;
+	var isArray = require$$10$1;
 
 	var VNode = require$$9$1;
 	var VText = require$$8;
 	var isVNode = require$$3$4;
-	var isVText = require$$2$6;
-	var isWidget = require$$0$15;
-	var isHook = require$$0$14;
-	var isVThunk = require$$0$13;
+	var isVText = require$$6$2;
+	var isWidget = require$$2$5;
+	var isHook = require$$0$15;
+	var isVThunk = require$$1$7;
 
-	var parseTag = require$$2$5;
-	var softSetHook = require$$1$5;
-	var evHook = require$$0$12;
+	var parseTag = require$$2$6;
+	var softSetHook = require$$1$8;
+	var evHook = require$$0$19;
 
 	module.exports = h;
 
@@ -653,10 +608,10 @@
 	}
 	});
 
-	var require$$0$11 = (index$3 && typeof index$3 === 'object' && 'default' in index$3 ? index$3['default'] : index$3);
+	var require$$0$18 = (index$3 && typeof index$3 === 'object' && 'default' in index$3 ? index$3['default'] : index$3);
 
 	var h = __commonjs(function (module) {
-	var h = require$$0$11;
+	var h = require$$0$18;
 
 	module.exports = h;
 	});
@@ -671,11 +626,11 @@
 	};
 	});
 
-	var require$$1$8 = (index$6 && typeof index$6 === 'object' && 'default' in index$6 ? index$6['default'] : index$6);
+	var require$$1$9 = (index$6 && typeof index$6 === 'object' && 'default' in index$6 ? index$6['default'] : index$6);
 
 	var diffProps = __commonjs(function (module) {
-	var isObject = require$$1$8;
-	var isHook = require$$0$14;
+	var isObject = require$$1$9;
+	var isHook = require$$0$15;
 
 	module.exports = diffProps;
 
@@ -734,13 +689,13 @@
 	}
 	});
 
-	var require$$0$18 = (diffProps && typeof diffProps === 'object' && 'default' in diffProps ? diffProps['default'] : diffProps);
+	var require$$0$17 = (diffProps && typeof diffProps === 'object' && 'default' in diffProps ? diffProps['default'] : diffProps);
 
 	var handleThunk = __commonjs(function (module) {
 	var isVNode = require$$3$4;
-	var isVText = require$$2$6;
-	var isWidget = require$$0$15;
-	var isThunk = require$$0$13;
+	var isVText = require$$6$2;
+	var isWidget = require$$2$5;
+	var isThunk = require$$1$7;
 
 	module.exports = handleThunk;
 
@@ -777,10 +732,10 @@
 	}
 	});
 
-	var require$$0$19 = (handleThunk && typeof handleThunk === 'object' && 'default' in handleThunk ? handleThunk['default'] : handleThunk);
+	var require$$1$6 = (handleThunk && typeof handleThunk === 'object' && 'default' in handleThunk ? handleThunk['default'] : handleThunk);
 
 	var vpatch = __commonjs(function (module) {
-	var version = require$$0$16;
+	var version = require$$4$3;
 
 	VirtualPatch.NONE = 0;
 	VirtualPatch.VTEXT = 1;
@@ -804,19 +759,19 @@
 	VirtualPatch.prototype.type = "VirtualPatch";
 	});
 
-	var require$$1$6 = (vpatch && typeof vpatch === 'object' && 'default' in vpatch ? vpatch['default'] : vpatch);
+	var require$$6$1 = (vpatch && typeof vpatch === 'object' && 'default' in vpatch ? vpatch['default'] : vpatch);
 
 	var diff$2 = __commonjs(function (module) {
-	var isArray = require$$3$5;
+	var isArray = require$$10$1;
 
-	var VPatch = require$$1$6;
+	var VPatch = require$$6$1;
 	var isVNode = require$$3$4;
-	var isVText = require$$2$6;
-	var isWidget = require$$0$15;
-	var isThunk = require$$0$13;
-	var handleThunk = require$$0$19;
+	var isVText = require$$6$2;
+	var isWidget = require$$2$5;
+	var isThunk = require$$1$7;
+	var handleThunk = require$$1$6;
 
-	var diffProps = require$$0$18;
+	var diffProps = require$$0$17;
 
 	module.exports = diff;
 
@@ -1212,10 +1167,10 @@
 	}
 	});
 
-	var require$$0$17 = (diff$2 && typeof diff$2 === 'object' && 'default' in diff$2 ? diff$2['default'] : diff$2);
+	var require$$0$16 = (diff$2 && typeof diff$2 === 'object' && 'default' in diff$2 ? diff$2['default'] : diff$2);
 
 	var diff = __commonjs(function (module) {
-	var diff = require$$0$17;
+	var diff = require$$0$16;
 
 	module.exports = diff;
 	});
@@ -1223,7 +1178,7 @@
 	var diff$1 = (diff && typeof diff === 'object' && 'default' in diff ? diff['default'] : diff);
 
 	var updateWidget = __commonjs(function (module) {
-	var isWidget = require$$0$15;
+	var isWidget = require$$2$5;
 
 	module.exports = updateWidget;
 
@@ -1240,11 +1195,11 @@
 	}
 	});
 
-	var require$$0$23 = (updateWidget && typeof updateWidget === 'object' && 'default' in updateWidget ? updateWidget['default'] : updateWidget);
+	var require$$0$14 = (updateWidget && typeof updateWidget === 'object' && 'default' in updateWidget ? updateWidget['default'] : updateWidget);
 
 	var applyProperties = __commonjs(function (module) {
-	var isObject = require$$1$8;
-	var isHook = require$$0$14;
+	var isObject = require$$1$9;
+	var isHook = require$$0$15;
 
 	module.exports = applyProperties;
 
@@ -1344,10 +1299,10 @@
 	var patchOp = __commonjs(function (module) {
 	var applyProperties = require$$4$2;
 
-	var isWidget = require$$0$15;
-	var VPatch = require$$1$6;
+	var isWidget = require$$2$5;
+	var VPatch = require$$6$1;
 
-	var updateWidget = require$$0$23;
+	var updateWidget = require$$0$14;
 
 	module.exports = applyPatch;
 
@@ -1494,7 +1449,7 @@
 	}
 	});
 
-	var require$$0$21 = (patchOp && typeof patchOp === 'object' && 'default' in patchOp ? patchOp['default'] : patchOp);
+	var require$$0$12 = (patchOp && typeof patchOp === 'object' && 'default' in patchOp ? patchOp['default'] : patchOp);
 
 	var domIndex = __commonjs(function (module) {
 	// Maps a virtual DOM tree onto a real DOM tree in an efficient manner.
@@ -1583,7 +1538,7 @@
 	}
 	});
 
-	var require$$1$7 = (domIndex && typeof domIndex === 'object' && 'default' in domIndex ? domIndex['default'] : domIndex);
+	var require$$1$5 = (domIndex && typeof domIndex === 'object' && 'default' in domIndex ? domIndex['default'] : domIndex);
 
 	var removeEventListener = __commonjs(function (module) {
 	module.exports = removeEventListener;
@@ -1607,7 +1562,7 @@
 	}
 	});
 
-	var require$$1$9 = (removeEventListener && typeof removeEventListener === 'object' && 'default' in removeEventListener ? removeEventListener['default'] : removeEventListener);
+	var require$$1$10 = (removeEventListener && typeof removeEventListener === 'object' && 'default' in removeEventListener ? removeEventListener['default'] : removeEventListener);
 
 	var addEventListener = __commonjs(function (module) {
 	module.exports = addEventListener;
@@ -1665,7 +1620,7 @@
 	}
 	});
 
-	var require$$3$6 = (dispatchEvent && typeof dispatchEvent === 'object' && 'default' in dispatchEvent ? dispatchEvent['default'] : dispatchEvent);
+	var require$$3$5 = (dispatchEvent && typeof dispatchEvent === 'object' && 'default' in dispatchEvent ? dispatchEvent['default'] : dispatchEvent);
 
 	var event = __commonjs(function (module) {
 	module.exports = Event;
@@ -1681,7 +1636,7 @@
 	Event.prototype.preventDefault = function _Event_preventDefault() {};
 	});
 
-	var require$$3$7 = (event && typeof event === 'object' && 'default' in event ? event['default'] : event);
+	var require$$3$6 = (event && typeof event === 'object' && 'default' in event ? event['default'] : event);
 
 	var serialize = __commonjs(function (module) {
 	module.exports = serializeNode;
@@ -1810,7 +1765,7 @@
 	}
 	});
 
-	var require$$0$29 = (serialize && typeof serialize === 'object' && 'default' in serialize ? serialize['default'] : serialize);
+	var require$$0$25 = (serialize && typeof serialize === 'object' && 'default' in serialize ? serialize['default'] : serialize);
 
 	var index$10 = __commonjs(function (module) {
 	var slice = Array.prototype.slice;
@@ -1839,14 +1794,14 @@
 	}
 	});
 
-	var require$$4$4 = (index$10 && typeof index$10 === 'object' && 'default' in index$10 ? index$10['default'] : index$10);
+	var require$$4$5 = (index$10 && typeof index$10 === 'object' && 'default' in index$10 ? index$10['default'] : index$10);
 
 	var domElement = __commonjs(function (module) {
-	var domWalk = require$$4$4;
-	var dispatchEvent = require$$3$6;
+	var domWalk = require$$4$5;
+	var dispatchEvent = require$$3$5;
 	var addEventListener = require$$2$7;
-	var removeEventListener = require$$1$9;
-	var serializeNode = require$$0$29;
+	var removeEventListener = require$$1$10;
+	var serializeNode = require$$0$25;
 
 	var htmlns = "http://www.w3.org/1999/xhtml";
 
@@ -2037,10 +1992,10 @@
 	};
 	});
 
-	var require$$0$28 = (domElement && typeof domElement === 'object' && 'default' in domElement ? domElement['default'] : domElement);
+	var require$$0$24 = (domElement && typeof domElement === 'object' && 'default' in domElement ? domElement['default'] : domElement);
 
 	var domFragment = __commonjs(function (module) {
-	var DOMElement = require$$0$28;
+	var DOMElement = require$$0$24;
 
 	module.exports = DocumentFragment;
 
@@ -2069,7 +2024,7 @@
 	};
 	});
 
-	var require$$4$3 = (domFragment && typeof domFragment === 'object' && 'default' in domFragment ? domFragment['default'] : domFragment);
+	var require$$4$4 = (domFragment && typeof domFragment === 'object' && 'default' in domFragment ? domFragment['default'] : domFragment);
 
 	var domText = __commonjs(function (module) {
 	module.exports = DOMText;
@@ -2100,7 +2055,7 @@
 	};
 	});
 
-	var require$$6$1 = (domText && typeof domText === 'object' && 'default' in domText ? domText['default'] : domText);
+	var require$$6$3 = (domText && typeof domText === 'object' && 'default' in domText ? domText['default'] : domText);
 
 	var domComment = __commonjs(function (module) {
 	module.exports = Comment;
@@ -2127,16 +2082,16 @@
 	var require$$7$2 = (domComment && typeof domComment === 'object' && 'default' in domComment ? domComment['default'] : domComment);
 
 	var document$2 = __commonjs(function (module) {
-	var domWalk = require$$4$4;
+	var domWalk = require$$4$5;
 
 	var Comment = require$$7$2;
-	var DOMText = require$$6$1;
-	var DOMElement = require$$0$28;
-	var DocumentFragment = require$$4$3;
-	var Event = require$$3$7;
-	var dispatchEvent = require$$3$6;
+	var DOMText = require$$6$3;
+	var DOMElement = require$$0$24;
+	var DocumentFragment = require$$4$4;
+	var Event = require$$3$6;
+	var dispatchEvent = require$$3$5;
 	var addEventListener = require$$2$7;
-	var removeEventListener = require$$1$9;
+	var removeEventListener = require$$1$10;
 
 	module.exports = Document;
 
@@ -2201,19 +2156,19 @@
 	proto.dispatchEvent = dispatchEvent;
 	});
 
-	var require$$0$27 = (document$2 && typeof document$2 === 'object' && 'default' in document$2 ? document$2['default'] : document$2);
+	var require$$0$23 = (document$2 && typeof document$2 === 'object' && 'default' in document$2 ? document$2['default'] : document$2);
 
 	var index$8 = __commonjs(function (module) {
-	var Document = require$$0$27;
+	var Document = require$$0$23;
 
 	module.exports = new Document();
 	});
 
-	var require$$0$26 = (index$8 && typeof index$8 === 'object' && 'default' in index$8 ? index$8['default'] : index$8);
+	var require$$0$22 = (index$8 && typeof index$8 === 'object' && 'default' in index$8 ? index$8['default'] : index$8);
 
 	var document$1 = __commonjs(function (module, exports, global) {
 	var topLevel = typeof global !== 'undefined' ? global : typeof window !== 'undefined' ? window : {};
-	var minDoc = require$$0$26;
+	var minDoc = require$$0$22;
 
 	if (typeof document$1 !== 'undefined') {
 	    module.exports = document$1;
@@ -2236,9 +2191,9 @@
 	var applyProperties = require$$4$2;
 
 	var isVNode = require$$3$4;
-	var isVText = require$$2$6;
-	var isWidget = require$$0$15;
-	var handleThunk = require$$0$19;
+	var isVText = require$$6$2;
+	var isWidget = require$$2$5;
+	var handleThunk = require$$1$6;
 
 	module.exports = createElement;
 
@@ -2277,15 +2232,15 @@
 	}
 	});
 
-	var require$$0$22 = (createElement && typeof createElement === 'object' && 'default' in createElement ? createElement['default'] : createElement);
+	var require$$0$13 = (createElement && typeof createElement === 'object' && 'default' in createElement ? createElement['default'] : createElement);
 
 	var patch$2 = __commonjs(function (module) {
 	var document = require$$5$2;
-	var isArray = require$$3$5;
+	var isArray = require$$10$1;
 
-	var render = require$$0$22;
-	var domIndex = require$$1$7;
-	var patchOp = require$$0$21;
+	var render = require$$0$13;
+	var domIndex = require$$1$5;
+	var patchOp = require$$0$12;
 	module.exports = patch;
 
 	function patch(rootNode, patches, renderOptions) {
@@ -2357,10 +2312,10 @@
 	}
 	});
 
-	var require$$0$20 = (patch$2 && typeof patch$2 === 'object' && 'default' in patch$2 ? patch$2['default'] : patch$2);
+	var require$$0$11 = (patch$2 && typeof patch$2 === 'object' && 'default' in patch$2 ? patch$2['default'] : patch$2);
 
 	var patch = __commonjs(function (module) {
-	var patch = require$$0$20;
+	var patch = require$$0$11;
 
 	module.exports = patch;
 	});
@@ -2368,7 +2323,7 @@
 	var patch$1 = (patch && typeof patch === 'object' && 'default' in patch ? patch['default'] : patch);
 
 	var createElement$1 = __commonjs(function (module) {
-	var createElement = require$$0$22;
+	var createElement = require$$0$13;
 
 	module.exports = createElement;
 	});
@@ -2579,7 +2534,7 @@
 	});
 	});
 
-	var require$$3$1 = (debounce && typeof debounce === 'object' && 'default' in debounce ? debounce['default'] : debounce);
+	var require$$3 = (debounce && typeof debounce === 'object' && 'default' in debounce ? debounce['default'] : debounce);
 
 	var getOwnPropertyDescriptors = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
@@ -2879,7 +2834,7 @@
 	});
 	});
 
-	var require$$3$2 = (getClosestIgnoredElement && typeof getClosestIgnoredElement === 'object' && 'default' in getClosestIgnoredElement ? getClosestIgnoredElement['default'] : getClosestIgnoredElement);
+	var require$$3$1 = (getClosestIgnoredElement && typeof getClosestIgnoredElement === 'object' && 'default' in getClosestIgnoredElement ? getClosestIgnoredElement['default'] : getClosestIgnoredElement);
 
 	var innerhtml = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
@@ -2967,7 +2922,7 @@
 	  if (typeof define === 'function' && define.amd) {
 	    define(['exports', 'module', '../fix/ie/innerhtml', '../util/get-closest-ignored-element', './vars', './registry', '../util/walk-tree'], factory);
 	  } else if (typeof exports !== 'undefined' && typeof module !== 'undefined') {
-	    factory(exports, module, require$$4, require$$3$2, require$$2$1, require$$0$4, require$$0$1);
+	    factory(exports, module, require$$4, require$$3$1, require$$2$1, require$$0$4, require$$0$1);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -3324,7 +3279,7 @@
 	});
 	});
 
-	var require$$3$3 = (propertiesCreated && typeof propertiesCreated === 'object' && 'default' in propertiesCreated ? propertiesCreated['default'] : propertiesCreated);
+	var require$$3$2 = (propertiesCreated && typeof propertiesCreated === 'object' && 'default' in propertiesCreated ? propertiesCreated['default'] : propertiesCreated);
 
 	var empty = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
@@ -3377,12 +3332,57 @@
 
 	var require$$2$4 = (dashCase && typeof dashCase === 'object' && 'default' in dashCase ? dashCase['default'] : dashCase);
 
+	var index$2 = __commonjs(function (module) {
+	/* eslint-disable no-unused-vars */
+	'use strict';
+
+	var hasOwnProperty = Object.prototype.hasOwnProperty;
+	var propIsEnumerable = Object.prototype.propertyIsEnumerable;
+
+	function toObject(val) {
+		if (val === null || val === undefined) {
+			throw new TypeError('Object.assign cannot be called with null or undefined');
+		}
+
+		return Object(val);
+	}
+
+	module.exports = Object.assign || function (target, source) {
+		var from;
+		var to = toObject(target);
+		var symbols;
+
+		for (var s = 1; s < arguments.length; s++) {
+			from = Object(arguments[s]);
+
+			for (var key in from) {
+				if (hasOwnProperty.call(from, key)) {
+					to[key] = from[key];
+				}
+			}
+
+			if (Object.getOwnPropertySymbols) {
+				symbols = Object.getOwnPropertySymbols(from);
+				for (var i = 0; i < symbols.length; i++) {
+					if (propIsEnumerable.call(from, symbols[i])) {
+						to[symbols[i]] = from[symbols[i]];
+					}
+				}
+			}
+		}
+
+		return to;
+	};
+	});
+
+	var require$$3$3 = (index$2 && typeof index$2 === 'object' && 'default' in index$2 ? index$2['default'] : index$2);
+
 	var propertiesInit = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === 'function' && define.amd) {
 	    define(['exports', 'module', 'object-assign', '../util/dash-case', '../util/data', '../util/empty'], factory);
 	  } else if (typeof exports !== 'undefined' && typeof module !== 'undefined') {
-	    factory(exports, module, require$$3, require$$2$4, require$$1$2, require$$0$9);
+	    factory(exports, module, require$$3$3, require$$2$4, require$$1$2, require$$0$9);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -3914,7 +3914,7 @@
 	  if (typeof define === 'function' && define.amd) {
 	    define(['exports', 'module', '../util/data', '../api/emit', './events', './patch-attribute-methods', './properties-init', './properties-created', './properties-ready', './prototype', './resolve'], factory);
 	  } else if (typeof exports !== 'undefined' && typeof module !== 'undefined') {
-	    factory(exports, module, require$$1$2, require$$7$1, require$$6, require$$5$1, require$$4$1, require$$3$3, require$$2$2, require$$1$3, require$$0$6);
+	    factory(exports, module, require$$1$2, require$$7$1, require$$6, require$$5$1, require$$4$1, require$$3$2, require$$2$2, require$$1$3, require$$0$6);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -4304,12 +4304,12 @@
 
 	var require$$2$3 = (boolean && typeof boolean === 'object' && 'default' in boolean ? boolean['default'] : boolean);
 
-	var index$2 = __commonjs(function (module, exports, global) {
+	var index$1 = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === 'function' && define.amd) {
 	    define(['exports', 'module', 'object-assign', './boolean', './number', './string'], factory);
 	  } else if (typeof exports !== 'undefined' && typeof module !== 'undefined') {
-	    factory(exports, module, require$$3, require$$2$3, require$$1$4, require$$0$7);
+	    factory(exports, module, require$$3$3, require$$2$3, require$$1$4, require$$0$7);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -4351,7 +4351,7 @@
 	});
 	});
 
-	var require$$19 = (index$2 && typeof index$2 === 'object' && 'default' in index$2 ? index$2['default'] : index$2);
+	var require$$19 = (index$1 && typeof index$1 === 'object' && 'default' in index$1 ? index$1['default'] : index$1);
 
 	var init = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
@@ -4506,7 +4506,7 @@
 	  if (typeof define === 'function' && define.amd) {
 	    define(['exports', 'module', 'object-assign', './init', '../global/registry'], factory);
 	  } else if (typeof exports !== 'undefined' && typeof module !== 'undefined') {
-	    factory(exports, module, require$$3, require$$1$1, require$$0$4);
+	    factory(exports, module, require$$3$3, require$$1$1, require$$0$4);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -4538,12 +4538,12 @@
 
 	var require$$23 = (create && typeof create === 'object' && 'default' in create ? create['default'] : create);
 
-	var index$1 = __commonjs(function (module, exports, global) {
+	var index = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === 'function' && define.amd) {
 	    define(['exports', 'module', './api/create', './api/emit', './api/fragment', './api/init', './api/properties/index', './api/ready', './api/render', './api/version', 'object-assign', './lifecycle/attached', './lifecycle/attribute', './lifecycle/created', './defaults', './lifecycle/detached', './global/document-observer', './global/registry', './support/custom-elements', './type/element', './util/get-all-property-descriptors', './util/get-own-property-descriptors', './util/debounce', './util/define-properties', './util/walk-tree', './support/valid-custom-element'], factory);
 	  } else if (typeof exports !== 'undefined' && typeof module !== 'undefined') {
-	    factory(exports, module, require$$23, require$$7$1, require$$21, require$$1$1, require$$19, require$$18, require$$17, require$$16, require$$3, require$$14, require$$13, require$$12, require$$11, require$$10, require$$9, require$$0$4, require$$7, require$$0$3, require$$5, require$$0$2, require$$3$1, require$$1, require$$0$1, require$$0);
+	    factory(exports, module, require$$23, require$$7$1, require$$21, require$$1$1, require$$19, require$$18, require$$17, require$$16, require$$3$3, require$$14, require$$13, require$$12, require$$11, require$$10, require$$9, require$$0$4, require$$7, require$$0$3, require$$5, require$$0$2, require$$3, require$$1, require$$0$1, require$$0);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -4720,7 +4720,7 @@
 	});
 	});
 
-	var skate = (index$1 && typeof index$1 === 'object' && 'default' in index$1 ? index$1['default'] : index$1);
+	var skate = (index && typeof index === 'object' && 'default' in index ? index['default'] : index);
 
 	function linkPropsToAttrsIfNotSpecified(props) {
 	  Object.keys(props || {}).forEach(function (name) {
@@ -4731,7 +4731,7 @@
 	  });
 	}
 
-	function kickflip (name, opts) {
+	function register (name, opts) {
 	  linkPropsToAttrsIfNotSpecified(opts.properties);
 	  opts.render = render(opts.render);
 	  return skate(name, opts);
@@ -4798,7 +4798,7 @@
 	function setState(elem, newState) {
 	  var ctor = elem.constructor;
 	  var shouldUpdate = !ctor.update || ctor.update(elem) !== false;
-	  require$$3(elem, newState);
+	  require$$3$3(elem, newState);
 	  if (shouldUpdate) {
 	    render$2(elem);
 	  }
@@ -4808,7 +4808,11 @@
 	  return typeof newState === 'undefined' ? getState(elem) : setState(elem);
 	}
 
-	var main = require$$3(kickflip, { render: render, state: state });
+	var main = {
+	  register: register,
+	  render: render,
+	  state: state
+	};
 
 	var previousGlobal = window.kickflip;
 	main.noConflict = function noConflict() {
