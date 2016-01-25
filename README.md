@@ -2,9 +2,25 @@
 
 Functional web components using [SkateJS](https://github.com/skatejs/skatejs) and [Virtual DOM](https://github.com/Matt-Esch/virtual-dom).
 
-- Custom elements backed by `skatejs`.
+- Custom elements backed by [SkateJS](https://github.com/skatejs/skatejs)`.
 - Uses native [custom element](http://w3c.github.io/webcomponents/spec/custom/) support if available.
-- Functional rendering pipeline using `virtual-dom`.
+- Functional rendering pipeline using [Virtual DOM](https://github.com/Matt-Esch/virtual-dom).
+
+## Install
+
+Package managers:
+
+```sh
+bower install kickflip
+jspm install npm:kickflip
+npm install kickflip
+```
+
+- Global / UMD bundles are located in `dist/`.
+- UMD sources are located in `lib/`.
+- ES2015 modules are located in `src/`.
+
+## Usage
 
 ```js
 import { register, state } from 'kickflip';
