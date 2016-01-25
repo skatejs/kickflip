@@ -3033,7 +3033,7 @@
 	}
 
 	function state (elem, newState) {
-	  return typeof newState === 'undefined' ? getState(elem) : setState(elem);
+	  return typeof newState === 'undefined' ? getState(elem) : setState(elem, newState);
 	}
 
 	var main = {
