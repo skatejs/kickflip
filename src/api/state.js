@@ -17,5 +17,5 @@ function setState(elem, newState) {
 }
 
 export default function (elem, newState) {
-  return typeof newState === 'undefined' ? getState(elem) : setState(elem);
+  return typeof newState === 'undefined' ? getState(elem) : setState(elem, newState);
 }
