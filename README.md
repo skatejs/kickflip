@@ -8,7 +8,7 @@ Functional web components using [SkateJS](https://github.com/skatejs/skatejs) an
 
 ## Install
 
-Package managers:
+Package managers (not published yet, but this is what it will look like):
 
 ```sh
 bower install kickflip
