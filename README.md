@@ -1,6 +1,6 @@
 # Kickflip
 
-Kickflip gives you a simple, opinionated wrapper around Skate to write functional web components against W3C specs.
+Kickflip gives you a simple, opinionated wrapper around Skate to write functional web components against [W3C specs](https://github.com/w3c/webcomponents).
 
 - Custom elements backed by [SkateJS](https://github.com/skatejs/skatejs).
 - Uses native [custom element](http://w3c.github.io/webcomponents/spec/custom/) support if available.
