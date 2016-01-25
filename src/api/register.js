@@ -1,4 +1,4 @@
-import render from './render';
+import render from 'skatejs-dom-diff/src/render';
 import skate from 'skatejs';
 
 function linkPropsToAttrsIfNotSpecified (props) {
