@@ -62,7 +62,6 @@ http://jsbin.com/cetidi/1
 ```js
 const intervals = new WeakMap();
 
-
 kickflip.register('x-counter', {
   properties: {
     count: { default: 0 }
