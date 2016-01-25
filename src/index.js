@@ -1,6 +1,9 @@
-import assign from 'object-assign';
-import kickflip from './api/kickflip';
+import register from './api/register';
 import render from './api/render';
 import state from './api/state';
 
-export default assign(kickflip, { render, state });
+export default {
+  register,
+  render,
+  state
+};
