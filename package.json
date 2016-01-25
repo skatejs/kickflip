@@ -33,6 +33,6 @@
   "dependencies": {
     "object-assign": "^4.0.1",
     "skatejs": "skatejs/skatejs#d1c7d6c",
-    "virtual-dom": "^2.1.1"
+    "skatejs-dom-diff": "skatejs/dom-diff#c1bef56"
   }
 }

@@ -16,2340 +16,568 @@
 	var __commonjs_global = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : this;
 	function __commonjs(fn, module) { return module = { exports: {} }, fn(module, module.exports, __commonjs_global), module.exports; }
 
-	var index$9 = __commonjs(function (module, exports, global) {
-	'use strict';
+	// Because weak map polyfills either are too big or don't use native if
+	// available properly.
 
-	/*global window, global*/
+	var index$3 = 0;
+	var prefix = '__WEAK_MAP_POLYFILL_';
 
-	var root = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : {};
+	var WeakMap$1 = function () {
+	  if (typeof WeakMap !== 'undefined') {
+	    return WeakMap;
+	  }
 
-	module.exports = Individual;
+	  function Polyfill() {
+	    this.key = prefix + index$3;
+	    ++index$3;
+	  }
 
-	function Individual(key, value) {
-	    if (key in root) {
-	        return root[key];
+	  Polyfill.prototype = {
+	    get: function get(obj) {
+	      return obj[this.key];
+	    },
+	    set: function set(obj, val) {
+	      obj[this.key] = val;
 	    }
-
-	    root[key] = value;
-
-	    return value;
-	}
-	});
-
-	var require$$0$27 = (index$9 && typeof index$9 === 'object' && 'default' in index$9 ? index$9['default'] : index$9);
-
-	var oneVersion = __commonjs(function (module) {
-	'use strict';
-
-	var Individual = require$$0$27;
-
-	module.exports = OneVersion;
-
-	function OneVersion(moduleName, version, defaultValue) {
-	    var key = '__INDIVIDUAL_ONE_VERSION_' + moduleName;
-	    var enforceKey = key + '_ENFORCE_SINGLETON';
-
-	    var versionValue = Individual(enforceKey, version);
-
-	    if (versionValue !== version) {
-	        throw new Error('Can only have one copy of ' + moduleName + '.\n' + 'You already have version ' + versionValue + ' installed.\n' + 'This means you cannot install version ' + version);
-	    }
-
-	    return Individual(key, defaultValue);
-	}
-	});
-
-	var require$$0$26 = (oneVersion && typeof oneVersion === 'object' && 'default' in oneVersion ? oneVersion['default'] : oneVersion);
-
-	var index$7 = __commonjs(function (module) {
-	'use strict';
-
-	var OneVersionConstraint = require$$0$26;
-
-	var MY_VERSION = '7';
-	OneVersionConstraint('ev-store', MY_VERSION);
-
-	var hashKey = '__EV_STORE_KEY@' + MY_VERSION;
-
-	module.exports = EvStore;
-
-	function EvStore(elem) {
-	    var hash = elem[hashKey];
-
-	    if (!hash) {
-	        hash = elem[hashKey] = {};
-	    }
-
-	    return hash;
-	}
-	});
-
-	var require$$0$21 = (index$7 && typeof index$7 === 'object' && 'default' in index$7 ? index$7['default'] : index$7);
-
-	var evHook = __commonjs(function (module) {
-	'use strict';
-
-	var EvStore = require$$0$21;
-
-	module.exports = EvHook;
-
-	function EvHook(value) {
-	    if (!(this instanceof EvHook)) {
-	        return new EvHook(value);
-	    }
-
-	    this.value = value;
-	}
-
-	EvHook.prototype.hook = function (node, propertyName) {
-	    var es = EvStore(node);
-	    var propName = propertyName.substr(3);
-
-	    es[propName] = this.value;
-	};
-
-	EvHook.prototype.unhook = function (node, propertyName) {
-	    var es = EvStore(node);
-	    var propName = propertyName.substr(3);
-
-	    es[propName] = undefined;
-	};
-	});
-
-	var require$$0$19 = (evHook && typeof evHook === 'object' && 'default' in evHook ? evHook['default'] : evHook);
-
-	var softSetHook = __commonjs(function (module) {
-	'use strict';
-
-	module.exports = SoftSetHook;
-
-	function SoftSetHook(value) {
-	    if (!(this instanceof SoftSetHook)) {
-	        return new SoftSetHook(value);
-	    }
-
-	    this.value = value;
-	}
-
-	SoftSetHook.prototype.hook = function (node, propertyName) {
-	    if (node[propertyName] !== this.value) {
-	        node[propertyName] = this.value;
-	    }
-	};
-	});
-
-	var require$$1$8 = (softSetHook && typeof softSetHook === 'object' && 'default' in softSetHook ? softSetHook['default'] : softSetHook);
-
-	var index$4 = __commonjs(function (module) {
-	/*!
-	 * Cross-Browser Split 1.1.1
-	 * Copyright 2007-2012 Steven Levithan <stevenlevithan.com>
-	 * Available under the MIT License
-	 * ECMAScript compliant, uniform cross-browser split method
-	 */
-
-	/**
-	 * Splits a string into an array of strings using a regex or string separator. Matches of the
-	 * separator are not included in the result array. However, if `separator` is a regex that contains
-	 * capturing groups, backreferences are spliced into the result each time `separator` is matched.
-	 * Fixes browser bugs compared to the native `String.prototype.split` and can be used reliably
-	 * cross-browser.
-	 * @param {String} str String to split.
-	 * @param {RegExp|String} separator Regex or string to use for separating the string.
-	 * @param {Number} [limit] Maximum number of items to include in the result array.
-	 * @returns {Array} Array of substrings.
-	 * @example
-	 *
-	 * // Basic use
-	 * split('a b c d', ' ');
-	 * // -> ['a', 'b', 'c', 'd']
-	 *
-	 * // With limit
-	 * split('a b c d', ' ', 2);
-	 * // -> ['a', 'b']
-	 *
-	 * // Backreferences in result array
-	 * split('..word1 word2..', /([a-z]+)(\d+)/i);
-	 * // -> ['..', 'word', '1', ' ', 'word', '2', '..']
-	 */
-	module.exports = function split(undef) {
-
-	  var nativeSplit = String.prototype.split,
-	      compliantExecNpcg = /()??/.exec("")[1] === undef,
-
-	  // NPCG: nonparticipating capturing group
-	  self;
-
-	  self = function self(str, separator, limit) {
-	    // If `separator` is not a regex, use `nativeSplit`
-	    if (Object.prototype.toString.call(separator) !== "[object RegExp]") {
-	      return nativeSplit.call(str, separator, limit);
-	    }
-	    var output = [],
-	        flags = (separator.ignoreCase ? "i" : "") + (separator.multiline ? "m" : "") + (separator.extended ? "x" : "") + ( // Proposed for ES6
-	    separator.sticky ? "y" : ""),
-
-	    // Firefox 3+
-	    lastLastIndex = 0,
-
-	    // Make `global` and avoid `lastIndex` issues by working with a copy
-	    separator = new RegExp(separator.source, flags + "g"),
-	        separator2,
-	        match,
-	        lastIndex,
-	        lastLength;
-	    str += ""; // Type-convert
-	    if (!compliantExecNpcg) {
-	      // Doesn't need flags gy, but they don't hurt
-	      separator2 = new RegExp("^" + separator.source + "$(?!\\s)", flags);
-	    }
-	    /* Values for `limit`, per the spec:
-	     * If undefined: 4294967295 // Math.pow(2, 32) - 1
-	     * If 0, Infinity, or NaN: 0
-	     * If positive number: limit = Math.floor(limit); if (limit > 4294967295) limit -= 4294967296;
-	     * If negative number: 4294967296 - Math.floor(Math.abs(limit))
-	     * If other: Type-convert, then use the above rules
-	     */
-	    limit = limit === undef ? -1 >>> 0 : // Math.pow(2, 32) - 1
-	    limit >>> 0; // ToUint32(limit)
-	    while (match = separator.exec(str)) {
-	      // `separator.lastIndex` is not reliable cross-browser
-	      lastIndex = match.index + match[0].length;
-	      if (lastIndex > lastLastIndex) {
-	        output.push(str.slice(lastLastIndex, match.index));
-	        // Fix browsers whose `exec` methods don't consistently return `undefined` for
-	        // nonparticipating capturing groups
-	        if (!compliantExecNpcg && match.length > 1) {
-	          match[0].replace(separator2, function () {
-	            for (var i = 1; i < arguments.length - 2; i++) {
-	              if (arguments[i] === undef) {
-	                match[i] = undef;
-	              }
-	            }
-	          });
-	        }
-	        if (match.length > 1 && match.index < str.length) {
-	          Array.prototype.push.apply(output, match.slice(1));
-	        }
-	        lastLength = match[0].length;
-	        lastLastIndex = lastIndex;
-	        if (output.length >= limit) {
-	          break;
-	        }
-	      }
-	      if (separator.lastIndex === match.index) {
-	        separator.lastIndex++; // Avoid an infinite loop
-	      }
-	    }
-	    if (lastLastIndex === str.length) {
-	      if (lastLength || !separator.test("")) {
-	        output.push("");
-	      }
-	    } else {
-	      output.push(str.slice(lastLastIndex));
-	    }
-	    return output.length > limit ? output.slice(0, limit) : output;
 	  };
 
-	  return self;
+	  return Polyfill;
 	}();
-	});
 
-	var require$$0$20 = (index$4 && typeof index$4 === 'object' && 'default' in index$4 ? index$4['default'] : index$4);
-
-	var parseTag = __commonjs(function (module) {
-	'use strict';
-
-	var split = require$$0$20;
-
-	var classIdSplit = /([\.#]?[a-zA-Z0-9\u007F-\uFFFF_:-]+)/;
-	var notClassId = /^\.|#/;
-
-	module.exports = parseTag;
-
-	function parseTag(tag, props) {
-	    if (!tag) {
-	        return 'DIV';
-	    }
-
-	    var noId = !props.hasOwnProperty('id');
-
-	    var tagParts = split(tag, classIdSplit);
-	    var tagName = null;
-
-	    if (notClassId.test(tagParts[1])) {
-	        tagName = 'DIV';
-	    }
-
-	    var classes, part, type, i;
-
-	    for (i = 0; i < tagParts.length; i++) {
-	        part = tagParts[i];
-
-	        if (!part) {
-	            continue;
+	function getAccessor(node, name) {
+	  if (name === 'class') {
+	    return node.className;
+	  } else if (name === 'style') {
+	    return node.style.cssText;
+	    // most things
+	  } else if (name !== 'type' && name in node) {
+	      return node[name];
+	      // real DOM elements
+	    } else if (node.getAttribute) {
+	        return node.getAttribute(name);
+	        // vDOM nodes
+	      } else if (node.attributes && node.attributes[name]) {
+	          return node.attributes[name].value;
 	        }
+	}
 
-	        type = part.charAt(0);
+	function mapAccessor(node, name, value) {
+	  if (name === 'class') {
+	    node.className = value;
+	  } else if (name === 'style') {
+	    node.style = { cssText: value };
+	  }
+	}
 
-	        if (!tagName) {
-	            tagName = part;
-	        } else if (type === '.') {
-	            classes = classes || [];
-	            classes.push(part.substring(1, part.length));
-	        } else if (type === '#' && noId) {
-	            props.id = part.substring(1, part.length);
+	function removeAccessor(node, name) {
+	  if (name === 'class') {
+	    node.className = '';
+	  } else if (name === 'style') {
+	    node.style.cssText = '';
+	    // most things
+	  } else if (name !== 'type' && name in node) {
+	      node[name] = '';
+	      // real DOM elements
+	    } else if (node.removeAttribute) {
+	        node.removeAttribute(name);
+	        // vDOM nodes
+	      } else if (node.attributes) {
+	          delete node.attributes[name];
 	        }
-	    }
+	}
 
-	    if (classes) {
-	        if (props.className) {
-	            classes.push(props.className);
+	function setAccessor(node, name, value) {
+	  if (name === 'class') {
+	    node.className = value;
+	  } else if (name === 'style') {
+	    node.style.cssText = value;
+	    // most things
+	  } else if (name !== 'type' && name in node || typeof value !== 'string') {
+	      // We check if it's undefined or null because IE throws "invalid argument"
+	      // errors for some types of properties. Essentially this is the same as
+	      // removing the accessor.
+	      node[name] = value == null ? '' : value;
+	      // real DOM elements
+	    } else if (node.setAttribute) {
+	        node.setAttribute(name, value);
+	        // vDOM nodes
+	      } else if (node.attributes) {
+	          node.attributes[node.attributes.length] = node.attributes[name] = { name: name, value: value };
 	        }
-
-	        props.className = classes.join(' ');
-	    }
-
-	    return props.namespace ? tagName : tagName.toUpperCase();
-	}
-	});
-
-	var require$$2$6 = (parseTag && typeof parseTag === 'object' && 'default' in parseTag ? parseTag['default'] : parseTag);
-
-	var isThunk = __commonjs(function (module) {
-	module.exports = isThunk;
-
-	function isThunk(t) {
-	    return t && t.type === "Thunk";
-	}
-	});
-
-	var require$$1$7 = (isThunk && typeof isThunk === 'object' && 'default' in isThunk ? isThunk['default'] : isThunk);
-
-	var isVhook = __commonjs(function (module) {
-	module.exports = isHook;
-
-	function isHook(hook) {
-	  return hook && (typeof hook.hook === "function" && !hook.hasOwnProperty("hook") || typeof hook.unhook === "function" && !hook.hasOwnProperty("unhook"));
-	}
-	});
-
-	var require$$0$15 = (isVhook && typeof isVhook === 'object' && 'default' in isVhook ? isVhook['default'] : isVhook);
-
-	var isWidget = __commonjs(function (module) {
-	module.exports = isWidget;
-
-	function isWidget(w) {
-	    return w && w.type === "Widget";
-	}
-	});
-
-	var require$$2$5 = (isWidget && typeof isWidget === 'object' && 'default' in isWidget ? isWidget['default'] : isWidget);
-
-	var version$1 = __commonjs(function (module) {
-	module.exports = "2";
-	});
-
-	var require$$4$3 = (version$1 && typeof version$1 === 'object' && 'default' in version$1 ? version$1['default'] : version$1);
-
-	var isVtext = __commonjs(function (module) {
-	var version = require$$4$3;
-
-	module.exports = isVirtualText;
-
-	function isVirtualText(x) {
-	    return x && x.type === "VirtualText" && x.version === version;
-	}
-	});
-
-	var require$$6$2 = (isVtext && typeof isVtext === 'object' && 'default' in isVtext ? isVtext['default'] : isVtext);
-
-	var isVnode = __commonjs(function (module) {
-	var version = require$$4$3;
-
-	module.exports = isVirtualNode;
-
-	function isVirtualNode(x) {
-	    return x && x.type === "VirtualNode" && x.version === version;
-	}
-	});
-
-	var require$$3$4 = (isVnode && typeof isVnode === 'object' && 'default' in isVnode ? isVnode['default'] : isVnode);
-
-	var vtext = __commonjs(function (module) {
-	var version = require$$4$3;
-
-	module.exports = VirtualText;
-
-	function VirtualText(text) {
-	    this.text = String(text);
 	}
 
-	VirtualText.prototype.version = version;
-	VirtualText.prototype.type = "VirtualText";
-	});
-
-	var require$$8 = (vtext && typeof vtext === 'object' && 'default' in vtext ? vtext['default'] : vtext);
-
-	var vnode = __commonjs(function (module) {
-	var version = require$$4$3;
-	var isVNode = require$$3$4;
-	var isWidget = require$$2$5;
-	var isThunk = require$$1$7;
-	var isVHook = require$$0$15;
-
-	module.exports = VirtualNode;
-
-	var noProperties = {};
-	var noChildren = [];
-
-	function VirtualNode(tagName, properties, children, key, namespace) {
-	    this.tagName = tagName;
-	    this.properties = properties || noProperties;
-	    this.children = children || noChildren;
-	    this.key = key != null ? String(key) : undefined;
-	    this.namespace = typeof namespace === "string" ? namespace : null;
-
-	    var count = children && children.length || 0;
-	    var descendants = 0;
-	    var hasWidgets = false;
-	    var hasThunks = false;
-	    var descendantHooks = false;
-	    var hooks;
-
-	    for (var propName in properties) {
-	        if (properties.hasOwnProperty(propName)) {
-	            var property = properties[propName];
-	            if (isVHook(property) && property.unhook) {
-	                if (!hooks) {
-	                    hooks = {};
-	                }
-
-	                hooks[propName] = property;
-	            }
-	        }
-	    }
-
-	    for (var i = 0; i < count; i++) {
-	        var child = children[i];
-	        if (isVNode(child)) {
-	            descendants += child.count || 0;
-
-	            if (!hasWidgets && child.hasWidgets) {
-	                hasWidgets = true;
-	            }
-
-	            if (!hasThunks && child.hasThunks) {
-	                hasThunks = true;
-	            }
-
-	            if (!descendantHooks && (child.hooks || child.descendantHooks)) {
-	                descendantHooks = true;
-	            }
-	        } else if (!hasWidgets && isWidget(child)) {
-	            if (typeof child.destroy === "function") {
-	                hasWidgets = true;
-	            }
-	        } else if (!hasThunks && isThunk(child)) {
-	            hasThunks = true;
-	        }
-	    }
-
-	    this.count = count + descendants;
-	    this.hasWidgets = hasWidgets;
-	    this.hasThunks = hasThunks;
-	    this.hooks = hooks;
-	    this.descendantHooks = descendantHooks;
+	function createTextNode(item) {
+	  return {
+	    nodeType: 3,
+	    textContent: item
+	  };
 	}
 
-	VirtualNode.prototype.version = version;
-	VirtualNode.prototype.type = "VirtualNode";
-	});
+	function separateData(obj) {
+	  var attrs = {};
+	  var events = {};
+	  var node = {};
+	  var attrIdx = 0;
 
-	var require$$9$1 = (vnode && typeof vnode === 'object' && 'default' in vnode ? vnode['default'] : vnode);
+	  for (var name in obj) {
+	    var value = obj[name];
 
-	var index$5 = __commonjs(function (module) {
-	var nativeIsArray = Array.isArray;
-	var toString = Object.prototype.toString;
-
-	module.exports = nativeIsArray || isArray;
-
-	function isArray(obj) {
-	    return toString.call(obj) === "[object Array]";
-	}
-	});
-
-	var require$$10$1 = (index$5 && typeof index$5 === 'object' && 'default' in index$5 ? index$5['default'] : index$5);
-
-	var index$3 = __commonjs(function (module) {
-	'use strict';
-
-	var isArray = require$$10$1;
-
-	var VNode = require$$9$1;
-	var VText = require$$8;
-	var isVNode = require$$3$4;
-	var isVText = require$$6$2;
-	var isWidget = require$$2$5;
-	var isHook = require$$0$15;
-	var isVThunk = require$$1$7;
-
-	var parseTag = require$$2$6;
-	var softSetHook = require$$1$8;
-	var evHook = require$$0$19;
-
-	module.exports = h;
-
-	function h(tagName, properties, children) {
-	    var childNodes = [];
-	    var tag, props, key, namespace;
-
-	    if (!children && isChildren(properties)) {
-	        children = properties;
-	        props = {};
-	    }
-
-	    props = props || properties || {};
-	    tag = parseTag(tagName, props);
-
-	    // support keys
-	    if (props.hasOwnProperty('key')) {
-	        key = props.key;
-	        props.key = undefined;
-	    }
-
-	    // support namespace
-	    if (props.hasOwnProperty('namespace')) {
-	        namespace = props.namespace;
-	        props.namespace = undefined;
-	    }
-
-	    // fix cursor bug
-	    if (tag === 'INPUT' && !namespace && props.hasOwnProperty('value') && props.value !== undefined && !isHook(props.value)) {
-	        props.value = softSetHook(props.value);
-	    }
-
-	    transformProperties(props);
-
-	    if (children !== undefined && children !== null) {
-	        addChild(children, childNodes, tag, props);
-	    }
-
-	    return new VNode(tag, props, childNodes, key, namespace);
-	}
-
-	function addChild(c, childNodes, tag, props) {
-	    if (typeof c === 'string') {
-	        childNodes.push(new VText(c));
-	    } else if (typeof c === 'number') {
-	        childNodes.push(new VText(String(c)));
-	    } else if (isChild(c)) {
-	        childNodes.push(c);
-	    } else if (isArray(c)) {
-	        for (var i = 0; i < c.length; i++) {
-	            addChild(c[i], childNodes, tag, props);
-	        }
-	    } else if (c === null || c === undefined) {
-	        return;
+	    if (name.indexOf('on') === 0) {
+	      events[name.substring(2)] = value;
 	    } else {
-	        throw UnexpectedVirtualElement({
-	            foreignObject: c,
-	            parentVnode: {
-	                tagName: tag,
-	                properties: props
-	            }
+	      attrs[attrIdx++] = attrs[name] = { name: name, value: value };
+	      mapAccessor(node, name, value);
+	    }
+	  }
+
+	  attrs.length = attrIdx;
+	  return { attrs: attrs, events: events, node: node };
+	}
+
+	function ensureNodes(arr) {
+	  var out = [];
+	  arr.filter(Boolean).forEach(function (item) {
+	    if (Array.isArray(item)) {
+	      out = out.concat(ensureNodes(item));
+	    } else if ((typeof item === 'undefined' ? 'undefined' : babelHelpers.typeof(item)) === 'object') {
+	      out.push(item);
+	    } else {
+	      out.push(createTextNode(item));
+	    }
+	  });
+	  return out;
+	}
+
+	function ensureTagName(name) {
+	  return (typeof name === 'function' ? name.id || name.name : name).toUpperCase();
+	}
+
+	function createElement (name) {
+	  var attrs = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+	  var data = separateData(attrs);
+	  var node = data.node;
+	  node.nodeType = 1;
+	  node.tagName = ensureTagName(name);
+	  node.attributes = data.attrs;
+	  node.events = data.events;
+
+	  for (var _len = arguments.length, chren = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+	    chren[_key - 2] = arguments[_key];
+	  }
+
+	  node.childNodes = ensureNodes(chren);
+	  return node;
+	}
+
+	var APPEND_CHILD = 1;
+	var REMOVE_CHILD = 2;
+	var REMOVE_ATTRIBUTE = 3;
+	var REPLACE_CHILD = 4;
+	var SET_ATTRIBUTE = 5;
+	var SET_EVENT = 6;
+	var TEXT_CONTENT = 8;
+
+	function compareAttributes (src, dst) {
+	  var srcAttrs = src.attributes;
+	  var dstAttrs = dst.attributes;
+	  var srcAttrsLen = (srcAttrs || 0) && srcAttrs.length;
+	  var dstAttrsLen = (dstAttrs || 0) && dstAttrs.length;
+	  var instructions = [];
+
+	  // Bail early if possible.
+	  if (!srcAttrsLen && !dstAttrsLen) {
+	    return instructions;
+	  }
+
+	  // Merge attributes that exist in source with destination's.
+	  for (var a = 0; a < srcAttrsLen; a++) {
+	    var srcAttr = srcAttrs[a];
+	    var srcAttrName = srcAttr.name;
+	    var srcAttrValue = getAccessor(src, srcAttrName);
+	    var dstAttr = dstAttrs[srcAttrName];
+	    var dstAttrValue = getAccessor(dst, srcAttrName);
+
+	    if (!dstAttr) {
+	      instructions.push({
+	        data: { name: srcAttrName },
+	        destination: dst,
+	        source: src,
+	        type: REMOVE_ATTRIBUTE
+	      });
+	    } else if (srcAttrValue !== dstAttrValue) {
+	      instructions.push({
+	        data: { name: srcAttrName, value: dstAttrValue },
+	        destination: dst,
+	        source: src,
+	        type: SET_ATTRIBUTE
+	      });
+	    }
+	  }
+
+	  // We only need to worry about setting attributes that don't already exist
+	  // in the source.
+	  for (var a = 0; a < dstAttrsLen; a++) {
+	    var dstAttr = dstAttrs[a];
+	    var dstAttrName = dstAttr.name;
+	    var dstAttrValue = getAccessor(dst, dstAttrName);
+	    var srcAttr = srcAttrs[dstAttrName];
+
+	    if (!srcAttr) {
+	      instructions.push({
+	        data: { name: dstAttrName, value: dstAttrValue },
+	        destination: dst,
+	        source: src,
+	        type: SET_ATTRIBUTE
+	      });
+	    }
+	  }
+
+	  return instructions;
+	}
+
+	var map = new WeakMap$1();
+
+	function eventMap (elem) {
+	  var events = map.get(elem);
+	  events || map.set(elem, events = {});
+	  return events;
+	}
+
+	function compareEvents (src, dst) {
+	  var dstEvents = dst.events;
+	  var srcEvents = eventMap(src);
+	  var instructions = [];
+
+	  // Remove any source events that aren't in the source before seeing if we
+	  // need to add any from the destination.
+	  if (srcEvents) {
+	    for (var name in srcEvents) {
+	      if (dstEvents[name] !== srcEvents[name]) {
+	        instructions.push({
+	          data: { name: name, value: undefined },
+	          destination: dst,
+	          source: src,
+	          type: SET_EVENT
 	        });
+	      }
 	    }
-	}
-
-	function transformProperties(props) {
-	    for (var propName in props) {
-	        if (props.hasOwnProperty(propName)) {
-	            var value = props[propName];
-
-	            if (isHook(value)) {
-	                continue;
-	            }
-
-	            if (propName.substr(0, 3) === 'ev-') {
-	                // add ev-foo support
-	                props[propName] = evHook(value);
-	            }
-	        }
-	    }
-	}
-
-	function isChild(x) {
-	    return isVNode(x) || isVText(x) || isWidget(x) || isVThunk(x);
-	}
-
-	function isChildren(x) {
-	    return typeof x === 'string' || isArray(x) || isChild(x);
-	}
-
-	function UnexpectedVirtualElement(data) {
-	    var err = new Error();
-
-	    err.type = 'virtual-hyperscript.unexpected.virtual-element';
-	    err.message = 'Unexpected virtual child passed to h().\n' + 'Expected a VNode / Vthunk / VWidget / string but:\n' + 'got:\n' + errorString(data.foreignObject) + '.\n' + 'The parent vnode is:\n' + errorString(data.parentVnode);
-	    '\n' + 'Suggested fix: change your `h(..., [ ... ])` callsite.';
-	    err.foreignObject = data.foreignObject;
-	    err.parentVnode = data.parentVnode;
-
-	    return err;
-	}
-
-	function errorString(obj) {
-	    try {
-	        return JSON.stringify(obj, null, '    ');
-	    } catch (e) {
-	        return String(obj);
-	    }
-	}
-	});
-
-	var require$$0$18 = (index$3 && typeof index$3 === 'object' && 'default' in index$3 ? index$3['default'] : index$3);
-
-	var h = __commonjs(function (module) {
-	var h = require$$0$18;
-
-	module.exports = h;
-	});
-
-	var h$1 = (h && typeof h === 'object' && 'default' in h ? h['default'] : h);
-
-	var index$6 = __commonjs(function (module) {
-	"use strict";
-
-	module.exports = function isObject(x) {
-		return (typeof x === "undefined" ? "undefined" : babelHelpers.typeof(x)) === "object" && x !== null;
-	};
-	});
-
-	var require$$1$9 = (index$6 && typeof index$6 === 'object' && 'default' in index$6 ? index$6['default'] : index$6);
-
-	var diffProps = __commonjs(function (module) {
-	var isObject = require$$1$9;
-	var isHook = require$$0$15;
-
-	module.exports = diffProps;
-
-	function diffProps(a, b) {
-	    var diff;
-
-	    for (var aKey in a) {
-	        if (!(aKey in b)) {
-	            diff = diff || {};
-	            diff[aKey] = undefined;
-	        }
-
-	        var aValue = a[aKey];
-	        var bValue = b[aKey];
-
-	        if (aValue === bValue) {
-	            continue;
-	        } else if (isObject(aValue) && isObject(bValue)) {
-	            if (getPrototype(bValue) !== getPrototype(aValue)) {
-	                diff = diff || {};
-	                diff[aKey] = bValue;
-	            } else if (isHook(bValue)) {
-	                diff = diff || {};
-	                diff[aKey] = bValue;
-	            } else {
-	                var objectDiff = diffProps(aValue, bValue);
-	                if (objectDiff) {
-	                    diff = diff || {};
-	                    diff[aKey] = objectDiff;
-	                }
-	            }
-	        } else {
-	            diff = diff || {};
-	            diff[aKey] = bValue;
-	        }
-	    }
-
-	    for (var bKey in b) {
-	        if (!(bKey in a)) {
-	            diff = diff || {};
-	            diff[bKey] = b[bKey];
-	        }
-	    }
-
-	    return diff;
-	}
-
-	function getPrototype(value) {
-	    if (Object.getPrototypeOf) {
-	        return Object.getPrototypeOf(value);
-	    } else if (value.__proto__) {
-	        return value.__proto__;
-	    } else if (value.constructor) {
-	        return value.constructor.prototype;
-	    }
-	}
-	});
-
-	var require$$0$17 = (diffProps && typeof diffProps === 'object' && 'default' in diffProps ? diffProps['default'] : diffProps);
-
-	var handleThunk = __commonjs(function (module) {
-	var isVNode = require$$3$4;
-	var isVText = require$$6$2;
-	var isWidget = require$$2$5;
-	var isThunk = require$$1$7;
-
-	module.exports = handleThunk;
-
-	function handleThunk(a, b) {
-	    var renderedA = a;
-	    var renderedB = b;
-
-	    if (isThunk(b)) {
-	        renderedB = renderThunk(b, a);
-	    }
-
-	    if (isThunk(a)) {
-	        renderedA = renderThunk(a, null);
-	    }
-
-	    return {
-	        a: renderedA,
-	        b: renderedB
-	    };
-	}
-
-	function renderThunk(thunk, previous) {
-	    var renderedThunk = thunk.vnode;
-
-	    if (!renderedThunk) {
-	        renderedThunk = thunk.vnode = thunk.render(previous);
-	    }
-
-	    if (!(isVNode(renderedThunk) || isVText(renderedThunk) || isWidget(renderedThunk))) {
-	        throw new Error("thunk did not return a valid node");
-	    }
-
-	    return renderedThunk;
-	}
-	});
-
-	var require$$1$6 = (handleThunk && typeof handleThunk === 'object' && 'default' in handleThunk ? handleThunk['default'] : handleThunk);
-
-	var vpatch = __commonjs(function (module) {
-	var version = require$$4$3;
-
-	VirtualPatch.NONE = 0;
-	VirtualPatch.VTEXT = 1;
-	VirtualPatch.VNODE = 2;
-	VirtualPatch.WIDGET = 3;
-	VirtualPatch.PROPS = 4;
-	VirtualPatch.ORDER = 5;
-	VirtualPatch.INSERT = 6;
-	VirtualPatch.REMOVE = 7;
-	VirtualPatch.THUNK = 8;
-
-	module.exports = VirtualPatch;
-
-	function VirtualPatch(type, vNode, patch) {
-	    this.type = Number(type);
-	    this.vNode = vNode;
-	    this.patch = patch;
-	}
-
-	VirtualPatch.prototype.version = version;
-	VirtualPatch.prototype.type = "VirtualPatch";
-	});
-
-	var require$$6$1 = (vpatch && typeof vpatch === 'object' && 'default' in vpatch ? vpatch['default'] : vpatch);
-
-	var diff$2 = __commonjs(function (module) {
-	var isArray = require$$10$1;
-
-	var VPatch = require$$6$1;
-	var isVNode = require$$3$4;
-	var isVText = require$$6$2;
-	var isWidget = require$$2$5;
-	var isThunk = require$$1$7;
-	var handleThunk = require$$1$6;
-
-	var diffProps = require$$0$17;
-
-	module.exports = diff;
-
-	function diff(a, b) {
-	    var patch = { a: a };
-	    walk(a, b, patch, 0);
-	    return patch;
-	}
-
-	function walk(a, b, patch, index) {
-	    if (a === b) {
-	        return;
-	    }
-
-	    var apply = patch[index];
-	    var applyClear = false;
-
-	    if (isThunk(a) || isThunk(b)) {
-	        thunks(a, b, patch, index);
-	    } else if (b == null) {
-
-	        // If a is a widget we will add a remove patch for it
-	        // Otherwise any child widgets/hooks must be destroyed.
-	        // This prevents adding two remove patches for a widget.
-	        if (!isWidget(a)) {
-	            clearState(a, patch, index);
-	            apply = patch[index];
-	        }
-
-	        apply = appendPatch(apply, new VPatch(VPatch.REMOVE, a, b));
-	    } else if (isVNode(b)) {
-	        if (isVNode(a)) {
-	            if (a.tagName === b.tagName && a.namespace === b.namespace && a.key === b.key) {
-	                var propsPatch = diffProps(a.properties, b.properties);
-	                if (propsPatch) {
-	                    apply = appendPatch(apply, new VPatch(VPatch.PROPS, a, propsPatch));
-	                }
-	                apply = diffChildren(a, b, patch, apply, index);
-	            } else {
-	                apply = appendPatch(apply, new VPatch(VPatch.VNODE, a, b));
-	                applyClear = true;
-	            }
-	        } else {
-	            apply = appendPatch(apply, new VPatch(VPatch.VNODE, a, b));
-	            applyClear = true;
-	        }
-	    } else if (isVText(b)) {
-	        if (!isVText(a)) {
-	            apply = appendPatch(apply, new VPatch(VPatch.VTEXT, a, b));
-	            applyClear = true;
-	        } else if (a.text !== b.text) {
-	            apply = appendPatch(apply, new VPatch(VPatch.VTEXT, a, b));
-	        }
-	    } else if (isWidget(b)) {
-	        if (!isWidget(a)) {
-	            applyClear = true;
-	        }
-
-	        apply = appendPatch(apply, new VPatch(VPatch.WIDGET, a, b));
-	    }
-
-	    if (apply) {
-	        patch[index] = apply;
-	    }
-
-	    if (applyClear) {
-	        clearState(a, patch, index);
-	    }
-	}
-
-	function diffChildren(a, b, patch, apply, index) {
-	    var aChildren = a.children;
-	    var orderedSet = reorder(aChildren, b.children);
-	    var bChildren = orderedSet.children;
-
-	    var aLen = aChildren.length;
-	    var bLen = bChildren.length;
-	    var len = aLen > bLen ? aLen : bLen;
-
-	    for (var i = 0; i < len; i++) {
-	        var leftNode = aChildren[i];
-	        var rightNode = bChildren[i];
-	        index += 1;
-
-	        if (!leftNode) {
-	            if (rightNode) {
-	                // Excess nodes in b need to be added
-	                apply = appendPatch(apply, new VPatch(VPatch.INSERT, null, rightNode));
-	            }
-	        } else {
-	            walk(leftNode, rightNode, patch, index);
-	        }
-
-	        if (isVNode(leftNode) && leftNode.count) {
-	            index += leftNode.count;
-	        }
-	    }
-
-	    if (orderedSet.moves) {
-	        // Reorder nodes last
-	        apply = appendPatch(apply, new VPatch(VPatch.ORDER, a, orderedSet.moves));
-	    }
-
-	    return apply;
-	}
-
-	function clearState(vNode, patch, index) {
-	    // TODO: Make this a single walk, not two
-	    unhook(vNode, patch, index);
-	    destroyWidgets(vNode, patch, index);
-	}
-
-	// Patch records for all destroyed widgets must be added because we need
-	// a DOM node reference for the destroy function
-	function destroyWidgets(vNode, patch, index) {
-	    if (isWidget(vNode)) {
-	        if (typeof vNode.destroy === "function") {
-	            patch[index] = appendPatch(patch[index], new VPatch(VPatch.REMOVE, vNode, null));
-	        }
-	    } else if (isVNode(vNode) && (vNode.hasWidgets || vNode.hasThunks)) {
-	        var children = vNode.children;
-	        var len = children.length;
-	        for (var i = 0; i < len; i++) {
-	            var child = children[i];
-	            index += 1;
-
-	            destroyWidgets(child, patch, index);
-
-	            if (isVNode(child) && child.count) {
-	                index += child.count;
-	            }
-	        }
-	    } else if (isThunk(vNode)) {
-	        thunks(vNode, null, patch, index);
-	    }
-	}
-
-	// Create a sub-patch for thunks
-	function thunks(a, b, patch, index) {
-	    var nodes = handleThunk(a, b);
-	    var thunkPatch = diff(nodes.a, nodes.b);
-	    if (hasPatches(thunkPatch)) {
-	        patch[index] = new VPatch(VPatch.THUNK, null, thunkPatch);
-	    }
-	}
-
-	function hasPatches(patch) {
-	    for (var index in patch) {
-	        if (index !== "a") {
-	            return true;
-	        }
-	    }
-
-	    return false;
-	}
-
-	// Execute hooks when two nodes are identical
-	function unhook(vNode, patch, index) {
-	    if (isVNode(vNode)) {
-	        if (vNode.hooks) {
-	            patch[index] = appendPatch(patch[index], new VPatch(VPatch.PROPS, vNode, undefinedKeys(vNode.hooks)));
-	        }
-
-	        if (vNode.descendantHooks || vNode.hasThunks) {
-	            var children = vNode.children;
-	            var len = children.length;
-	            for (var i = 0; i < len; i++) {
-	                var child = children[i];
-	                index += 1;
-
-	                unhook(child, patch, index);
-
-	                if (isVNode(child) && child.count) {
-	                    index += child.count;
-	                }
-	            }
-	        }
-	    } else if (isThunk(vNode)) {
-	        thunks(vNode, null, patch, index);
-	    }
-	}
-
-	function undefinedKeys(obj) {
-	    var result = {};
-
-	    for (var key in obj) {
-	        result[key] = undefined;
-	    }
-
-	    return result;
-	}
-
-	// List diff, naive left to right reordering
-	function reorder(aChildren, bChildren) {
-	    // O(M) time, O(M) memory
-	    var bChildIndex = keyIndex(bChildren);
-	    var bKeys = bChildIndex.keys;
-	    var bFree = bChildIndex.free;
-
-	    if (bFree.length === bChildren.length) {
-	        return {
-	            children: bChildren,
-	            moves: null
-	        };
-	    }
-
-	    // O(N) time, O(N) memory
-	    var aChildIndex = keyIndex(aChildren);
-	    var aKeys = aChildIndex.keys;
-	    var aFree = aChildIndex.free;
-
-	    if (aFree.length === aChildren.length) {
-	        return {
-	            children: bChildren,
-	            moves: null
-	        };
-	    }
-
-	    // O(MAX(N, M)) memory
-	    var newChildren = [];
-
-	    var freeIndex = 0;
-	    var freeCount = bFree.length;
-	    var deletedItems = 0;
-
-	    // Iterate through a and match a node in b
-	    // O(N) time,
-	    for (var i = 0; i < aChildren.length; i++) {
-	        var aItem = aChildren[i];
-	        var itemIndex;
-
-	        if (aItem.key) {
-	            if (bKeys.hasOwnProperty(aItem.key)) {
-	                // Match up the old keys
-	                itemIndex = bKeys[aItem.key];
-	                newChildren.push(bChildren[itemIndex]);
-	            } else {
-	                // Remove old keyed items
-	                itemIndex = i - deletedItems++;
-	                newChildren.push(null);
-	            }
-	        } else {
-	            // Match the item in a with the next free item in b
-	            if (freeIndex < freeCount) {
-	                itemIndex = bFree[freeIndex++];
-	                newChildren.push(bChildren[itemIndex]);
-	            } else {
-	                // There are no free items in b to match with
-	                // the free items in a, so the extra free nodes
-	                // are deleted.
-	                itemIndex = i - deletedItems++;
-	                newChildren.push(null);
-	            }
-	        }
-	    }
-
-	    var lastFreeIndex = freeIndex >= bFree.length ? bChildren.length : bFree[freeIndex];
-
-	    // Iterate through b and append any new keys
-	    // O(M) time
-	    for (var j = 0; j < bChildren.length; j++) {
-	        var newItem = bChildren[j];
-
-	        if (newItem.key) {
-	            if (!aKeys.hasOwnProperty(newItem.key)) {
-	                // Add any new keyed items
-	                // We are adding new items to the end and then sorting them
-	                // in place. In future we should insert new items in place.
-	                newChildren.push(newItem);
-	            }
-	        } else if (j >= lastFreeIndex) {
-	            // Add any leftover non-keyed items
-	            newChildren.push(newItem);
-	        }
-	    }
-
-	    var simulate = newChildren.slice();
-	    var simulateIndex = 0;
-	    var removes = [];
-	    var inserts = [];
-	    var simulateItem;
-
-	    for (var k = 0; k < bChildren.length;) {
-	        var wantedItem = bChildren[k];
-	        simulateItem = simulate[simulateIndex];
-
-	        // remove items
-	        while (simulateItem === null && simulate.length) {
-	            removes.push(remove(simulate, simulateIndex, null));
-	            simulateItem = simulate[simulateIndex];
-	        }
-
-	        if (!simulateItem || simulateItem.key !== wantedItem.key) {
-	            // if we need a key in this position...
-	            if (wantedItem.key) {
-	                if (simulateItem && simulateItem.key) {
-	                    // if an insert doesn't put this key in place, it needs to move
-	                    if (bKeys[simulateItem.key] !== k + 1) {
-	                        removes.push(remove(simulate, simulateIndex, simulateItem.key));
-	                        simulateItem = simulate[simulateIndex];
-	                        // if the remove didn't put the wanted item in place, we need to insert it
-	                        if (!simulateItem || simulateItem.key !== wantedItem.key) {
-	                            inserts.push({ key: wantedItem.key, to: k });
-	                        }
-	                        // items are matching, so skip ahead
-	                        else {
-	                                simulateIndex++;
-	                            }
-	                    } else {
-	                        inserts.push({ key: wantedItem.key, to: k });
-	                    }
-	                } else {
-	                    inserts.push({ key: wantedItem.key, to: k });
-	                }
-	                k++;
-	            }
-	            // a key in simulate has no matching wanted key, remove it
-	            else if (simulateItem && simulateItem.key) {
-	                    removes.push(remove(simulate, simulateIndex, simulateItem.key));
-	                }
-	        } else {
-	            simulateIndex++;
-	            k++;
-	        }
-	    }
-
-	    // remove all the remaining nodes from simulate
-	    while (simulateIndex < simulate.length) {
-	        simulateItem = simulate[simulateIndex];
-	        removes.push(remove(simulate, simulateIndex, simulateItem && simulateItem.key));
-	    }
-
-	    // If the only moves we have are deletes then we can just
-	    // let the delete patch remove these items.
-	    if (removes.length === deletedItems && !inserts.length) {
-	        return {
-	            children: newChildren,
-	            moves: null
-	        };
-	    }
-
-	    return {
-	        children: newChildren,
-	        moves: {
-	            removes: removes,
-	            inserts: inserts
-	        }
-	    };
-	}
-
-	function remove(arr, index, key) {
-	    arr.splice(index, 1);
-
-	    return {
-	        from: index,
-	        key: key
-	    };
-	}
-
-	function keyIndex(children) {
-	    var keys = {};
-	    var free = [];
-	    var length = children.length;
-
-	    for (var i = 0; i < length; i++) {
-	        var child = children[i];
-
-	        if (child.key) {
-	            keys[child.key] = i;
-	        } else {
-	            free.push(i);
-	        }
-	    }
-
-	    return {
-	        keys: keys, // A hash of key name to index
-	        free: free // An array of unkeyed item indices
-	    };
-	}
-
-	function appendPatch(apply, patch) {
-	    if (apply) {
-	        if (isArray(apply)) {
-	            apply.push(patch);
-	        } else {
-	            apply = [apply, patch];
-	        }
-
-	        return apply;
-	    } else {
-	        return patch;
-	    }
-	}
-	});
-
-	var require$$0$16 = (diff$2 && typeof diff$2 === 'object' && 'default' in diff$2 ? diff$2['default'] : diff$2);
-
-	var diff = __commonjs(function (module) {
-	var diff = require$$0$16;
-
-	module.exports = diff;
-	});
-
-	var diff$1 = (diff && typeof diff === 'object' && 'default' in diff ? diff['default'] : diff);
-
-	var updateWidget = __commonjs(function (module) {
-	var isWidget = require$$2$5;
-
-	module.exports = updateWidget;
-
-	function updateWidget(a, b) {
-	    if (isWidget(a) && isWidget(b)) {
-	        if ("name" in a && "name" in b) {
-	            return a.id === b.id;
-	        } else {
-	            return a.init === b.init;
-	        }
-	    }
-
-	    return false;
-	}
-	});
-
-	var require$$0$14 = (updateWidget && typeof updateWidget === 'object' && 'default' in updateWidget ? updateWidget['default'] : updateWidget);
-
-	var applyProperties = __commonjs(function (module) {
-	var isObject = require$$1$9;
-	var isHook = require$$0$15;
-
-	module.exports = applyProperties;
-
-	function applyProperties(node, props, previous) {
-	    for (var propName in props) {
-	        var propValue = props[propName];
-
-	        if (propValue === undefined) {
-	            removeProperty(node, propName, propValue, previous);
-	        } else if (isHook(propValue)) {
-	            removeProperty(node, propName, propValue, previous);
-	            if (propValue.hook) {
-	                propValue.hook(node, propName, previous ? previous[propName] : undefined);
-	            }
-	        } else {
-	            if (isObject(propValue)) {
-	                patchObject(node, props, previous, propName, propValue);
-	            } else {
-	                node[propName] = propValue;
-	            }
-	        }
-	    }
-	}
-
-	function removeProperty(node, propName, propValue, previous) {
-	    if (previous) {
-	        var previousValue = previous[propName];
-
-	        if (!isHook(previousValue)) {
-	            if (propName === "attributes") {
-	                for (var attrName in previousValue) {
-	                    node.removeAttribute(attrName);
-	                }
-	            } else if (propName === "style") {
-	                for (var i in previousValue) {
-	                    node.style[i] = "";
-	                }
-	            } else if (typeof previousValue === "string") {
-	                node[propName] = "";
-	            } else {
-	                node[propName] = null;
-	            }
-	        } else if (previousValue.unhook) {
-	            previousValue.unhook(node, propName, propValue);
-	        }
-	    }
-	}
-
-	function patchObject(node, props, previous, propName, propValue) {
-	    var previousValue = previous ? previous[propName] : undefined;
-
-	    // Set attributes
-	    if (propName === "attributes") {
-	        for (var attrName in propValue) {
-	            var attrValue = propValue[attrName];
-
-	            if (attrValue === undefined) {
-	                node.removeAttribute(attrName);
-	            } else {
-	                node.setAttribute(attrName, attrValue);
-	            }
-	        }
-
-	        return;
-	    }
-
-	    if (previousValue && isObject(previousValue) && getPrototype(previousValue) !== getPrototype(propValue)) {
-	        node[propName] = propValue;
-	        return;
-	    }
-
-	    if (!isObject(node[propName])) {
-	        node[propName] = {};
-	    }
-
-	    var replacer = propName === "style" ? "" : undefined;
-
-	    for (var k in propValue) {
-	        var value = propValue[k];
-	        node[propName][k] = value === undefined ? replacer : value;
-	    }
-	}
-
-	function getPrototype(value) {
-	    if (Object.getPrototypeOf) {
-	        return Object.getPrototypeOf(value);
-	    } else if (value.__proto__) {
-	        return value.__proto__;
-	    } else if (value.constructor) {
-	        return value.constructor.prototype;
-	    }
-	}
-	});
-
-	var require$$4$2 = (applyProperties && typeof applyProperties === 'object' && 'default' in applyProperties ? applyProperties['default'] : applyProperties);
-
-	var patchOp = __commonjs(function (module) {
-	var applyProperties = require$$4$2;
-
-	var isWidget = require$$2$5;
-	var VPatch = require$$6$1;
-
-	var updateWidget = require$$0$14;
-
-	module.exports = applyPatch;
-
-	function applyPatch(vpatch, domNode, renderOptions) {
-	    var type = vpatch.type;
-	    var vNode = vpatch.vNode;
-	    var patch = vpatch.patch;
-
-	    switch (type) {
-	        case VPatch.REMOVE:
-	            return removeNode(domNode, vNode);
-	        case VPatch.INSERT:
-	            return insertNode(domNode, patch, renderOptions);
-	        case VPatch.VTEXT:
-	            return stringPatch(domNode, vNode, patch, renderOptions);
-	        case VPatch.WIDGET:
-	            return widgetPatch(domNode, vNode, patch, renderOptions);
-	        case VPatch.VNODE:
-	            return vNodePatch(domNode, vNode, patch, renderOptions);
-	        case VPatch.ORDER:
-	            reorderChildren(domNode, patch);
-	            return domNode;
-	        case VPatch.PROPS:
-	            applyProperties(domNode, patch, vNode.properties);
-	            return domNode;
-	        case VPatch.THUNK:
-	            return replaceRoot(domNode, renderOptions.patch(domNode, patch, renderOptions));
-	        default:
-	            return domNode;
-	    }
-	}
-
-	function removeNode(domNode, vNode) {
-	    var parentNode = domNode.parentNode;
-
-	    if (parentNode) {
-	        parentNode.removeChild(domNode);
-	    }
-
-	    destroyWidget(domNode, vNode);
-
-	    return null;
-	}
-
-	function insertNode(parentNode, vNode, renderOptions) {
-	    var newNode = renderOptions.render(vNode, renderOptions);
-
-	    if (parentNode) {
-	        parentNode.appendChild(newNode);
-	    }
-
-	    return parentNode;
-	}
-
-	function stringPatch(domNode, leftVNode, vText, renderOptions) {
-	    var newNode;
-
-	    if (domNode.nodeType === 3) {
-	        domNode.replaceData(0, domNode.length, vText.text);
-	        newNode = domNode;
-	    } else {
-	        var parentNode = domNode.parentNode;
-	        newNode = renderOptions.render(vText, renderOptions);
-
-	        if (parentNode && newNode !== domNode) {
-	            parentNode.replaceChild(newNode, domNode);
-	        }
-	    }
-
-	    return newNode;
-	}
-
-	function widgetPatch(domNode, leftVNode, widget, renderOptions) {
-	    var updating = updateWidget(leftVNode, widget);
-	    var newNode;
-
-	    if (updating) {
-	        newNode = widget.update(leftVNode, domNode) || domNode;
-	    } else {
-	        newNode = renderOptions.render(widget, renderOptions);
-	    }
-
-	    var parentNode = domNode.parentNode;
-
-	    if (parentNode && newNode !== domNode) {
-	        parentNode.replaceChild(newNode, domNode);
-	    }
-
-	    if (!updating) {
-	        destroyWidget(domNode, leftVNode);
-	    }
-
-	    return newNode;
-	}
-
-	function vNodePatch(domNode, leftVNode, vNode, renderOptions) {
-	    var parentNode = domNode.parentNode;
-	    var newNode = renderOptions.render(vNode, renderOptions);
-
-	    if (parentNode && newNode !== domNode) {
-	        parentNode.replaceChild(newNode, domNode);
-	    }
-
-	    return newNode;
-	}
-
-	function destroyWidget(domNode, w) {
-	    if (typeof w.destroy === "function" && isWidget(w)) {
-	        w.destroy(domNode);
-	    }
-	}
-
-	function reorderChildren(domNode, moves) {
-	    var childNodes = domNode.childNodes;
-	    var keyMap = {};
-	    var node;
-	    var remove;
-	    var insert;
-
-	    for (var i = 0; i < moves.removes.length; i++) {
-	        remove = moves.removes[i];
-	        node = childNodes[remove.from];
-	        if (remove.key) {
-	            keyMap[remove.key] = node;
-	        }
-	        domNode.removeChild(node);
-	    }
-
-	    var length = childNodes.length;
-	    for (var j = 0; j < moves.inserts.length; j++) {
-	        insert = moves.inserts[j];
-	        node = keyMap[insert.key];
-	        // this is the weirdest bug i've ever seen in webkit
-	        domNode.insertBefore(node, insert.to >= length++ ? null : childNodes[insert.to]);
-	    }
-	}
-
-	function replaceRoot(oldRoot, newRoot) {
-	    if (oldRoot && newRoot && oldRoot !== newRoot && oldRoot.parentNode) {
-	        oldRoot.parentNode.replaceChild(newRoot, oldRoot);
-	    }
-
-	    return newRoot;
-	}
-	});
-
-	var require$$0$12 = (patchOp && typeof patchOp === 'object' && 'default' in patchOp ? patchOp['default'] : patchOp);
-
-	var domIndex = __commonjs(function (module) {
-	// Maps a virtual DOM tree onto a real DOM tree in an efficient manner.
-	// We don't want to read all of the DOM nodes in the tree so we use
-	// the in-order tree indexing to eliminate recursion down certain branches.
-	// We only recurse into a DOM node if we know that it contains a child of
-	// interest.
-
-	var noChild = {};
-
-	module.exports = domIndex;
-
-	function domIndex(rootNode, tree, indices, nodes) {
-	    if (!indices || indices.length === 0) {
-	        return {};
-	    } else {
-	        indices.sort(ascending);
-	        return recurse(rootNode, tree, indices, nodes, 0);
-	    }
-	}
-
-	function recurse(rootNode, tree, indices, nodes, rootIndex) {
-	    nodes = nodes || {};
-
-	    if (rootNode) {
-	        if (indexInRange(indices, rootIndex, rootIndex)) {
-	            nodes[rootIndex] = rootNode;
-	        }
-
-	        var vChildren = tree.children;
-
-	        if (vChildren) {
-
-	            var childNodes = rootNode.childNodes;
-
-	            for (var i = 0; i < tree.children.length; i++) {
-	                rootIndex += 1;
-
-	                var vChild = vChildren[i] || noChild;
-	                var nextIndex = rootIndex + (vChild.count || 0);
-
-	                // skip recursion down the tree if there are no nodes down here
-	                if (indexInRange(indices, rootIndex, nextIndex)) {
-	                    recurse(childNodes[i], vChild, indices, nodes, rootIndex);
-	                }
-
-	                rootIndex = nextIndex;
-	            }
-	        }
-	    }
-
-	    return nodes;
-	}
-
-	// Binary search for an index in the interval [left, right]
-	function indexInRange(indices, left, right) {
-	    if (indices.length === 0) {
-	        return false;
-	    }
-
-	    var minIndex = 0;
-	    var maxIndex = indices.length - 1;
-	    var currentIndex;
-	    var currentItem;
-
-	    while (minIndex <= maxIndex) {
-	        currentIndex = (maxIndex + minIndex) / 2 >> 0;
-	        currentItem = indices[currentIndex];
-
-	        if (minIndex === maxIndex) {
-	            return currentItem >= left && currentItem <= right;
-	        } else if (currentItem < left) {
-	            minIndex = currentIndex + 1;
-	        } else if (currentItem > right) {
-	            maxIndex = currentIndex - 1;
-	        } else {
-	            return true;
-	        }
-	    }
-
-	    return false;
-	}
-
-	function ascending(a, b) {
-	    return a > b ? 1 : -1;
-	}
-	});
-
-	var require$$1$5 = (domIndex && typeof domIndex === 'object' && 'default' in domIndex ? domIndex['default'] : domIndex);
-
-	var removeEventListener = __commonjs(function (module) {
-	module.exports = removeEventListener;
-
-	function removeEventListener(type, listener) {
-	    var elem = this;
-
-	    if (!elem.listeners) {
-	        return;
-	    }
-
-	    if (!elem.listeners[type]) {
-	        return;
-	    }
-
-	    var list = elem.listeners[type];
-	    var index = list.indexOf(listener);
-	    if (index !== -1) {
-	        list.splice(index, 1);
-	    }
-	}
-	});
-
-	var require$$1$10 = (removeEventListener && typeof removeEventListener === 'object' && 'default' in removeEventListener ? removeEventListener['default'] : removeEventListener);
-
-	var addEventListener = __commonjs(function (module) {
-	module.exports = addEventListener;
-
-	function addEventListener(type, listener) {
-	    var elem = this;
-
-	    if (!elem.listeners) {
-	        elem.listeners = {};
-	    }
-
-	    if (!elem.listeners[type]) {
-	        elem.listeners[type] = [];
-	    }
-
-	    if (elem.listeners[type].indexOf(listener) === -1) {
-	        elem.listeners[type].push(listener);
-	    }
-	}
-	});
-
-	var require$$2$7 = (addEventListener && typeof addEventListener === 'object' && 'default' in addEventListener ? addEventListener['default'] : addEventListener);
-
-	var dispatchEvent = __commonjs(function (module) {
-	module.exports = dispatchEvent;
-
-	function dispatchEvent(ev) {
-	    var elem = this;
-	    var type = ev.type;
-
-	    if (!ev.target) {
-	        ev.target = elem;
-	    }
-
-	    if (!elem.listeners) {
-	        elem.listeners = {};
-	    }
-
-	    var listeners = elem.listeners[type];
-
-	    if (listeners) {
-	        return listeners.forEach(function (listener) {
-	            ev.currentTarget = elem;
-	            if (typeof listener === 'function') {
-	                listener(ev);
-	            } else {
-	                listener.handleEvent(ev);
-	            }
+	  }
+
+	  // After instructing to remove any old events, we then can instruct to add
+	  // new events. This prevents the new events from being removed from earlier
+	  // instructions.
+	  if (dstEvents) {
+	    for (var name in dstEvents) {
+	      var value = dstEvents[name];
+	      if (srcEvents[name] !== value) {
+	        instructions.push({
+	          data: { name: name, value: value },
+	          destination: dst,
+	          source: src,
+	          type: SET_EVENT
 	        });
+	      }
 	    }
+	  }
 
-	    if (elem.parentNode) {
-	        elem.parentNode.dispatchEvent(ev);
-	    }
-	}
-	});
-
-	var require$$3$5 = (dispatchEvent && typeof dispatchEvent === 'object' && 'default' in dispatchEvent ? dispatchEvent['default'] : dispatchEvent);
-
-	var event = __commonjs(function (module) {
-	module.exports = Event;
-
-	function Event(family) {}
-
-	Event.prototype.initEvent = function _Event_initEvent(type, bubbles, cancelable) {
-	    this.type = type;
-	    this.bubbles = bubbles;
-	    this.cancelable = cancelable;
-	};
-
-	Event.prototype.preventDefault = function _Event_preventDefault() {};
-	});
-
-	var require$$3$6 = (event && typeof event === 'object' && 'default' in event ? event['default'] : event);
-
-	var serialize = __commonjs(function (module) {
-	module.exports = serializeNode;
-
-	var voidElements = /area|base|br|col|embed|hr|img|input|keygen|link|menuitem|meta|param|source|track|wbr/i;
-
-	function serializeNode(node) {
-	    switch (node.nodeType) {
-	        case 3:
-	            return escapeText(node.data);
-	        case 8:
-	            return "<!--" + node.data + "-->";
-	        default:
-	            return serializeElement(node);
-	    }
+	  return instructions;
 	}
 
-	function serializeElement(elem) {
-	    var strings = [];
+	function compareElement (src, dst) {
+	  if (src.tagName === dst.tagName) {
+	    return compareAttributes(src, dst).concat(compareEvents(src, dst));
+	  }
+	}
 
-	    var tagname = elem.tagName;
+	function text (src, dst) {
+	  if (src.textContent === dst.textContent) {
+	    return [];
+	  }
 
-	    if (elem.namespaceURI === "http://www.w3.org/1999/xhtml") {
-	        tagname = tagname.toLowerCase();
-	    }
+	  return [{
+	    destination: dst,
+	    source: src,
+	    type: TEXT_CONTENT
+	  }];
+	}
 
-	    strings.push("<" + tagname + properties(elem) + datasetify(elem));
+	var NODE_COMMENT = 8;
+	var NODE_ELEMENT = 1;
+	var NODE_TEXT = 3;
 
-	    if (voidElements.test(tagname)) {
-	        strings.push(" />");
+	function compareNode (src, dst) {
+	  var dstType = undefined,
+	      srcType = undefined;
+
+	  if (!dst || !src) {
+	    return;
+	  }
+
+	  dstType = dst.nodeType;
+	  srcType = src.nodeType;
+
+	  if (dstType !== srcType) {
+	    return;
+	  } else if (dstType === NODE_ELEMENT) {
+	    return compareElement(src, dst);
+	  } else if (dstType === NODE_TEXT) {
+	    return text(src, dst);
+	  } else if (dstType === NODE_COMMENT) {
+	    return text(src, dst);
+	  }
+	}
+
+	var realNodeMap = new WeakMap$1();
+
+	var _window$1 = window;
+	var Node$2 = _window$1.Node;
+
+	function realNode (node) {
+	  return node instanceof Node$2 ? node : realNodeMap.get(node);
+	}
+
+	function diff() {
+	  var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+	  var src = opts.source;
+	  var dst = opts.destination;
+	  var instructions = [];
+
+	  if (!src || !dst) {
+	    return [];
+	  }
+
+	  var srcChs = src.childNodes;
+	  var dstChs = dst.childNodes;
+	  var srcChsLen = srcChs ? srcChs.length : 0;
+	  var dstChsLen = dstChs ? dstChs.length : 0;
+
+	  for (var a = 0; a < dstChsLen; a++) {
+	    var curSrc = srcChs[a];
+	    var curDst = dstChs[a];
+
+	    // If there is no matching destination node it means we need to remove the
+	    // current source node from the source.
+	    if (!curSrc) {
+	      instructions.push({
+	        destination: dstChs[a],
+	        source: src,
+	        type: APPEND_CHILD
+	      });
+	      continue;
 	    } else {
-	        strings.push(">");
-
-	        if (elem.childNodes.length) {
-	            strings.push.apply(strings, elem.childNodes.map(serializeNode));
-	        } else if (elem.textContent || elem.innerText) {
-	            strings.push(escapeText(elem.textContent || elem.innerText));
-	        } else if (elem.innerHTML) {
-	            strings.push(elem.innerHTML);
-	        }
-
-	        strings.push("</" + tagname + ">");
+	      // Ensure the real node is carried over even if the destination isn't used.
+	      // This is used in the render() function to keep track of the real node
+	      // that corresponds to a virtual node if a virtual tree is being used.
+	      if (!(curDst instanceof Node)) {
+	        realNodeMap.set(curDst, realNode(curSrc));
+	      }
 	    }
 
-	    return strings.join("");
-	}
+	    var nodeInstructions = compareNode(curSrc, curDst);
 
-	function isProperty(elem, key) {
-	    var type = babelHelpers.typeof(elem[key]);
-
-	    if (key === "style" && Object.keys(elem.style).length > 0) {
-	        return true;
-	    }
-
-	    return elem.hasOwnProperty(key) && (type === "string" || type === "boolean" || type === "number") && key !== "nodeName" && key !== "className" && key !== "tagName" && key !== "textContent" && key !== "innerText" && key !== "namespaceURI" && key !== "innerHTML";
-	}
-
-	function stylify(styles) {
-	    var attr = "";
-	    Object.keys(styles).forEach(function (key) {
-	        var value = styles[key];
-	        key = key.replace(/[A-Z]/g, function (c) {
-	            return "-" + c.toLowerCase();
-	        });
-	        attr += key + ":" + value + ";";
-	    });
-	    return attr;
-	}
-
-	function datasetify(elem) {
-	    var ds = elem.dataset;
-	    var props = [];
-
-	    for (var key in ds) {
-	        props.push({ name: "data-" + key, value: ds[key] });
-	    }
-
-	    return props.length ? stringify(props) : "";
-	}
-
-	function stringify(list) {
-	    var attributes = [];
-	    list.forEach(function (tuple) {
-	        var name = tuple.name;
-	        var value = tuple.value;
-
-	        if (name === "style") {
-	            value = stylify(value);
-	        }
-
-	        attributes.push(name + "=" + "\"" + escapeAttributeValue(value) + "\"");
-	    });
-
-	    return attributes.length ? " " + attributes.join(" ") : "";
-	}
-
-	function properties(elem) {
-	    var props = [];
-	    for (var key in elem) {
-	        if (isProperty(elem, key)) {
-	            props.push({ name: key, value: elem[key] });
-	        }
-	    }
-
-	    for (var ns in elem._attributes) {
-	        for (var attribute in elem._attributes[ns]) {
-	            var prop = elem._attributes[ns][attribute];
-	            var name = (prop.prefix ? prop.prefix + ":" : "") + attribute;
-	            props.push({ name: name, value: prop.value });
-	        }
-	    }
-
-	    if (elem.className) {
-	        props.push({ name: "class", value: elem.className });
-	    }
-
-	    return props.length ? stringify(props) : "";
-	}
-
-	function escapeText(str) {
-	    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-	}
-
-	function escapeAttributeValue(str) {
-	    return escapeText(str).replace(/"/g, "&quot;");
-	}
-	});
-
-	var require$$0$25 = (serialize && typeof serialize === 'object' && 'default' in serialize ? serialize['default'] : serialize);
-
-	var index$10 = __commonjs(function (module) {
-	var slice = Array.prototype.slice;
-
-	module.exports = iterativelyWalk;
-
-	function iterativelyWalk(nodes, cb) {
-	    if (!('length' in nodes)) {
-	        nodes = [nodes];
-	    }
-
-	    nodes = slice.call(nodes);
-
-	    while (nodes.length) {
-	        var node = nodes.shift(),
-	            ret = cb(node);
-
-	        if (ret) {
-	            return ret;
-	        }
-
-	        if (node.childNodes && node.childNodes.length) {
-	            nodes = slice.call(node.childNodes).concat(nodes);
-	        }
-	    }
-	}
-	});
-
-	var require$$4$5 = (index$10 && typeof index$10 === 'object' && 'default' in index$10 ? index$10['default'] : index$10);
-
-	var domElement = __commonjs(function (module) {
-	var domWalk = require$$4$5;
-	var dispatchEvent = require$$3$5;
-	var addEventListener = require$$2$7;
-	var removeEventListener = require$$1$10;
-	var serializeNode = require$$0$25;
-
-	var htmlns = "http://www.w3.org/1999/xhtml";
-
-	module.exports = DOMElement;
-
-	function DOMElement(tagName, owner, namespace) {
-	    if (!(this instanceof DOMElement)) {
-	        return new DOMElement(tagName);
-	    }
-
-	    var ns = namespace === undefined ? htmlns : namespace || null;
-
-	    this.tagName = ns === htmlns ? String(tagName).toUpperCase() : tagName;
-	    this.className = "";
-	    this.dataset = {};
-	    this.childNodes = [];
-	    this.parentNode = null;
-	    this.style = {};
-	    this.ownerDocument = owner || null;
-	    this.namespaceURI = ns;
-	    this._attributes = {};
-
-	    if (this.tagName === 'INPUT') {
-	        this.type = 'text';
-	    }
-	}
-
-	DOMElement.prototype.type = "DOMElement";
-	DOMElement.prototype.nodeType = 1;
-
-	DOMElement.prototype.appendChild = function _Element_appendChild(child) {
-	    if (child.parentNode) {
-	        child.parentNode.removeChild(child);
-	    }
-
-	    this.childNodes.push(child);
-	    child.parentNode = this;
-
-	    return child;
-	};
-
-	DOMElement.prototype.replaceChild = function _Element_replaceChild(elem, needle) {
-	    // TODO: Throw NotFoundError if needle.parentNode !== this
-
-	    if (elem.parentNode) {
-	        elem.parentNode.removeChild(elem);
-	    }
-
-	    var index = this.childNodes.indexOf(needle);
-
-	    needle.parentNode = null;
-	    this.childNodes[index] = elem;
-	    elem.parentNode = this;
-
-	    return needle;
-	};
-
-	DOMElement.prototype.removeChild = function _Element_removeChild(elem) {
-	    // TODO: Throw NotFoundError if elem.parentNode !== this
-
-	    var index = this.childNodes.indexOf(elem);
-	    this.childNodes.splice(index, 1);
-
-	    elem.parentNode = null;
-	    return elem;
-	};
-
-	DOMElement.prototype.insertBefore = function _Element_insertBefore(elem, needle) {
-	    // TODO: Throw NotFoundError if referenceElement is a dom node
-	    // and parentNode !== this
-
-	    if (elem.parentNode) {
-	        elem.parentNode.removeChild(elem);
-	    }
-
-	    var index = needle === null || needle === undefined ? -1 : this.childNodes.indexOf(needle);
-
-	    if (index > -1) {
-	        this.childNodes.splice(index, 0, elem);
+	    // If there are instructions (even an empty array) it means the node can be
+	    // diffed and doesn't have to be replaced. If the instructions are falsy
+	    // it means that the nodes are not similar (cannot be changed) and must be
+	    // replaced instead.
+	    if (nodeInstructions) {
+	      var newOpts = opts;
+	      newOpts.destination = curDst;
+	      newOpts.source = curSrc;
+	      instructions = instructions.concat(nodeInstructions, diff(newOpts));
 	    } else {
-	        this.childNodes.push(elem);
+	      instructions.push({
+	        destination: curDst,
+	        source: curSrc,
+	        type: REPLACE_CHILD
+	      });
 	    }
+	  }
 
-	    elem.parentNode = this;
-	    return elem;
-	};
-
-	DOMElement.prototype.setAttributeNS = function _Element_setAttributeNS(namespace, name, value) {
-	    var prefix = null;
-	    var localName = name;
-	    var colonPosition = name.indexOf(":");
-	    if (colonPosition > -1) {
-	        prefix = name.substr(0, colonPosition);
-	        localName = name.substr(colonPosition + 1);
+	  if (dstChsLen < srcChsLen) {
+	    for (var a = dstChsLen; a < srcChsLen; a++) {
+	      instructions.push({
+	        destination: srcChs[a],
+	        source: src,
+	        type: REMOVE_CHILD
+	      });
 	    }
-	    var attributes = this._attributes[namespace] || (this._attributes[namespace] = {});
-	    attributes[localName] = { value: value, prefix: prefix };
-	};
+	  }
 
-	DOMElement.prototype.getAttributeNS = function _Element_getAttributeNS(namespace, name) {
-	    var attributes = this._attributes[namespace];
-	    var value = attributes && attributes[name] && attributes[name].value;
-	    if (typeof value !== "string") {
-	        return null;
-	    }
-
-	    return value;
-	};
-
-	DOMElement.prototype.removeAttributeNS = function _Element_removeAttributeNS(namespace, name) {
-	    var attributes = this._attributes[namespace];
-	    if (attributes) {
-	        delete attributes[name];
-	    }
-	};
-
-	DOMElement.prototype.hasAttributeNS = function _Element_hasAttributeNS(namespace, name) {
-	    var attributes = this._attributes[namespace];
-	    return !!attributes && name in attributes;
-	};
-
-	DOMElement.prototype.setAttribute = function _Element_setAttribute(name, value) {
-	    return this.setAttributeNS(null, name, value);
-	};
-
-	DOMElement.prototype.getAttribute = function _Element_getAttribute(name) {
-	    return this.getAttributeNS(null, name);
-	};
-
-	DOMElement.prototype.removeAttribute = function _Element_removeAttribute(name) {
-	    return this.removeAttributeNS(null, name);
-	};
-
-	DOMElement.prototype.hasAttribute = function _Element_hasAttribute(name) {
-	    return this.hasAttributeNS(null, name);
-	};
-
-	DOMElement.prototype.removeEventListener = removeEventListener;
-	DOMElement.prototype.addEventListener = addEventListener;
-	DOMElement.prototype.dispatchEvent = dispatchEvent;
-
-	// Un-implemented
-	DOMElement.prototype.focus = function _Element_focus() {
-	    return void 0;
-	};
-
-	DOMElement.prototype.toString = function _Element_toString() {
-	    return serializeNode(this);
-	};
-
-	DOMElement.prototype.getElementsByClassName = function _Element_getElementsByClassName(classNames) {
-	    var classes = classNames.split(" ");
-	    var elems = [];
-
-	    domWalk(this, function (node) {
-	        if (node.nodeType === 1) {
-	            var nodeClassName = node.className || "";
-	            var nodeClasses = nodeClassName.split(" ");
-
-	            if (classes.every(function (item) {
-	                return nodeClasses.indexOf(item) !== -1;
-	            })) {
-	                elems.push(node);
-	            }
-	        }
-	    });
-
-	    return elems;
-	};
-
-	DOMElement.prototype.getElementsByTagName = function _Element_getElementsByTagName(tagName) {
-	    tagName = tagName.toLowerCase();
-	    var elems = [];
-
-	    domWalk(this.childNodes, function (node) {
-	        if (node.nodeType === 1 && (tagName === '*' || node.tagName.toLowerCase() === tagName)) {
-	            elems.push(node);
-	        }
-	    });
-
-	    return elems;
-	};
-
-	DOMElement.prototype.contains = function _Element_contains(element) {
-	    return domWalk(this, function (node) {
-	        return element === node;
-	    }) || false;
-	};
-	});
-
-	var require$$0$24 = (domElement && typeof domElement === 'object' && 'default' in domElement ? domElement['default'] : domElement);
-
-	var domFragment = __commonjs(function (module) {
-	var DOMElement = require$$0$24;
-
-	module.exports = DocumentFragment;
-
-	function DocumentFragment(owner) {
-	    if (!(this instanceof DocumentFragment)) {
-	        return new DocumentFragment();
-	    }
-
-	    this.childNodes = [];
-	    this.parentNode = null;
-	    this.ownerDocument = owner || null;
+	  return instructions;
 	}
 
-	DocumentFragment.prototype.type = "DocumentFragment";
-	DocumentFragment.prototype.nodeType = 11;
-	DocumentFragment.prototype.nodeName = "#document-fragment";
+	function createElement$1(el) {
+	  var realNode = document.createElement(el.tagName);
+	  var attributes = el.attributes;
+	  var events = el.events;
+	  var eventHandlers = eventMap(realNode);
+	  var children = el.childNodes;
 
-	DocumentFragment.prototype.appendChild = DOMElement.prototype.appendChild;
-	DocumentFragment.prototype.replaceChild = DOMElement.prototype.replaceChild;
-	DocumentFragment.prototype.removeChild = DOMElement.prototype.removeChild;
+	  if (attributes) {
+	    var attributesLen = attributes.length;
+	    for (var a = 0; a < attributesLen; a++) {
+	      var attr = attributes[a];
+	      setAccessor(realNode, attr.name, attr.value);
+	    }
+	  }
 
-	DocumentFragment.prototype.toString = function _DocumentFragment_toString() {
-	    return this.childNodes.map(function (node) {
-	        return String(node);
-	    }).join("");
-	};
-	});
+	  if (events) {
+	    for (var name in events) {
+	      realNode.addEventListener(name, eventHandlers[name] = events[name]);
+	    }
+	  }
 
-	var require$$4$4 = (domFragment && typeof domFragment === 'object' && 'default' in domFragment ? domFragment['default'] : domFragment);
+	  if (children) {
+	    var docfrag = document.createDocumentFragment();
+	    var childrenLen = children.length;
 
-	var domText = __commonjs(function (module) {
-	module.exports = DOMText;
-
-	function DOMText(value, owner) {
-	    if (!(this instanceof DOMText)) {
-	        return new DOMText(value);
+	    for (var a = 0; a < childrenLen; a++) {
+	      var ch = children[a];
+	      ch && docfrag.appendChild(render$2(ch));
 	    }
 
-	    this.data = value || "";
-	    this.length = this.data.length;
-	    this.ownerDocument = owner || null;
+	    if (realNode.appendChild) {
+	      realNode.appendChild(docfrag);
+	    }
+	  }
+
+	  return realNode;
 	}
 
-	DOMText.prototype.type = "DOMTextNode";
-	DOMText.prototype.nodeType = 3;
-
-	DOMText.prototype.toString = function _Text_toString() {
-	    return this.data;
-	};
-
-	DOMText.prototype.replaceData = function replaceData(index, length, value) {
-	    var current = this.data;
-	    var left = current.substring(0, index);
-	    var right = current.substring(index + length, current.length);
-	    this.data = left + value + right;
-	    this.length = this.data.length;
-	};
-	});
-
-	var require$$6$3 = (domText && typeof domText === 'object' && 'default' in domText ? domText['default'] : domText);
-
-	var domComment = __commonjs(function (module) {
-	module.exports = Comment;
-
-	function Comment(data, owner) {
-	    if (!(this instanceof Comment)) {
-	        return new Comment(data, owner);
-	    }
-
-	    this.data = data;
-	    this.nodeValue = data;
-	    this.length = data.length;
-	    this.ownerDocument = owner || null;
+	function createText(el) {
+	  return document.createTextNode(el.textContent);
 	}
 
-	Comment.prototype.nodeType = 8;
-	Comment.prototype.nodeName = "#comment";
+	function render$2(el) {
+	  if (el instanceof Node) {
+	    return el;
+	  }
+	  if (Array.isArray(el)) {
+	    var _ret = function () {
+	      var frag = document.createDocumentFragment();
+	      el.forEach(function (item) {
+	        return frag.appendChild(render$2(item));
+	      });
+	      return {
+	        v: frag
+	      };
+	    }();
 
-	Comment.prototype.toString = function _Comment_toString() {
-	    return "[object Comment]";
-	};
-	});
-
-	var require$$7$2 = (domComment && typeof domComment === 'object' && 'default' in domComment ? domComment['default'] : domComment);
-
-	var document$2 = __commonjs(function (module) {
-	var domWalk = require$$4$5;
-
-	var Comment = require$$7$2;
-	var DOMText = require$$6$3;
-	var DOMElement = require$$0$24;
-	var DocumentFragment = require$$4$4;
-	var Event = require$$3$6;
-	var dispatchEvent = require$$3$5;
-	var addEventListener = require$$2$7;
-	var removeEventListener = require$$1$10;
-
-	module.exports = Document;
-
-	function Document() {
-	    if (!(this instanceof Document)) {
-	        return new Document();
-	    }
-
-	    this.head = this.createElement("head");
-	    this.body = this.createElement("body");
-	    this.documentElement = this.createElement("html");
-	    this.documentElement.appendChild(this.head);
-	    this.documentElement.appendChild(this.body);
-	    this.childNodes = [this.documentElement];
-	    this.nodeType = 9;
+	    if ((typeof _ret === 'undefined' ? 'undefined' : babelHelpers.typeof(_ret)) === "object") return _ret.v;
+	  }
+	  var realNode = el.tagName ? createElement$1(el) : createText(el);
+	  realNodeMap.set(el, realNode);
+	  return realNode;
 	}
 
-	var proto = Document.prototype;
-	proto.createTextNode = function createTextNode(value) {
-	    return new DOMText(value, this);
-	};
-
-	proto.createElementNS = function createElementNS(namespace, tagName) {
-	    var ns = namespace === null ? null : String(namespace);
-	    return new DOMElement(tagName, this, ns);
-	};
-
-	proto.createElement = function createElement(tagName) {
-	    return new DOMElement(tagName, this);
-	};
-
-	proto.createDocumentFragment = function createDocumentFragment() {
-	    return new DocumentFragment(this);
-	};
-
-	proto.createEvent = function createEvent(family) {
-	    return new Event(family);
-	};
-
-	proto.createComment = function createComment(data) {
-	    return new Comment(data, this);
-	};
-
-	proto.getElementById = function getElementById(id) {
-	    id = String(id);
-
-	    var result = domWalk(this.childNodes, function (node) {
-	        if (String(node.id) === id) {
-	            return node;
-	        }
-	    });
-
-	    return result || null;
-	};
-
-	proto.getElementsByClassName = DOMElement.prototype.getElementsByClassName;
-	proto.getElementsByTagName = DOMElement.prototype.getElementsByTagName;
-	proto.contains = DOMElement.prototype.contains;
-
-	proto.removeEventListener = removeEventListener;
-	proto.addEventListener = addEventListener;
-	proto.dispatchEvent = dispatchEvent;
-	});
-
-	var require$$0$23 = (document$2 && typeof document$2 === 'object' && 'default' in document$2 ? document$2['default'] : document$2);
-
-	var index$8 = __commonjs(function (module) {
-	var Document = require$$0$23;
-
-	module.exports = new Document();
-	});
-
-	var require$$0$22 = (index$8 && typeof index$8 === 'object' && 'default' in index$8 ? index$8['default'] : index$8);
-
-	var document$1 = __commonjs(function (module, exports, global) {
-	var topLevel = typeof global !== 'undefined' ? global : typeof window !== 'undefined' ? window : {};
-	var minDoc = require$$0$22;
-
-	if (typeof document$1 !== 'undefined') {
-	    module.exports = document$1;
-	} else {
-	    var doccy = topLevel['__GLOBAL_DOCUMENT_CACHE@4'];
-
-	    if (!doccy) {
-	        doccy = topLevel['__GLOBAL_DOCUMENT_CACHE@4'] = minDoc;
-	    }
-
-	    module.exports = doccy;
-	}
-	});
-
-	var require$$5$2 = (document$1 && typeof document$1 === 'object' && 'default' in document$1 ? document$1['default'] : document$1);
-
-	var createElement = __commonjs(function (module) {
-	var document = require$$5$2;
-
-	var applyProperties = require$$4$2;
-
-	var isVNode = require$$3$4;
-	var isVText = require$$6$2;
-	var isWidget = require$$2$5;
-	var handleThunk = require$$1$6;
-
-	module.exports = createElement;
-
-	function createElement(vnode, opts) {
-	    var doc = opts ? opts.document || document : document;
-	    var warn = opts ? opts.warn : null;
-
-	    vnode = handleThunk(vnode).a;
-
-	    if (isWidget(vnode)) {
-	        return vnode.init();
-	    } else if (isVText(vnode)) {
-	        return doc.createTextNode(vnode.text);
-	    } else if (!isVNode(vnode)) {
-	        if (warn) {
-	            warn("Item is not a valid virtual dom node", vnode);
-	        }
-	        return null;
-	    }
-
-	    var node = vnode.namespace === null ? doc.createElement(vnode.tagName) : doc.createElementNS(vnode.namespace, vnode.tagName);
-
-	    var props = vnode.properties;
-	    applyProperties(node, props);
-
-	    var children = vnode.children;
-
-	    for (var i = 0; i < children.length; i++) {
-	        var childNode = createElement(children[i], opts);
-	        if (childNode) {
-	            node.appendChild(childNode);
-	        }
-	    }
-
-	    return node;
-	}
-	});
-
-	var require$$0$13 = (createElement && typeof createElement === 'object' && 'default' in createElement ? createElement['default'] : createElement);
-
-	var patch$2 = __commonjs(function (module) {
-	var document = require$$5$2;
-	var isArray = require$$10$1;
-
-	var render = require$$0$13;
-	var domIndex = require$$1$5;
-	var patchOp = require$$0$12;
-	module.exports = patch;
-
-	function patch(rootNode, patches, renderOptions) {
-	    renderOptions = renderOptions || {};
-	    renderOptions.patch = renderOptions.patch && renderOptions.patch !== patch ? renderOptions.patch : patchRecursive;
-	    renderOptions.render = renderOptions.render || render;
-
-	    return renderOptions.patch(rootNode, patches, renderOptions);
+	function appendChild (src, dst) {
+	  realNode(src).appendChild(render$2(dst));
 	}
 
-	function patchRecursive(rootNode, patches, renderOptions) {
-	    var indices = patchIndices(patches);
-
-	    if (indices.length === 0) {
-	        return rootNode;
-	    }
-
-	    var index = domIndex(rootNode, patches.a, indices);
-	    var ownerDocument = rootNode.ownerDocument;
-
-	    if (!renderOptions.document && ownerDocument !== document) {
-	        renderOptions.document = ownerDocument;
-	    }
-
-	    for (var i = 0; i < indices.length; i++) {
-	        var nodeIndex = indices[i];
-	        rootNode = applyPatch(rootNode, index[nodeIndex], patches[nodeIndex], renderOptions);
-	    }
-
-	    return rootNode;
+	function removeAttribute (src, dst, data) {
+	  removeAccessor(realNode(src), data.name);
 	}
 
-	function applyPatch(rootNode, domNode, patchList, renderOptions) {
-	    if (!domNode) {
-	        return rootNode;
-	    }
-
-	    var newNode;
-
-	    if (isArray(patchList)) {
-	        for (var i = 0; i < patchList.length; i++) {
-	            newNode = patchOp(patchList[i], domNode, renderOptions);
-
-	            if (domNode === rootNode) {
-	                rootNode = newNode;
-	            }
-	        }
-	    } else {
-	        newNode = patchOp(patchList, domNode, renderOptions);
-
-	        if (domNode === rootNode) {
-	            rootNode = newNode;
-	        }
-	    }
-
-	    return rootNode;
+	function removeChild (src, dst) {
+	  var realDst = realNode(dst);
+	  realDst.parentNode.removeChild(realDst);
 	}
 
-	function patchIndices(patches) {
-	    var indices = [];
-
-	    for (var key in patches) {
-	        if (key !== "a") {
-	            indices.push(Number(key));
-	        }
-	    }
-
-	    return indices;
+	function replaceChild (src, dst) {
+	  var realSrc = realNode(src);
+	  realSrc && realSrc.parentNode && realSrc.parentNode.replaceChild(render$2(dst), realSrc);
 	}
-	});
 
-	var require$$0$11 = (patch$2 && typeof patch$2 === 'object' && 'default' in patch$2 ? patch$2['default'] : patch$2);
+	function setAttribute (src, dst, data) {
+	  setAccessor(realNode(src), data.name, data.value);
+	}
 
-	var patch = __commonjs(function (module) {
-	var patch = require$$0$11;
+	function setEvent (src, dst, data) {
+	  var realSrc = realNode(src);
+	  var eventHandlers = eventMap(realSrc);
+	  var name = data.name;
+	  var prevHandler = eventHandlers[name];
+	  var nextHandler = data.value;
 
-	module.exports = patch;
-	});
+	  if (typeof prevHandler === 'function') {
+	    delete eventHandlers[name];
+	    realSrc.removeEventListener(name, prevHandler);
+	  }
 
-	var patch$1 = (patch && typeof patch === 'object' && 'default' in patch ? patch['default'] : patch);
+	  if (typeof nextHandler === 'function') {
+	    eventHandlers[name] = nextHandler;
+	    realSrc.addEventListener(name, nextHandler);
+	  }
+	}
 
-	var createElement$1 = __commonjs(function (module) {
-	var createElement = require$$0$13;
+	function textContent (src, dst) {
+	  realNode(src).textContent = dst.textContent;
+	}
 
-	module.exports = createElement;
-	});
+	var patchers = {};
+	patchers[APPEND_CHILD] = appendChild;
+	patchers[REMOVE_ATTRIBUTE] = removeAttribute;
+	patchers[REMOVE_CHILD] = removeChild;
+	patchers[REPLACE_CHILD] = replaceChild;
+	patchers[SET_ATTRIBUTE] = setAttribute;
+	patchers[SET_EVENT] = setEvent;
+	patchers[TEXT_CONTENT] = textContent;
 
-	var createElement$2 = (createElement$1 && typeof createElement$1 === 'object' && 'default' in createElement$1 ? createElement$1['default'] : createElement$1);
+	function patch(instruction) {
+	  patchers[instruction.type](instruction.source, instruction.destination, instruction.data);
+	}
 
-	var mapOldTree = new WeakMap();
-	var mapRootNode = new WeakMap();
+	function patch$1 (instructions) {
+	  instructions.forEach(patch);
+	}
 
-	function render (render) {
+	function merge (opts) {
+	  var inst = diff(opts);
+	  patch$1(inst);
+	  return inst;
+	}
+
+	function removeChildNodes(elem) {
+	  while (elem.firstChild) {
+	    var first = elem.firstChild;
+	    first.parentNode.removeChild(first);
+	  }
+	}
+
+	function mount (elem, tree) {
+	  removeChildNodes(elem);
+	  elem.appendChild(render$2(tree));
+	}
+
+	var _window = window;
+	var Node$1 = _window.Node;
+
+	var oldTreeMap = new WeakMap$1();
+
+	function render$1 (render) {
 	  return function (elem) {
-	    var newTree = render(elem, h$1);
-	    var oldTree = mapOldTree.get(elem);
+	    elem = elem instanceof Node$1 ? elem : this;
 
-	    // Keep track of the previous state.
-	    mapOldTree.set(elem, newTree);
-
-	    // If the old tree exists, we're diffing / patching.
-	    // Otherwise we're doing the initial mount.
-	    if (oldTree) {
-	      patch$1(mapRootNode.get(elem), diff$1(oldTree, newTree));
-	    } else {
-	      var newRootNode = createElement$2(newTree);
-	      mapRootNode.set(elem, newRootNode);
-	      elem.appendChild(newRootNode);
+	    if (!elem instanceof Node$1) {
+	      throw new Error('No node provided to diff renderer as either the first argument or the context.');
 	    }
+
+	    // Create a new element to house the new tree since we diff / mount fragments.
+	    var newTree = createElement('div', null, render(elem, { createElement: createElement }));
+	    var oldTree = oldTreeMap.get(elem);
+
+	    if (oldTree) {
+	      merge({
+	        destination: newTree,
+	        source: oldTree
+	      });
+	    } else {
+	      mount(elem, newTree.childNodes);
+	    }
+
+	    oldTreeMap.set(elem, newTree);
 	  };
 	}
 
@@ -4098,7 +2326,7 @@
 
 	var require$$16 = (version && typeof version === 'object' && 'default' in version ? version['default'] : version);
 
-	var render$1 = __commonjs(function (module, exports, global) {
+	var render = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === 'function' && define.amd) {
 	    define(['exports', 'module', '../global/registry'], factory);
@@ -4128,7 +2356,7 @@
 	});
 	});
 
-	var require$$17 = (render$1 && typeof render$1 === 'object' && 'default' in render$1 ? render$1['default'] : render$1);
+	var require$$17 = (render && typeof render === 'object' && 'default' in render ? render['default'] : render);
 
 	var ready = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
@@ -4733,7 +2961,7 @@
 
 	function register (name, opts) {
 	  linkPropsToAttrsIfNotSpecified(opts.properties);
-	  opts.render = render(opts.render);
+	  opts.render = render$1(opts.render);
 	  return skate(name, opts);
 	}
 
@@ -4750,7 +2978,7 @@
 	var globals = window[VERSION];
 
 	var definitions = {};
-	var map = [];
+	var map$1 = [];
 	var types = [];
 
 	var registry$1 = globals.registerIfNotExists('registry', {
@@ -4768,22 +2996,22 @@
 	    if (typeIndex === -1) {
 	      typeIndex = types.length;
 	      types.push(type);
-	      map[typeIndex] = {};
+	      map$1[typeIndex] = {};
 	    }
 
-	    return definitions[name] = map[typeIndex][name] = Ctor;
+	    return definitions[name] = map$1[typeIndex][name] = Ctor;
 	  },
 	  find: function find(elem) {
 	    var filtered = [];
 	    var typesLength = types.length;
 	    for (var a = 0; a < typesLength; a++) {
-	      filtered = filtered.concat(types[a].filter(elem, map[a]) || []);
+	      filtered = filtered.concat(types[a].filter(elem, map$1[a]) || []);
 	    }
 	    return filtered;
 	  }
 	});
 
-	function render$2 (elem) {
+	function render$3 (elem) {
 	  registry$1.find(elem).forEach(function (component) {
 	    return component.render && component.render(elem);
 	  });
@@ -4800,7 +3028,7 @@
 	  var shouldUpdate = !ctor.update || ctor.update(elem) !== false;
 	  require$$3$3(elem, newState);
 	  if (shouldUpdate) {
-	    render$2(elem);
+	    render$3(elem);
 	  }
 	}
 
@@ -4810,7 +3038,6 @@
 
 	var main = {
 	  register: register,
-	  render: render,
 	  state: state
 	};
 
