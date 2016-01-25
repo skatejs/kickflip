@@ -2,8 +2,9 @@
 
 Functional web components using [SkateJS](https://github.com/skatejs/skatejs) and [Virtual DOM](https://github.com/Matt-Esch/virtual-dom).
 
-- Custom elements backed by SkateJS (uses native custom element support if available)
-- Functional rendering pipeline (via virtual-dom)
+- Custom elements backed by SkateJS.
+- Uses native custom element support if available.
+- Functional rendering pipeline using `virtual-dom`.
 
 ```js
 import { register, state } from 'kickflip';
