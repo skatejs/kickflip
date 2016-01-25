@@ -1,3 +1,12 @@
 {
-  "base": "node_modules/skatejs-build/task"
+  "base": "node_modules/skatejs-build/task",
+  "globals": {
+    "object-assign": "Object.assign",
+    "skatejs": "skate",
+    "skatejs/src/api/render": "skate.render",
+    "virtual-dom/h": "virtualDom.h",
+    "virtual-dom/diff": "virtualDom.diff",
+    "virtual-dom/patch": "virtualDom.patch",
+    "virtual-dom/create-element": "virtualDom.createElement"
+  }
 }

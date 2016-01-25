@@ -1,5 +1,5 @@
 import assign from 'object-assign';
-import render from 'skatejs/lib/api/render';
+import render from 'skatejs/src/api/render';
 
 function getState (elem) {
   return Object.keys(elem.constructor.properties || {}).reduce(function (prev, curr) {
