@@ -23,25 +23,24 @@ npm install kickflip
 ## Usage
 
 ```js
-import { register, state } from 'kickflip';
-import { properties } from 'skatejs';
+import kickflip from 'kickflip';
 
 const intervals = new WeakMap();
 
-register('x-counter', {
+kickflip.register('x-counter', {
   properties: {
-    count: properties.number({ default: 0 })
+    count: { default: 0 }
   },
   attached (elem) {
     intervals.set(elem, setInterval(function () {
-      state(elem, { count: elem.count + 1 });
+      kickflip.state(elem, { count: elem.count + 1 });
     }, 1000));
   },
   detached (elem) {
     clearInterval(intervals.get(elem));
   },
-  render (props, create) {
-    return create('div', ['Count: ', props.count]);
+  render (elem, vdom) {
+    return vdom.createElement('div', null, ['Count: ', elem.count.toString()]);
   }
 });
 ```
