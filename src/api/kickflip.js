@@ -1,4 +1,4 @@
-import render from 'api/render';
+import render from './render';
 import skate from 'skatejs';
 
 function linkPropsToAttrsIfNotSpecified (props) {
