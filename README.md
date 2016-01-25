@@ -2,7 +2,7 @@
 
 Functional web components using [SkateJS](https://github.com/skatejs/skatejs) and [Virtual DOM](https://github.com/Matt-Esch/virtual-dom).
 
-- Custom elements backed by SkateJS.
+- Custom elements backed by `skatejs`.
 - Uses native custom element support if available.
 - Functional rendering pipeline using `virtual-dom`.
 
