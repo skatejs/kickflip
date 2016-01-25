@@ -435,7 +435,7 @@
 
 	    for (var a = 0; a < childrenLen; a++) {
 	      var ch = children[a];
-	      ch && docfrag.appendChild(render$2(ch));
+	      ch && docfrag.appendChild(render$1(ch));
 	    }
 
 	    if (realNode.appendChild) {
@@ -450,7 +450,7 @@
 	  return document.createTextNode(el.textContent);
 	}
 
-	function render$2(el) {
+	function render$1(el) {
 	  if (el instanceof Node) {
 	    return el;
 	  }
@@ -458,7 +458,7 @@
 	    var _ret = function () {
 	      var frag = document.createDocumentFragment();
 	      el.forEach(function (item) {
-	        return frag.appendChild(render$2(item));
+	        return frag.appendChild(render$1(item));
 	      });
 	      return {
 	        v: frag
@@ -473,7 +473,7 @@
 	}
 
 	function appendChild (src, dst) {
-	  realNode(src).appendChild(render$2(dst));
+	  realNode(src).appendChild(render$1(dst));
 	}
 
 	function removeAttribute (src, dst, data) {
@@ -487,7 +487,7 @@
 
 	function replaceChild (src, dst) {
 	  var realSrc = realNode(src);
-	  realSrc && realSrc.parentNode && realSrc.parentNode.replaceChild(render$2(dst), realSrc);
+	  realSrc && realSrc.parentNode && realSrc.parentNode.replaceChild(render$1(dst), realSrc);
 	}
 
 	function setAttribute (src, dst, data) {
@@ -548,7 +548,7 @@
 
 	function mount (elem, tree) {
 	  removeChildNodes(elem);
-	  elem.appendChild(render$2(tree));
+	  elem.appendChild(render$1(tree));
 	}
 
 	var _window = window;
@@ -556,7 +556,7 @@
 
 	var oldTreeMap = new WeakMap$1();
 
-	function render$1 (render) {
+	function ddRender (render) {
 	  return function (elem) {
 	    elem = elem instanceof Node$1 ? elem : this;
 
@@ -578,6 +578,231 @@
 	    }
 
 	    oldTreeMap.set(elem, newTree);
+	  };
+	}
+
+	var mapPatch = new WeakMap();
+
+	var mapSlots = new WeakMap();
+
+	var mapSlotsDefault = new WeakMap();
+
+	// Returns whether or not the specified element has been polyfilled.
+	function polyfilled (elem) {
+	  return mapPatch.get(elem);
+	}
+
+	var prop = Object.defineProperty.bind(Object);
+
+	// Helpers.
+
+	function getSlotName(elem, node) {
+	  return node.getAttribute && node.getAttribute('slot') || mapSlotsDefault.get(elem);
+	}
+
+	function nodeToArray(node) {
+	  return node instanceof DocumentFragment ? [].slice.call(node.childNodes) : [node];
+	}
+
+	// Prop overrides.
+
+	var props = {
+	  childElementCount: {
+	    get: function get() {
+	      return this.children.length;
+	    }
+	  },
+	  childNodes: {
+	    get: function get() {
+	      var _this = this;
+
+	      return (mapSlots.get(this) || []).reduce(function (prev, curr) {
+	        return prev.concat(_this[curr]);
+	      }, []);
+	    }
+	  },
+	  children: {
+	    get: function get() {
+	      return this.childNodes.filter(function (node) {
+	        return node.nodeType === 1;
+	      });
+	    }
+	  },
+	  firstChild: {
+	    get: function get() {
+	      return this.childNodes[0];
+	    }
+	  },
+	  firstElementChild: {
+	    get: function get() {
+	      return this.children[0];
+	    }
+	  },
+	  innerHTML: {
+	    get: function get() {
+	      return this.childNodes.map(function (node) {
+	        return node.outerHTML || node.textContent;
+	      }).join('');
+	    },
+	    set: function set(val) {
+	      var div = document.createElement('div');
+	      div.innerHTML = val;
+	      while (div.hasChildNodes()) {
+	        this.appendChild(div.childNodes[0]);
+	      }
+	    }
+	  },
+	  lastChild: {
+	    get: function get() {
+	      var ch = this.childNodes;
+	      return ch[ch.length - 1];
+	    }
+	  },
+	  lastElementChild: {
+	    get: function get() {
+	      var ch = this.children;
+	      return ch[ch.length - 1];
+	    }
+	  },
+	  outerHTML: {
+	    get: function get() {
+	      var name = this.tagName.toLowerCase();
+	      var attributes = [].slice.call(this.attributes).map(function (attr) {
+	        return ' ' + attr.name + (attr.value ? '=' + attr.value : '');
+	      });
+	      return '<' + name + attributes + '>' + this.innerHTML + '</' + name + '>';
+	    }
+	  },
+	  textContent: {
+	    get: function get() {
+	      return this.childNodes.map(function (node) {
+	        return node.textContent;
+	      }).join('');
+	    },
+	    set: function set(val) {
+	      var slot = mapSlotsDefault.get(this);
+	      if (slot) {
+	        this[slot] = document.createTextNode(val);
+	      }
+	    }
+	  }
+	};
+
+	// Method overrides.
+
+	var funcs = {
+	  appendChild: function appendChild(newNode) {
+	    var name = getSlotName(this, newNode);
+	    if (!name && !this[name]) return;
+	    this[name] = this[name].concat(nodeToArray(newNode));
+	    return newNode;
+	  },
+	  hasChildNodes: function hasChildNodes() {
+	    return this.childNodes.length > 0;
+	  },
+	  insertBefore: function insertBefore(newNode, refNode) {
+	    var name = getSlotName(this, newNode);
+	    if (!name || !this[name]) return;
+	    var index = this[name].indexOf(refNode);
+	    this[name] = this[name].slice(0, index).concat(nodeToArray(newNode)).concat(this[name].slice(index));
+	    return newNode;
+	  },
+	  removeChild: function removeChild(refNode) {
+	    var name = getSlotName(this, refNode);
+	    if (!name && !this[name]) return;
+	    var index = this[name].indexOf(refNode);
+	    this[name] = this[name].slice(0, index).concat(this[name].slice(index + 1));
+	    return refNode;
+	  },
+	  replaceChild: function replaceChild(newNode, refNode) {
+	    var name = getSlotName(this, newNode);
+	    if (!name || !this[name]) return;
+	    var index = this[name].indexOf(refNode);
+	    this[name] = this[name].slice(0, index).concat(nodeToArray(newNode)).concat(this[name].slice(index + 1));
+	    return refNode;
+	  }
+	};
+
+	// Polyfills an element.
+	function polyfill (elem) {
+	  if (polyfilled(elem)) {
+	    return;
+	  }
+
+	  for (var name in props) {
+	    prop(elem, name, props[name]);
+	  }
+
+	  for (var name in funcs) {
+	    elem[name] = funcs[name];
+	  }
+
+	  mapPatch.set(elem, true);
+	}
+
+	// Simple renderer that proxies another renderer. It will polyfill if not yet
+	// polyfilled, or simply run the renderer. Initial content is taken into
+	// consideration.
+	function nsRender (fn) {
+	  return function (elem) {
+	    if (mapPatch.get(elem)) {
+	      fn(elem);
+	    } else {
+	      var ch = [].slice.call(elem.childNodes);
+	      fn(elem);
+	      polyfill(elem);
+	      ch.forEach(elem.appendChild(ch));
+	    }
+	  };
+	}
+
+	// Creates a slot property compatible with the SkateJS custom property
+	// definitions. Makes web component integration much simpler.
+	function nsSlot (opts) {
+	  if (!opts) {
+	    opts = {
+	      default: false,
+	      set: null
+	    };
+	  }
+
+	  return {
+	    // Makes sure that whatever is passed in is an array.
+	    coerce: function coerce(val) {
+	      return Array.isArray(val) ? val : [val];
+	    },
+
+	    // Registers the slot so we can check later.
+	    created: function created(elem, data) {
+	      var slots = mapSlots.get(elem);
+
+	      if (!slots) {
+	        mapSlots.set(elem, slots = []);
+	      }
+
+	      slots.push(data.name);
+
+	      if (opts.default) {
+	        mapSlotsDefault.set(elem, data.name);
+	      }
+	    },
+
+	    // If an empty value is passed in, ensure that it's an array.
+	    'default': function _default() {
+	      return [];
+	    },
+
+	    // Return any initial nodes that match the slot.
+	    initial: function initial(elem, data) {
+	      return [].slice.call(elem.childNodes).filter(function (ch) {
+	        var slot = ch.getAttribute && ch.getAttribute('slot') || opts.default && data.name;
+	        var chHasContent = ch.nodeType === 1 || ch.textContent.trim();
+	        return slot && slot === data.name && chHasContent;
+	      });
+	    },
+
+	    // User-defined setter.
+	    set: opts.set
 	  };
 	}
 
@@ -2950,21 +3175,6 @@
 
 	var skate = (index && typeof index === 'object' && 'default' in index ? index['default'] : index);
 
-	function linkPropsToAttrsIfNotSpecified(props) {
-	  Object.keys(props || {}).forEach(function (name) {
-	    var prop = props[name];
-	    if (typeof prop.attribute === 'undefined') {
-	      prop.attribute = true;
-	    }
-	  });
-	}
-
-	function register (name, opts) {
-	  linkPropsToAttrsIfNotSpecified(opts.properties);
-	  opts.render = render$1(opts.render);
-	  return skate(name, opts);
-	}
-
 	var VERSION = '__skate_0_14_0';
 
 	if (!window[VERSION]) {
@@ -3011,10 +3221,50 @@
 	  }
 	});
 
-	function render$3 (elem) {
+	function render$2 (elem) {
 	  registry$1.find(elem).forEach(function (component) {
 	    return component.render && component.render(elem);
 	  });
+	}
+
+	function linkPropsToAttrsIfNotSpecified(opts) {
+	  var props = opts.properties;
+	  Object.keys(props || {}).forEach(function (name) {
+	    var prop = props[name];
+	    if (typeof prop.attribute === 'undefined') {
+	      prop.attribute = true;
+	    }
+	  });
+	}
+
+	function createSlotProperties(opts) {
+	  if (!opts.slots) {
+	    opts.slots = [];
+	  }
+
+	  if (!opts.properties) {
+	    opts.properties = {};
+	  }
+
+	  var props = opts.properties;
+
+	  opts.slots.forEach(function (name, index) {
+	    props[name] = nsSlot({
+	      default: index === 0,
+	      set: render$2
+	    });
+	  });
+	}
+
+	function wrapRender(opts) {
+	  opts.render = nsRender(ddRender(opts.render));
+	}
+
+	function register (name, opts) {
+	  linkPropsToAttrsIfNotSpecified(opts);
+	  createSlotProperties(opts);
+	  wrapRender(opts);
+	  return skate(name, opts);
 	}
 
 	function getState(elem) {
@@ -3028,7 +3278,7 @@
 	  var shouldUpdate = !ctor.update || ctor.update(elem) !== false;
 	  require$$3$3(elem, newState);
 	  if (shouldUpdate) {
-	    render$3(elem);
+	    render$2(elem);
 	  }
 	}
 

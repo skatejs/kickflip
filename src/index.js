@@ -1,5 +1,5 @@
-import register from './api/register';
-import state from './api/state';
+import register from './register';
+import state from './state';
 
 export default {
   register,

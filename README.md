@@ -79,3 +79,19 @@ kickflip.register('x-counter', {
   }
 });
 ```
+
+
+
+### Todos
+
+```html
+<x-todos>
+  <x-item>Item 1</x-item>
+  <x-item>Item 2</x-item>
+  <x-item>Item 3</x-item>
+</x-todos>
+```
+
+```js
+
+```
