@@ -4,7 +4,7 @@ Functional web components using [SkateJS](https://github.com/skatejs/skatejs) an
 
 - Custom elements backed by [SkateJS](https://github.com/skatejs/skatejs).
 - Uses native [custom element](http://w3c.github.io/webcomponents/spec/custom/) support if available.
-- Functional rendering pipeline using [Virtual DOM](https://github.com/Matt-Esch/virtual-dom).
+- Functional rendering pipeline using [SkateJS DOM Diff](https://github.com/skatejs-dom-diff).
 
 ## Install
 
