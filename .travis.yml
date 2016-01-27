@@ -11,6 +11,6 @@ script:
 - if [ "${TRAVIS_SECURE_ENV_VARS}" = "true" ]; then npm test -- --saucelabs; else npm test -- --browsers Firefox; fi
 env:
   global:
-  - SAUCE_TESTNAME="kickflip"
-  - SAUCE_USERNAME="kickflip"
-  - secure:
+    - SAUCE_TESTNAME="kickflip"
+    - SAUCE_USERNAME="kickflip"
+    - secure:
