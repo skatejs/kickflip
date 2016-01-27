@@ -1020,7 +1020,7 @@
 	});
 	});
 
-	var require$$3$1 = (debounce && typeof debounce === 'object' && 'default' in debounce ? debounce['default'] : debounce);
+	var require$$3 = (debounce && typeof debounce === 'object' && 'default' in debounce ? debounce['default'] : debounce);
 
 	var getOwnPropertyDescriptors = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
@@ -1320,7 +1320,7 @@
 	});
 	});
 
-	var require$$3$2 = (getClosestIgnoredElement && typeof getClosestIgnoredElement === 'object' && 'default' in getClosestIgnoredElement ? getClosestIgnoredElement['default'] : getClosestIgnoredElement);
+	var require$$3$1 = (getClosestIgnoredElement && typeof getClosestIgnoredElement === 'object' && 'default' in getClosestIgnoredElement ? getClosestIgnoredElement['default'] : getClosestIgnoredElement);
 
 	var innerhtml = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
@@ -1408,7 +1408,7 @@
 	  if (typeof define === 'function' && define.amd) {
 	    define(['exports', 'module', '../fix/ie/innerhtml', '../util/get-closest-ignored-element', './vars', './registry', '../util/walk-tree'], factory);
 	  } else if (typeof exports !== 'undefined' && typeof module !== 'undefined') {
-	    factory(exports, module, require$$4, require$$3$2, require$$2$1, require$$0$4, require$$0$1);
+	    factory(exports, module, require$$4, require$$3$1, require$$2$1, require$$0$4, require$$0$1);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -1765,7 +1765,7 @@
 	});
 	});
 
-	var require$$3$3 = (propertiesCreated && typeof propertiesCreated === 'object' && 'default' in propertiesCreated ? propertiesCreated['default'] : propertiesCreated);
+	var require$$3$2 = (propertiesCreated && typeof propertiesCreated === 'object' && 'default' in propertiesCreated ? propertiesCreated['default'] : propertiesCreated);
 
 	var empty = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
@@ -1818,7 +1818,7 @@
 
 	var require$$2$4 = (dashCase && typeof dashCase === 'object' && 'default' in dashCase ? dashCase['default'] : dashCase);
 
-	var index = __commonjs(function (module) {
+	var index$2 = __commonjs(function (module) {
 	/* eslint-disable no-unused-vars */
 	'use strict';
 
@@ -1861,14 +1861,14 @@
 	};
 	});
 
-	var require$$3 = (index && typeof index === 'object' && 'default' in index ? index['default'] : index);
+	var require$$3$3 = (index$2 && typeof index$2 === 'object' && 'default' in index$2 ? index$2['default'] : index$2);
 
 	var propertiesInit = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === 'function' && define.amd) {
 	    define(['exports', 'module', 'object-assign', '../util/dash-case', '../util/data', '../util/empty'], factory);
 	  } else if (typeof exports !== 'undefined' && typeof module !== 'undefined') {
-	    factory(exports, module, require$$3, require$$2$4, require$$1$2, require$$0$9);
+	    factory(exports, module, require$$3$3, require$$2$4, require$$1$2, require$$0$9);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -2400,7 +2400,7 @@
 	  if (typeof define === 'function' && define.amd) {
 	    define(['exports', 'module', '../util/data', '../api/emit', './events', './patch-attribute-methods', './properties-init', './properties-created', './properties-ready', './prototype', './resolve'], factory);
 	  } else if (typeof exports !== 'undefined' && typeof module !== 'undefined') {
-	    factory(exports, module, require$$1$2, require$$7$1, require$$6, require$$5$1, require$$4$1, require$$3$3, require$$2$2, require$$1$3, require$$0$6);
+	    factory(exports, module, require$$1$2, require$$7$1, require$$6, require$$5$1, require$$4$1, require$$3$2, require$$2$2, require$$1$3, require$$0$6);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -2790,12 +2790,12 @@
 
 	var require$$2$3 = (boolean && typeof boolean === 'object' && 'default' in boolean ? boolean['default'] : boolean);
 
-	var index$2 = __commonjs(function (module, exports, global) {
+	var index$1 = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === 'function' && define.amd) {
 	    define(['exports', 'module', 'object-assign', './boolean', './number', './string'], factory);
 	  } else if (typeof exports !== 'undefined' && typeof module !== 'undefined') {
-	    factory(exports, module, require$$3, require$$2$3, require$$1$4, require$$0$7);
+	    factory(exports, module, require$$3$3, require$$2$3, require$$1$4, require$$0$7);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -2837,7 +2837,7 @@
 	});
 	});
 
-	var require$$19 = (index$2 && typeof index$2 === 'object' && 'default' in index$2 ? index$2['default'] : index$2);
+	var require$$19 = (index$1 && typeof index$1 === 'object' && 'default' in index$1 ? index$1['default'] : index$1);
 
 	var init = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
@@ -2992,7 +2992,7 @@
 	  if (typeof define === 'function' && define.amd) {
 	    define(['exports', 'module', 'object-assign', './init', '../global/registry'], factory);
 	  } else if (typeof exports !== 'undefined' && typeof module !== 'undefined') {
-	    factory(exports, module, require$$3, require$$1$1, require$$0$4);
+	    factory(exports, module, require$$3$3, require$$1$1, require$$0$4);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -3024,12 +3024,12 @@
 
 	var require$$23 = (create && typeof create === 'object' && 'default' in create ? create['default'] : create);
 
-	var index$1 = __commonjs(function (module, exports, global) {
+	var index = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === 'function' && define.amd) {
 	    define(['exports', 'module', './api/create', './api/emit', './api/fragment', './api/init', './api/properties/index', './api/ready', './api/render', './api/version', 'object-assign', './lifecycle/attached', './lifecycle/attribute', './lifecycle/created', './defaults', './lifecycle/detached', './global/document-observer', './global/registry', './support/custom-elements', './type/element', './util/get-all-property-descriptors', './util/get-own-property-descriptors', './util/debounce', './util/define-properties', './util/walk-tree', './support/valid-custom-element'], factory);
 	  } else if (typeof exports !== 'undefined' && typeof module !== 'undefined') {
-	    factory(exports, module, require$$23, require$$7$1, require$$21, require$$1$1, require$$19, require$$18, require$$17, require$$16, require$$3, require$$14, require$$13, require$$12, require$$11, require$$10, require$$9, require$$0$4, require$$7, require$$0$3, require$$5, require$$0$2, require$$3$1, require$$1, require$$0$1, require$$0);
+	    factory(exports, module, require$$23, require$$7$1, require$$21, require$$1$1, require$$19, require$$18, require$$17, require$$16, require$$3$3, require$$14, require$$13, require$$12, require$$11, require$$10, require$$9, require$$0$4, require$$7, require$$0$3, require$$5, require$$0$2, require$$3, require$$1, require$$0$1, require$$0);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -3206,7 +3206,7 @@
 	});
 	});
 
-	var skate = (index$1 && typeof index$1 === 'object' && 'default' in index$1 ? index$1['default'] : index$1);
+	var skate = (index && typeof index === 'object' && 'default' in index ? index['default'] : index);
 
 	var VERSION = '__skate_0_14_0';
 
