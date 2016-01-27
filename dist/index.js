@@ -4395,21 +4395,46 @@
 	  opts.render = nsRender(ddRender(opts.render));
 	}
 
-	function register (name, opts) {
+	function kickflip (name, opts) {
 	  linkPropsToAttrsIfNotSpecified(opts);
 	  createSlotProperties(opts);
 	  wrapRender(opts);
 	  return skate(name, opts);
 	}
 
+	function getState(elem) {
+	  return Object.keys(elem.constructor.properties || {}).reduce(function (prev, curr) {
+	    prev[curr] = elem[curr];
+	  }, {});
+	}
+
+	function setState(elem, newState) {
+	  var ctor = elem.constructor;
+	  var shouldUpdate = !ctor.update || ctor.update(elem) !== false;
+	  require$$3$3(elem, newState);
+	  if (shouldUpdate) {
+	    require$$17(elem);
+	  }
+	}
+
+	function state (elem, newState) {
+	  return typeof newState === 'undefined' ? getState(elem) : setState(elem, newState);
+	}
+
+	var version = '0.0.4';
+
+	kickflip.state = state;
+	kickflip.vdom = require$$2$5;
+	kickflip.version = version;
+
 	var previousGlobal = window.kickflip;
-	register.noConflict = function noConflict() {
+	kickflip.noConflict = function noConflict() {
 	  window.kickflip = previousGlobal;
 	  return this;
 	};
-	window.kickflip = register;
+	window.kickflip = kickflip;
 
-	return register;
+	return kickflip;
 
 }));
 //# sourceMappingURL=index.js.map
