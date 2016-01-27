@@ -28,12 +28,12 @@
   "devDependencies": {
     "eslint": "1.10.3",
     "gulp": "gulpjs/gulp#73eced0",
-    "skatejs-build": "skatejs/build#c4e6cec"
+    "skatejs-build": "skatejs/build#70b9e02"
   },
   "dependencies": {
     "object-assign": "^4.0.1",
     "skatejs": "skatejs/skatejs#d1c7d6c",
-    "skatejs-dom-diff": "skatejs/dom-diff#c1bef56",
+    "skatejs-dom-diff": "skatejs/dom-diff#50ce04b",
     "skatejs-named-slots": "skatejs/named-slots#694de68"
   }
 }
