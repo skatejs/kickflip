@@ -28,7 +28,7 @@
   "devDependencies": {
     "eslint": "1.10.3",
     "gulp": "gulpjs/gulp#73eced0",
-    "skatejs-build": "skatejs/build#57d0037"
+    "skatejs-build": "skatejs/build#3fc16cc"
   },
   "dependencies": {
     "object-assign": "^4.0.1",
