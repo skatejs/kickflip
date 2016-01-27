@@ -2562,7 +2562,7 @@
 
 	var require$$14 = (attached && typeof attached === 'object' && 'default' in attached ? attached['default'] : attached);
 
-	var version = __commonjs(function (module, exports, global) {
+	var version$1 = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === 'function' && define.amd) {
 	    define(['exports', 'module'], factory);
@@ -2582,7 +2582,7 @@
 	});
 	});
 
-	var require$$16 = (version && typeof version === 'object' && 'default' in version ? version['default'] : version);
+	var require$$16 = (version$1 && typeof version$1 === 'object' && 'default' in version$1 ? version$1['default'] : version$1);
 
 	var render = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
