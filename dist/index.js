@@ -62,14 +62,14 @@
 	});
 	});
 
-	var require$$0$15 = (weakMap && typeof weakMap === 'object' && 'default' in weakMap ? weakMap['default'] : weakMap);
+	var require$$0$12 = (weakMap && typeof weakMap === 'object' && 'default' in weakMap ? weakMap['default'] : weakMap);
 
 	var realNodeMap = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', './weak-map'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$0$15);
+	    factory(exports, require$$0$12);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -96,14 +96,14 @@
 	});
 	});
 
-	var require$$0$20 = (realNodeMap && typeof realNodeMap === 'object' && 'default' in realNodeMap ? realNodeMap['default'] : realNodeMap);
+	var require$$0$17 = (realNodeMap && typeof realNodeMap === 'object' && 'default' in realNodeMap ? realNodeMap['default'] : realNodeMap);
 
 	var eventMap = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', './weak-map'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$0$15);
+	    factory(exports, require$$0$12);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -136,7 +136,7 @@
 	});
 	});
 
-	var require$$0$21 = (eventMap && typeof eventMap === 'object' && 'default' in eventMap ? eventMap['default'] : eventMap);
+	var require$$0$18 = (eventMap && typeof eventMap === 'object' && 'default' in eventMap ? eventMap['default'] : eventMap);
 
 	var accessor = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
@@ -243,14 +243,14 @@
 	});
 	});
 
-	var require$$0$19 = (accessor && typeof accessor === 'object' && 'default' in accessor ? accessor['default'] : accessor);
+	var require$$0$16 = (accessor && typeof accessor === 'object' && 'default' in accessor ? accessor['default'] : accessor);
 
 	var dom = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', '../util/accessor', '../util/event-map', '../util/real-node-map'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$0$19, require$$0$21, require$$0$20);
+	    factory(exports, require$$0$16, require$$0$18, require$$0$17);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -353,14 +353,14 @@
 	});
 	});
 
-	var require$$0$16 = (dom && typeof dom === 'object' && 'default' in dom ? dom['default'] : dom);
+	var require$$0$13 = (dom && typeof dom === 'object' && 'default' in dom ? dom['default'] : dom);
 
 	var mount = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', './dom'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$0$16);
+	    factory(exports, require$$0$13);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -397,14 +397,14 @@
 	});
 	});
 
-	var require$$0$14 = (mount && typeof mount === 'object' && 'default' in mount ? mount['default'] : mount);
+	var require$$0$11 = (mount && typeof mount === 'object' && 'default' in mount ? mount['default'] : mount);
 
 	var realNode = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', './real-node-map'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$0$20);
+	    factory(exports, require$$0$17);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -436,14 +436,14 @@
 	});
 	});
 
-	var require$$1$11 = (realNode && typeof realNode === 'object' && 'default' in realNode ? realNode['default'] : realNode);
+	var require$$1$9 = (realNode && typeof realNode === 'object' && 'default' in realNode ? realNode['default'] : realNode);
 
 	var textContent = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', '../util/real-node'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$1$11);
+	    factory(exports, require$$1$9);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -472,14 +472,14 @@
 	});
 	});
 
-	var require$$0$22 = (textContent && typeof textContent === 'object' && 'default' in textContent ? textContent['default'] : textContent);
+	var require$$0$19 = (textContent && typeof textContent === 'object' && 'default' in textContent ? textContent['default'] : textContent);
 
 	var setEvent = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', '../util/event-map', '../util/real-node'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$0$21, require$$1$11);
+	    factory(exports, require$$0$18, require$$1$9);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -524,14 +524,14 @@
 	});
 	});
 
-	var require$$1$9 = (setEvent && typeof setEvent === 'object' && 'default' in setEvent ? setEvent['default'] : setEvent);
+	var require$$1$7 = (setEvent && typeof setEvent === 'object' && 'default' in setEvent ? setEvent['default'] : setEvent);
 
 	var setAttribute = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', '../util/accessor', '../util/real-node'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$0$19, require$$1$11);
+	    factory(exports, require$$0$16, require$$1$9);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -567,7 +567,7 @@
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', '../vdom/dom', '../util/real-node'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$0$16, require$$1$11);
+	    factory(exports, require$$0$13, require$$1$9);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -606,7 +606,7 @@
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', '../util/real-node'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$1$11);
+	    factory(exports, require$$1$9);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -643,7 +643,7 @@
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', '../util/accessor', '../util/real-node'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$0$19, require$$1$11);
+	    factory(exports, require$$0$16, require$$1$9);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -679,7 +679,7 @@
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', '../util/real-node', '../vdom/dom'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$1$11, require$$0$16);
+	    factory(exports, require$$1$9, require$$0$13);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -742,14 +742,14 @@
 	});
 	});
 
-	var require$$1$10 = (types && typeof types === 'object' && 'default' in types ? types['default'] : types);
+	var require$$1$8 = (types && typeof types === 'object' && 'default' in types ? types['default'] : types);
 
-	var patch$1 = __commonjs(function (module, exports, global) {
+	var patch = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', './types', './patch/append-child', './patch/remove-attribute', './patch/remove-child', './patch/replace-child', './patch/set-attribute', './patch/set-event', './patch/text-content'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$1$10, require$$6$1, require$$5$2, require$$4$2, require$$3$4, require$$2$6, require$$1$9, require$$0$22);
+	    factory(exports, require$$1$8, require$$6$1, require$$5$2, require$$4$2, require$$3$4, require$$2$6, require$$1$7, require$$0$19);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -822,14 +822,14 @@
 	});
 	});
 
-	var require$$0$17 = (patch$1 && typeof patch$1 === 'object' && 'default' in patch$1 ? patch$1['default'] : patch$1);
+	var require$$0$14 = (patch && typeof patch === 'object' && 'default' in patch ? patch['default'] : patch);
 
 	var text$1 = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', '../types'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$1$10);
+	    factory(exports, require$$1$8);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -877,14 +877,14 @@
 	});
 	});
 
-	var require$$0$24 = (text$1 && typeof text$1 === 'object' && 'default' in text$1 ? text$1['default'] : text$1);
+	var require$$0$21 = (text$1 && typeof text$1 === 'object' && 'default' in text$1 ? text$1['default'] : text$1);
 
 	var comment = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', './text'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$0$24);
+	    factory(exports, require$$0$21);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -911,14 +911,14 @@
 	});
 	});
 
-	var require$$0$23 = (comment && typeof comment === 'object' && 'default' in comment ? comment['default'] : comment);
+	var require$$0$20 = (comment && typeof comment === 'object' && 'default' in comment ? comment['default'] : comment);
 
 	var events$1 = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', '../types', '../util/event-map'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$1$10, require$$0$21);
+	    factory(exports, require$$1$8, require$$0$18);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -1002,14 +1002,14 @@
 	});
 	});
 
-	var require$$0$25 = (events$1 && typeof events$1 === 'object' && 'default' in events$1 ? events$1['default'] : events$1);
+	var require$$0$22 = (events$1 && typeof events$1 === 'object' && 'default' in events$1 ? events$1['default'] : events$1);
 
 	var attributes = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', '../types', '../util/accessor'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$1$10, require$$0$19);
+	    factory(exports, require$$1$8, require$$0$16);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -1103,14 +1103,14 @@
 	});
 	});
 
-	var require$$1$12 = (attributes && typeof attributes === 'object' && 'default' in attributes ? attributes['default'] : attributes);
+	var require$$1$10 = (attributes && typeof attributes === 'object' && 'default' in attributes ? attributes['default'] : attributes);
 
 	var element$2 = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', './attributes', './events'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$1$12, require$$0$25);
+	    factory(exports, require$$1$10, require$$0$22);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -1150,7 +1150,7 @@
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', './element', './text', './comment'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$2$8, require$$0$24, require$$0$23);
+	    factory(exports, require$$2$8, require$$0$21, require$$0$20);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -1212,7 +1212,7 @@
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', './types', './compare/node', './util/real-node', './util/real-node-map'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$1$10, require$$2$7, require$$1$11, require$$0$20);
+	    factory(exports, require$$1$8, require$$2$7, require$$1$9, require$$0$17);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -1322,14 +1322,14 @@
 	});
 	});
 
-	var require$$1$8 = (diff && typeof diff === 'object' && 'default' in diff ? diff['default'] : diff);
+	var require$$1$6 = (diff && typeof diff === 'object' && 'default' in diff ? diff['default'] : diff);
 
 	var merge = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', './diff', './patch'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$1$8, require$$0$17);
+	    factory(exports, require$$1$6, require$$0$14);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -1362,7 +1362,7 @@
 	});
 	});
 
-	var require$$1$7 = (merge && typeof merge === 'object' && 'default' in merge ? merge['default'] : merge);
+	var require$$1$5 = (merge && typeof merge === 'object' && 'default' in merge ? merge['default'] : merge);
 
 	var text = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
@@ -1394,14 +1394,14 @@
 	});
 	});
 
-	var require$$0$18 = (text && typeof text === 'object' && 'default' in text ? text['default'] : text);
+	var require$$0$15 = (text && typeof text === 'object' && 'default' in text ? text['default'] : text);
 
 	var element$1 = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', '../util/accessor', './text'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$0$19, require$$0$18);
+	    factory(exports, require$$0$16, require$$0$15);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -1507,12 +1507,12 @@
 
 	var require$$2$5 = (element$1 && typeof element$1 === 'object' && 'default' in element$1 ? element$1['default'] : element$1);
 
-	var render$2 = __commonjs(function (module, exports, global) {
+	var render$1 = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', './util/weak-map', './vdom/element', './merge', './vdom/mount'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$0$15, require$$2$5, require$$1$7, require$$0$14);
+	    factory(exports, require$$0$12, require$$2$5, require$$1$5, require$$0$11);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -1572,9 +1572,9 @@
 	});
 	});
 
-	var ddRender = (render$2 && typeof render$2 === 'object' && 'default' in render$2 ? render$2['default'] : render$2);
+	var ddRender = (render$1 && typeof render$1 === 'object' && 'default' in render$1 ? render$1['default'] : render$1);
 
-	var patch = __commonjs(function (module, exports, global) {
+	var patch$1 = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(["exports"], factory);
@@ -1597,14 +1597,14 @@
 	});
 	});
 
-	var require$$0$11 = (patch && typeof patch === 'object' && 'default' in patch ? patch['default'] : patch);
+	var require$$0$23 = (patch$1 && typeof patch$1 === 'object' && 'default' in patch$1 ? patch$1['default'] : patch$1);
 
 	var polyfilled = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', './internal/map/patch'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$0$11);
+	    factory(exports, require$$0$23);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -1633,7 +1633,7 @@
 	});
 	});
 
-	var require$$0$12 = (polyfilled && typeof polyfilled === 'object' && 'default' in polyfilled ? polyfilled['default'] : polyfilled);
+	var require$$0$24 = (polyfilled && typeof polyfilled === 'object' && 'default' in polyfilled ? polyfilled['default'] : polyfilled);
 
 	var slotsDefault = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
@@ -1658,7 +1658,7 @@
 	});
 	});
 
-	var require$$0$13 = (slotsDefault && typeof slotsDefault === 'object' && 'default' in slotsDefault ? slotsDefault['default'] : slotsDefault);
+	var require$$0$25 = (slotsDefault && typeof slotsDefault === 'object' && 'default' in slotsDefault ? slotsDefault['default'] : slotsDefault);
 
 	var slots = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
@@ -1683,14 +1683,14 @@
 	});
 	});
 
-	var require$$1$6 = (slots && typeof slots === 'object' && 'default' in slots ? slots['default'] : slots);
+	var require$$1$12 = (slots && typeof slots === 'object' && 'default' in slots ? slots['default'] : slots);
 
 	var polyfill = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', './internal/map/patch', './internal/map/slots', './internal/map/slots-default', './polyfilled'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$0$11, require$$1$6, require$$0$13, require$$0$12);
+	    factory(exports, require$$0$23, require$$1$12, require$$0$25, require$$0$24);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -1863,14 +1863,14 @@
 	});
 	});
 
-	var require$$1$5 = (polyfill && typeof polyfill === 'object' && 'default' in polyfill ? polyfill['default'] : polyfill);
+	var require$$1$11 = (polyfill && typeof polyfill === 'object' && 'default' in polyfill ? polyfill['default'] : polyfill);
 
-	var render$1 = __commonjs(function (module, exports, global) {
+	var render$2 = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', './polyfill', './internal/map/patch'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$1$5, require$$0$11);
+	    factory(exports, require$$1$11, require$$0$23);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -1908,14 +1908,14 @@
 	});
 	});
 
-	var nsRender = (render$1 && typeof render$1 === 'object' && 'default' in render$1 ? render$1['default'] : render$1);
+	var nsRender = (render$2 && typeof render$2 === 'object' && 'default' in render$2 ? render$2['default'] : render$2);
 
 	var slot = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', './internal/map/slots', './internal/map/slots-default'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$1$6, require$$0$13);
+	    factory(exports, require$$1$12, require$$0$25);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -4401,52 +4401,6 @@
 	  wrapRender(opts);
 	  return skate(name, opts);
 	}
-
-	var VERSION = '__skate_0_14_0';
-
-	if (!window[VERSION]) {
-	  window[VERSION] = {
-	    registerIfNotExists: function registerIfNotExists(name, value) {
-	      return this[name] || (this[name] = value);
-	    }
-	  };
-	}
-
-	var globals = window[VERSION];
-
-	var definitions = {};
-	var map = [];
-	var types$1 = [];
-
-	globals.registerIfNotExists('registry', {
-	  get: function get(name) {
-	    return Object.prototype.hasOwnProperty.call(definitions, name) && definitions[name];
-	  },
-	  set: function set(name, Ctor) {
-	    if (this.get(name)) {
-	      throw new Error('A Skate component with the name of "' + name + '" already exists.');
-	    }
-
-	    var type = Ctor.type;
-	    var typeIndex = types$1.indexOf(type);
-
-	    if (typeIndex === -1) {
-	      typeIndex = types$1.length;
-	      types$1.push(type);
-	      map[typeIndex] = {};
-	    }
-
-	    return definitions[name] = map[typeIndex][name] = Ctor;
-	  },
-	  find: function find(elem) {
-	    var filtered = [];
-	    var typesLength = types$1.length;
-	    for (var a = 0; a < typesLength; a++) {
-	      filtered = filtered.concat(types$1[a].filter(elem, map[a]) || []);
-	    }
-	    return filtered;
-	  }
-	});
 
 	var previousGlobal = window.kickflip;
 	register.noConflict = function noConflict() {
