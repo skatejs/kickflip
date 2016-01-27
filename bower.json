@@ -1,0 +1,11 @@
+{
+  "name": "kickflip",
+  "description": "Functional SkateJS inspired by you-know-who.",
+  "main": "lib/index.js",
+  "authors": [],
+  "license": "MIT",
+  "keywords": ["functional","ui","web","component","custom","element"],
+  "homepage": "https://github.com/skatejs/kickflip#readme",
+  "moduleType": [ "amd", "es6", "globals", "node" ],
+  "ignore": [ "**/.*", "node_modules", "bower_components", "test", "tests" ]
+}
