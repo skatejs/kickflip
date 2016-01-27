@@ -44,6 +44,30 @@
 	  return Polyfill;
 	}();
 
+	function classToString(obj) {
+	  if (typeof obj === 'string') {
+	    return obj;
+	  }
+
+	  if (Array.isArray(obj)) {
+	    return obj.join(' ');
+	  }
+
+	  return Object.keys(obj).filter(function (key) {
+	    return obj[key] ? key : false;
+	  }).join(' ');
+	}
+
+	function styleToString(obj) {
+	  if (typeof obj === 'string') {
+	    return obj;
+	  }
+
+	  return Object.keys(obj).map(function (key) {
+	    return key + ': ' + obj[key] + ';';
+	  }).join(' ');
+	}
+
 	function getAccessor(node, name) {
 	  if (name === 'class') {
 	    return node.className;
@@ -63,9 +87,9 @@
 
 	function mapAccessor(node, name, value) {
 	  if (name === 'class') {
-	    node.className = value;
+	    node.className = classToString(value);
 	  } else if (name === 'style') {
-	    node.style = { cssText: value };
+	    node.style = { cssText: styleToString(value) };
 	  }
 	}
 
@@ -152,10 +176,15 @@
 	  return (typeof name === 'function' ? name.id || name.name : name).toUpperCase();
 	}
 
-	function createElement (name) {
+	function isChildren(arg) {
+	  return arg && (typeof arg === 'string' || Array.isArray(arg) || typeof arg.nodeType === 'number');
+	}
+
+	var createElement = function element(name) {
 	  var attrs = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
-	  var data = separateData(attrs);
+	  var isAttrsNode = isChildren(attrs);
+	  var data = separateData(isAttrsNode ? {} : attrs);
 	  var node = data.node;
 	  node.nodeType = 1;
 	  node.tagName = ensureTagName(name);
@@ -166,9 +195,14 @@
 	    chren[_key - 2] = arguments[_key];
 	  }
 
-	  node.childNodes = ensureNodes(chren);
+	  node.childNodes = ensureNodes(isAttrsNode ? [attrs].concat(chren) : chren);
 	  return node;
 	}
+
+	// Generate built-in factories.
+	['a', 'abbr', 'address', 'area', 'article', 'aside', 'audio', 'b', 'base', 'bdi', 'bdo', 'bgsound', 'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'cite', 'code', 'col', 'colgroup', 'command', 'content', 'data', 'datalist', 'dd', 'del', 'details', 'dfn', 'dialog', 'div', 'dl', 'dt', 'element', 'em', 'embed', 'fieldset', 'figcaption', 'figure', 'font', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'hr', 'html', 'i', 'iframe', 'image', 'img', 'input', 'ins', 'kbd', 'keygen', 'label', 'legend', 'li', 'link', 'main', 'map', 'mark', 'marquee', 'menu', 'menuitem', 'meta', 'meter', 'multicol', 'nav', 'nobr', 'noembed', 'noframes', 'noscript', 'object', 'ol', 'optgroup', 'option', 'output', 'p', 'param', 'picture', 'pre', 'progress', 'q', 'rp', 'rt', 'rtc', 'ruby', 's', 'samp', 'script', 'section', 'select', 'shadow', 'small', 'source', 'span', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr', 'track', 'u', 'ul', 'var', 'video', 'wbr'].forEach(function (tag) {
+	  element[tag] = element.bind(null, tag);
+	});
 
 	var APPEND_CHILD = 1;
 	var REMOVE_CHILD = 2;
@@ -565,7 +599,7 @@
 	    }
 
 	    // Create a new element to house the new tree since we diff / mount fragments.
-	    var newTree = createElement('div', null, render(elem, { createElement: createElement }));
+	    var newTree = createElement('div', null, render(elem));
 	    var oldTree = oldTreeMap.get(elem);
 
 	    if (oldTree) {
@@ -1084,7 +1118,7 @@
 
 	var require$$5 = (getAllPropertyDescriptors && typeof getAllPropertyDescriptors === 'object' && 'default' in getAllPropertyDescriptors ? getAllPropertyDescriptors['default'] : getAllPropertyDescriptors);
 
-	var element = __commonjs(function (module, exports, global) {
+	var element$1 = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === 'function' && define.amd) {
 	    define(['exports', 'module'], factory);
@@ -1132,7 +1166,7 @@
 	});
 	});
 
-	var require$$0$3 = (element && typeof element === 'object' && 'default' in element ? element['default'] : element);
+	var require$$0$3 = (element$1 && typeof element$1 === 'object' && 'default' in element$1 ? element$1['default'] : element$1);
 
 	var customElements = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
@@ -3266,38 +3300,14 @@
 	  return skate(name, opts);
 	}
 
-	function getState(elem) {
-	  return Object.keys(elem.constructor.properties || {}).reduce(function (prev, curr) {
-	    prev[curr] = elem[curr];
-	  }, {});
-	}
-
-	function setState(elem, newState) {
-	  var ctor = elem.constructor;
-	  var shouldUpdate = !ctor.update || ctor.update(elem) !== false;
-	  require$$3(elem, newState);
-	  if (shouldUpdate) {
-	    render$2(elem);
-	  }
-	}
-
-	function state (elem, newState) {
-	  return typeof newState === 'undefined' ? getState(elem) : setState(elem, newState);
-	}
-
-	var main = {
-	  register: register,
-	  state: state
-	};
-
 	var previousGlobal = window.kickflip;
-	main.noConflict = function noConflict() {
+	register.noConflict = function noConflict() {
 	  window.kickflip = previousGlobal;
 	  return this;
 	};
-	window.kickflip = main;
+	window.kickflip = register;
 
-	return main;
+	return register;
 
 }));
 //# sourceMappingURL=index.js.map
