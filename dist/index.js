@@ -1658,7 +1658,7 @@
 	});
 	});
 
-	var require$$1$11 = (slotsDefault && typeof slotsDefault === 'object' && 'default' in slotsDefault ? slotsDefault['default'] : slotsDefault);
+	var require$$0$25 = (slotsDefault && typeof slotsDefault === 'object' && 'default' in slotsDefault ? slotsDefault['default'] : slotsDefault);
 
 	var slots = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
@@ -1683,14 +1683,14 @@
 	});
 	});
 
-	var require$$2$9 = (slots && typeof slots === 'object' && 'default' in slots ? slots['default'] : slots);
+	var require$$1$12 = (slots && typeof slots === 'object' && 'default' in slots ? slots['default'] : slots);
 
 	var polyfill = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', './internal/map/patch', './internal/map/slots', './internal/map/slots-default', './polyfilled'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$0$23, require$$2$9, require$$1$11, require$$0$24);
+	    factory(exports, require$$0$23, require$$1$12, require$$0$25, require$$0$24);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -1863,14 +1863,14 @@
 	});
 	});
 
-	var require$$1$12 = (polyfill && typeof polyfill === 'object' && 'default' in polyfill ? polyfill['default'] : polyfill);
+	var require$$1$11 = (polyfill && typeof polyfill === 'object' && 'default' in polyfill ? polyfill['default'] : polyfill);
 
 	var render$2 = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', './polyfill', './internal/map/patch'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$1$12, require$$0$23);
+	    factory(exports, require$$1$11, require$$0$23);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -1915,7 +1915,7 @@
 	  if (typeof define === "function" && define.amd) {
 	    define(['exports', './internal/map/slots', './internal/map/slots-default'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(exports, require$$2$9, require$$1$11);
+	    factory(exports, require$$1$12, require$$0$25);
 	  } else {
 	    var mod = {
 	      exports: {}
