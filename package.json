@@ -1,6 +1,6 @@
 {
   "name": "kickflip",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Functional SkateJS inspired by you-know-who.",
   "main": "lib/index.js",
   "jsnext:main": "src/index.js",

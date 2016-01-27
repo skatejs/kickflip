@@ -3300,6 +3300,254 @@
 	  return skate(name, opts);
 	}
 
+	var text$1 = __commonjs(function (module, exports, global) {
+	(function (global, factory) {
+	  if (typeof define === "function" && define.amd) {
+	    define(["exports"], factory);
+	  } else if (typeof exports !== "undefined") {
+	    factory(exports);
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod.exports);
+	    global.text = mod.exports;
+	  }
+	})(__commonjs_global, function (exports) {
+	  "use strict";
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+	  exports.default = createTextNode;
+
+	  function createTextNode(item) {
+	    return {
+	      nodeType: 3,
+	      textContent: item
+	    };
+	  }
+	});
+	});
+
+	var require$$0$11 = (text$1 && typeof text$1 === 'object' && 'default' in text$1 ? text$1['default'] : text$1);
+
+	var accessor = __commonjs(function (module, exports, global) {
+	(function (global, factory) {
+	  if (typeof define === "function" && define.amd) {
+	    define(['exports'], factory);
+	  } else if (typeof exports !== "undefined") {
+	    factory(exports);
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod.exports);
+	    global.accessor = mod.exports;
+	  }
+	})(__commonjs_global, function (exports) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+	  exports.getAccessor = getAccessor;
+	  exports.mapAccessor = mapAccessor;
+	  exports.removeAccessor = removeAccessor;
+	  exports.setAccessor = setAccessor;
+
+	  function classToString(obj) {
+	    if (typeof obj === 'string') {
+	      return obj;
+	    }
+
+	    if (Array.isArray(obj)) {
+	      return obj.join(' ');
+	    }
+
+	    return Object.keys(obj).filter(function (key) {
+	      return obj[key] ? key : false;
+	    }).join(' ');
+	  }
+
+	  function styleToString(obj) {
+	    if (typeof obj === 'string') {
+	      return obj;
+	    }
+
+	    return Object.keys(obj).map(function (key) {
+	      return key + ': ' + obj[key] + ';';
+	    }).join(' ');
+	  }
+
+	  function getAccessor(node, name) {
+	    if (name === 'class') {
+	      return node.className;
+	    } else if (name === 'style') {
+	      return node.style.cssText;
+	    } else if (name !== 'type' && name in node) {
+	      return node[name];
+	    } else if (node.getAttribute) {
+	      return node.getAttribute(name);
+	    } else if (node.attributes && node.attributes[name]) {
+	      return node.attributes[name].value;
+	    }
+	  }
+
+	  function mapAccessor(node, name, value) {
+	    if (name === 'class') {
+	      node.className = classToString(value);
+	    } else if (name === 'style') {
+	      node.style = {
+	        cssText: styleToString(value)
+	      };
+	    }
+	  }
+
+	  function removeAccessor(node, name) {
+	    if (name === 'class') {
+	      node.className = '';
+	    } else if (name === 'style') {
+	      node.style.cssText = '';
+	    } else if (name !== 'type' && name in node) {
+	      node[name] = '';
+	    } else if (node.removeAttribute) {
+	      node.removeAttribute(name);
+	    } else if (node.attributes) {
+	      delete node.attributes[name];
+	    }
+	  }
+
+	  function setAccessor(node, name, value) {
+	    if (name === 'class') {
+	      node.className = value;
+	    } else if (name === 'style') {
+	      node.style.cssText = value;
+	    } else if (name !== 'type' && name in node || typeof value !== 'string') {
+	      node[name] = value == null ? '' : value;
+	    } else if (node.setAttribute) {
+	      node.setAttribute(name, value);
+	    } else if (node.attributes) {
+	      node.attributes[node.attributes.length] = node.attributes[name] = {
+	        name: name,
+	        value: value
+	      };
+	    }
+	  }
+	});
+	});
+
+	var require$$1$5 = (accessor && typeof accessor === 'object' && 'default' in accessor ? accessor['default'] : accessor);
+
+	var element$2 = __commonjs(function (module, exports, global) {
+	(function (global, factory) {
+	  if (typeof define === "function" && define.amd) {
+	    define(['exports', '../util/accessor', './text'], factory);
+	  } else if (typeof exports !== "undefined") {
+	    factory(exports, require$$1$5, require$$0$11);
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod.exports, global.accessor, global.text);
+	    global.element = mod.exports;
+	  }
+	})(__commonjs_global, function (exports, _accessor, _text) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+	  exports.default = element;
+
+	  var _text2 = _interopRequireDefault(_text);
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  var _typeof = typeof Symbol === "function" && babelHelpers.typeof(Symbol.iterator) === "symbol" ? function (obj) {
+	    return typeof obj === 'undefined' ? 'undefined' : babelHelpers.typeof(obj);
+	  } : function (obj) {
+	    return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj === 'undefined' ? 'undefined' : babelHelpers.typeof(obj);
+	  };
+
+	  function separateData(obj) {
+	    var attrs = {};
+	    var events = {};
+	    var node = {};
+	    var attrIdx = 0;
+
+	    for (var name in obj) {
+	      var value = obj[name];
+
+	      if (name.indexOf('on') === 0) {
+	        events[name.substring(2)] = value;
+	      } else {
+	        attrs[attrIdx++] = attrs[name] = {
+	          name: name,
+	          value: value
+	        };
+	        (0, _accessor.mapAccessor)(node, name, value);
+	      }
+	    }
+
+	    attrs.length = attrIdx;
+	    return {
+	      attrs: attrs,
+	      events: events,
+	      node: node
+	    };
+	  }
+
+	  function ensureNodes(arr) {
+	    var out = [];
+	    arr.filter(Boolean).forEach(function (item) {
+	      if (Array.isArray(item)) {
+	        out = out.concat(ensureNodes(item));
+	      } else if ((typeof item === 'undefined' ? 'undefined' : _typeof(item)) === 'object') {
+	        out.push(item);
+	      } else {
+	        out.push((0, _text2.default)(item));
+	      }
+	    });
+	    return out;
+	  }
+
+	  function ensureTagName(name) {
+	    return (typeof name === 'function' ? name.id || name.name : name).toUpperCase();
+	  }
+
+	  function isChildren(arg) {
+	    return arg && (typeof arg === 'string' || Array.isArray(arg) || typeof arg.nodeType === 'number');
+	  }
+
+	  function element(name) {
+	    var attrs = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+	    var isAttrsNode = isChildren(attrs);
+	    var data = separateData(isAttrsNode ? {} : attrs);
+	    var node = data.node;
+	    node.nodeType = 1;
+	    node.tagName = ensureTagName(name);
+	    node.attributes = data.attrs;
+	    node.events = data.events;
+
+	    for (var _len = arguments.length, chren = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+	      chren[_key - 2] = arguments[_key];
+	    }
+
+	    node.childNodes = ensureNodes(isAttrsNode ? [attrs].concat(chren) : chren);
+	    return node;
+	  }
+
+	  ['a', 'abbr', 'address', 'area', 'article', 'aside', 'audio', 'b', 'base', 'bdi', 'bdo', 'bgsound', 'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'cite', 'code', 'col', 'colgroup', 'command', 'content', 'data', 'datalist', 'dd', 'del', 'details', 'dfn', 'dialog', 'div', 'dl', 'dt', 'element', 'em', 'embed', 'fieldset', 'figcaption', 'figure', 'font', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'hr', 'html', 'i', 'iframe', 'image', 'img', 'input', 'ins', 'kbd', 'keygen', 'label', 'legend', 'li', 'link', 'main', 'map', 'mark', 'marquee', 'menu', 'menuitem', 'meta', 'meter', 'multicol', 'nav', 'nobr', 'noembed', 'noframes', 'noscript', 'object', 'ol', 'optgroup', 'option', 'output', 'p', 'param', 'picture', 'pre', 'progress', 'q', 'rp', 'rt', 'rtc', 'ruby', 's', 'samp', 'script', 'section', 'select', 'shadow', 'small', 'source', 'span', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr', 'track', 'u', 'ul', 'var', 'video', 'wbr'].forEach(function (tag) {
+	    element[tag] = element.bind(null, tag);
+	  });
+	});
+	});
+
 	var previousGlobal = window.kickflip;
 	register.noConflict = function noConflict() {
 	  window.kickflip = previousGlobal;
