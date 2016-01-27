@@ -1,8 +1,8 @@
-import ddRender from 'skatejs-dom-diff/src/render';
-import nsRender from 'skatejs-named-slots/src/render';
-import nsSlot from 'skatejs-named-slots/src/slot';
+import ddRender from 'skatejs-dom-diff/lib/render';
+import nsRender from 'skatejs-named-slots/lib/render';
+import nsSlot from 'skatejs-named-slots/lib/slot';
 import skate from 'skatejs';
-import skRender from 'skatejs/src/api/render';
+import skRender from 'skatejs/lib/api/render';
 
 function linkPropsToAttrsIfNotSpecified (opts) {
   const props = opts.properties;
