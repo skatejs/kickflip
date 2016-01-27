@@ -111,7 +111,7 @@ kickflip('x-todos', {
     function add (e) {
       if (e.keyCode === 13) {
         state(elem, {
-          content: elem.content.concat(vdom('x-item', null, e.target.value)),
+          content: elem.content.concat(vdom('x-item', e.target.value)),
           value: ''
         });
       }
