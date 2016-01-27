@@ -11,7 +11,7 @@ Kickflip gives you a simple, opinionated wrapper around Skate to write functiona
 
 ## Install
 
-Package managers (not published yet, but this is what it will look like):
+Package managers:
 
 ```sh
 bower install kickflip
