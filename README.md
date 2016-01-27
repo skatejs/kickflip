@@ -27,7 +27,7 @@ npm install kickflip
 
 ## Usage
 
-Here's some working examples of how to build components with Kickflip.
+Here's some working examples of how to build web components with Kickflip.
 
 
 
@@ -40,12 +40,15 @@ http://jsbin.com/tataweq/2
 ```
 
 ```js
-kickflip.register('x-hello', {
+import kickflip from 'kickflip/src/register';
+import { div } from 'kickflip/src/vdom';
+
+kickflip('x-hello', {
   properties: {
     name: {}
   },
-  render (elem, vdom) {
-    return vdom.createElement('div', null, 'Hello, ', elem.name, '!');
+  render (elem) {
+    return div('Hello, ', elem.name, '!');
   }
 });
 ```
@@ -61,22 +64,25 @@ http://jsbin.com/cetidi/1
 ```
 
 ```js
+import kickflip, { state } from 'kickflip/src/register';
+import { div } from 'kickflip/src/vdom';
+
 const intervals = new WeakMap();
 
-kickflip.register('x-counter', {
+kickflip('x-counter', {
   properties: {
     count: { default: 0 }
   },
   attached (elem) {
     intervals.set(elem, setInterval(function () {
-      kickflip.state(elem, { count: elem.count + 1 });
+      state(elem, { count: elem.count + 1 });
     }, 1000));
   },
   detached (elem) {
     clearInterval(intervals.get(elem));
   },
-  render (elem, vdom) {
-    return vdom.createElement('div', null, ['Count: ', elem.count.toString()]);
+  render (elem) {
+    return div('Count: ', elem.count.toString());
   }
 });
 ```
@@ -96,13 +102,16 @@ http://jsbin.com/basego/3
 ```
 
 ```js
-kickflip.register('x-todos', {
+import kickflip, { state } from 'kickflip';
+import vdom, { button, div, li } from 'kickflip/src/vdom';
+
+kickflip('x-todos', {
   slots: ['content'],
-  render (elem, vdom) {
+  render (elem) {
     function add (e) {
       if (e.keyCode === 13) {
-        kickflip.state(elem, {
-          content: elem.content.concat(vdom.createElement('x-item', null, e.target.value)),
+        state(elem, {
+          content: elem.content.concat(vdom('x-item', null, e.target.value)),
           value: ''
         });
       }
@@ -110,21 +119,20 @@ kickflip.register('x-todos', {
 
     function remove (index) {
       return function () {
-        kickflip.state(elem, {
+        state(elem, {
           content: elem.content.slice(0, index).concat(elem.content.slice(index + 1))
         });
       };
     }
 
     const items = elem.content.map(function (item, index) {
-      const delbtn = vdom.createElement('button', { onclick: remove(index) }, 'x');
-      return vdom.createElement('li', null, [item, ' ', delbtn]);
+      return li(item, ' ', button({ onclick: remove(index) }, 'x'));
     });
 
-    return vdom.createElement('div', null, [
-      vdom.createElement('input', { onkeyup: add, value: elem.value }),
-      items.length ? vdom.createElement('ul', null, items) : vdom.createElement('p', null, 'There are no items.')
-    ]);
+    return div(
+      input({ onkeyup: add, value: elem.value }),
+      items.length ? ul(items) : p('There are no items.')
+    );
   }
 });
 ```
