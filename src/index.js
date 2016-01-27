@@ -1,7 +1,10 @@
-import register from './register';
+import kickflip from './kickflip';
 import state from './state';
 import vdom from './vdom';
 import version from './version';
 
-export { register, state, vdom, version };
-export default register;
+kickflip.state = state;
+kickflip.vdom = vdom;
+kickflip.version = version;
+
+export default kickflip;
