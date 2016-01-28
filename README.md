@@ -145,3 +145,11 @@ kickflip('x-todos', {
   }
 });
 ```
+
+
+
+### React Integration
+
+http://requirebin.com/?gist=451f1f4f94003e7af33f
+
+The example above is the same `<x-todos>` component rendered by a React app. It exists to show the seamless integration between native (or polyfilled) custom elements and React components.
