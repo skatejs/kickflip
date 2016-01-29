@@ -1,0 +1,78 @@
+<script src="../dist/index.js"></script>
+<script src="../node_modules/skatejs-react-integration/dist/index.js"></script>
+<script src="https://fb.me/react-0.14.6.js"></script>
+<script src="https://fb.me/react-dom-0.14.6.js"></script>
+
+<div id="app"></div>
+
+<script>
+var emit = kickflip.emit;
+var state = kickflip.state;
+var vdom = kickflip.vdom;
+
+var button = vdom.button;
+var div = vdom.div;
+var input = vdom.input;
+var li = vdom.li;
+var p = vdom.p;
+var ul = vdom.ul;
+
+var Todos = skatejsReactIntegration(kickflip('x-todos', {
+  listeners: ['add', 'remove'],
+  slots: ['content'],
+  render: function (elem) {
+    function add (e) {
+      if (e.keyCode === 13) {
+        emit(this, 'add', { detail: e.target.value });
+        state(elem, { value: '' });
+      }
+    }
+
+    function remove (index) {
+      return function (e) {
+        emit(this, 'remove', { detail: index });
+      };
+    }
+
+    var items = elem.content.map(function (item, index) {
+      return li(item, ' ', button({ onclick: remove(index) }, 'x'));
+    });
+
+    return div(
+      input({ onkeyup: add, value: elem.value }),
+      items.length ? ul(items) : p('There are no items.')
+    );
+  }
+}));
+
+
+
+var rce = React.createElement;
+var App = React.createClass({
+  addItem: function (e) {
+    this.setState({
+      items: this.state.items.concat(e.detail)
+    });
+  },
+  removeItem: function (e) {
+    this.setState({
+      items: this.state.items.slice(0, e.detail).concat(this.state.items.slice(e.detail + 1))
+    });
+  },
+  getInitialState: function () {
+    return { items: [] };
+  },
+  render: function () {
+    return rce('div', null,
+      rce(Todos, { onadd: this.addItem, onremove: this.removeItem },
+        this.state.items.map(function (item, key) {
+          return rce('x-item', { key: key }, item);
+        })
+			)
+		);
+  }
+});
+
+
+ReactDOM.render(rce(App), document.getElementById('app'));
+</script>
