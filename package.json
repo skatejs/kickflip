@@ -33,7 +33,7 @@
   "dependencies": {
     "object-assign": "^4.0.1",
     "skatejs": "skatejs/skatejs#7a9f021",
-    "skatejs-dom-diff": "skatejs/dom-diff#0.3.1",
-    "skatejs-named-slots": "skatejs/named-slots#0.0.1"
+    "skatejs-dom-diff": "skatejs/dom-diff#7be9d97",
+    "skatejs-named-slots": "skatejs/named-slots#cb50d21"
   }
 }
