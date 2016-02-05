@@ -31,9 +31,10 @@
     "skatejs-build": "skatejs/build#b354c3f"
   },
   "dependencies": {
+    "debounce": "^1.0.0",
     "object-assign": "^4.0.1",
     "skatejs": "skatejs/skatejs#301fd97",
-    "skatejs-dom-diff": "skatejs/dom-diff#d2d66b7",
-    "skatejs-named-slots": "skatejs/named-slots#2aaf684"
+    "skatejs-dom-diff": "skatejs/dom-diff#f1ff814",
+    "skatejs-named-slots": "skatejs/named-slots#b62edf2"
   }
 }
