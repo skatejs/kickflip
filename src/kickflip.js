@@ -1,8 +1,10 @@
 import ddRender from 'skatejs-dom-diff/lib/render';
+import debounce from 'debounce';
 import nsRender from 'skatejs-named-slots/lib/render';
 import nsSlot from 'skatejs-named-slots/lib/slot';
 import skate from 'skatejs';
-import skRender from 'skatejs/lib/api/render';
+
+const $debounce = Symbol();
 
 function createAttributeLinks (opts) {
   const props = opts.properties;
@@ -42,7 +44,7 @@ function createSlotProperties (opts) {
     props[name] = nsSlot({
       attribute: false,
       default: index === 0,
-      set: skRender
+      set: skate.render
     });
   });
 }
@@ -51,12 +53,45 @@ function ensureOpts (opts) {
   if (!opts.listeners) {
     opts.listeners = [];
   }
+
   if (!opts.properties) {
     opts.properties = {};
   }
+
   if (!opts.slots) {
     opts.slots = [];
   }
+}
+
+function normalizePropertyRender (render) {
+  if (typeof render === 'undefined') {
+    return function (elem, data) {
+      return data.newValue !== data.oldValue;
+    }
+  }
+  if (typeof render === 'function') {
+    return render;
+  }
+  return function () {
+    return !!render;
+  };
+}
+
+function setStateOnPropertySet (opts) {
+  const props = opts.properties;
+  Object.keys(props).forEach(function (name) {
+    const prop = props[name];
+    const set = prop.set;
+    const render = normalizePropertyRender(prop.render);
+    prop.set = function (elem, data) {
+      set && set(elem, data);
+      if (render(elem, data)) {
+        let deb = elem[$debounce];
+        !deb && (deb = elem[$debounce] = debounce(skate.render, 1));
+        deb(elem);
+      }
+    };
+  });
 }
 
 function wrapRender (opts) {
@@ -66,6 +101,7 @@ function wrapRender (opts) {
 export default function (name, opts) {
   ensureOpts(opts);
   createAttributeLinks(opts);
+  setStateOnPropertySet(opts);
   createEventProperties(opts);
   createSlotProperties(opts);
   wrapRender(opts);
