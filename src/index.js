@@ -1,12 +1,23 @@
 import kickflip from './kickflip';
+import link from './link';
 import skate from 'skatejs';
 import state from './state';
-import vdom from './vdom';
+import * as vdom from './vdom';
 import version from './version';
 
-kickflip.emit = skate.emit;
-kickflip.state = state;
-kickflip.vdom = vdom;
-kickflip.version = version;
+const { create, emit, fragment, init, properties, ready, render } = skate;
 
 export default kickflip;
+export {
+  create,
+  emit,
+  fragment,
+  init,
+  link,
+  properties,
+  ready,
+  render,
+  state,
+  vdom,
+  version
+};
