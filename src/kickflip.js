@@ -1,21 +1,28 @@
-import ddRender from 'skatejs-dom-diff/lib/render';
 import debounce from 'debounce';
-import nsRender from 'skatejs-named-slots/lib/render';
-import nsSlot from 'skatejs-named-slots/lib/slot';
+import render from './render';
 import skate from 'skatejs';
 
 const $debounce = Symbol();
 
+// Defaults all properties to be linked to an attribute unless explicitly
+// specified.
 function createAttributeLinks (opts) {
   const props = opts.properties;
   Object.keys(props).forEach(function (name) {
-    const prop = props[name];
+    let prop = props[name];
+
+    if (!prop) {
+      prop = props[name] = {};
+    }
+
     if (typeof prop.attribute === 'undefined') {
       prop.attribute = true;
     }
   });
 }
 
+// Creates properties that add / remove event listeners. This is mostly for
+// seemless integration with React.
 function createEventProperties (opts) {
   const props = opts.properties;
   opts.listeners.forEach(function (name) {
@@ -38,17 +45,7 @@ function createEventProperties (opts) {
   });
 }
 
-function createSlotProperties (opts) {
-  const props = opts.properties;
-  opts.slots.forEach(function (name, index) {
-    props[name] = nsSlot({
-      attribute: false,
-      default: index === 0,
-      set: skate.render
-    });
-  });
-}
-
+// Normalises options to safe defaults.
 function ensureOpts (opts) {
   if (!opts.listeners) {
     opts.listeners = [];
@@ -63,11 +60,12 @@ function ensureOpts (opts) {
   }
 }
 
+// Creates a safe default for the render option for properties.
 function normalizePropertyRender (render) {
   if (typeof render === 'undefined') {
     return function (elem, data) {
       return data.newValue !== data.oldValue;
-    }
+    };
   }
   if (typeof render === 'function') {
     return render;
@@ -77,6 +75,8 @@ function normalizePropertyRender (render) {
   };
 }
 
+// Re-renders the component when a property is set, debouncing it so that it is
+// only rendered once on the tail end of consecutive subsequent property sets.
 function setStateOnPropertySet (opts) {
   const props = opts.properties;
   Object.keys(props).forEach(function (name) {
@@ -94,16 +94,19 @@ function setStateOnPropertySet (opts) {
   });
 }
 
+// Wraps the provided render function with our custom renderer that does all
+// the diffing / patching.
 function wrapRender (opts) {
-  opts.render = nsRender(ddRender(opts.render));
+  opts.render = render(opts);
 }
 
+// Proxies skate() ensuring everything is set up before the component is
+// registered and returned.
 export default function (name, opts) {
   ensureOpts(opts);
   createAttributeLinks(opts);
   setStateOnPropertySet(opts);
   createEventProperties(opts);
-  createSlotProperties(opts);
   wrapRender(opts);
   return skate(name, opts);
 }
