@@ -2,10 +2,10 @@
 
 Kickflip gives you a simple, opinionated wrapper around Skate to write functional web components against [W3C specs](https://github.com/w3c/webcomponents).
 
-- Custom elements backed by [SkateJS](https://github.com/skatejs/skatejs).
-- Uses native [custom element](http://w3c.github.io/webcomponents/spec/custom/) support if available.
-- Uni-directional rendering pipeline using [dom diffing / patching](https://github.com/skatejs-dom-diff).
-- Public API exposed through partial-polyfilling of the [Shadow DOM Spec](https://w3c.github.io/webcomponents/spec/shadow/) using [named slots](https://github.com/skatejs/named-slots).
+- Custom elements backed by [SkateJS](https://github.com/skatejs/skatejs) that uses native Custom Element support if available.
+- Uni-directional rendering pipeline using [dom diffing / patching] via Google's [Incremental DOM](https://github.com/google/incremental-dom).
+- Public API exposed through partial-polyfilling of the [Shadow DOM Spec](https://w3c.github.io/webcomponents/spec/shadow/) using [our Named Slot Prollyfill](https://github.com/skatejs/named-slots).
+- Because we polyfill some of the DOM methods for the named-slot API, Kickflip is inherently compatible with libraries such as Incremental DOM, Virtual DOM and React.
 
 
 
@@ -27,28 +27,26 @@ npm install kickflip
 
 ## Usage
 
-Here's some working examples of how to build web components with Kickflip.
+Here's some examples of how to build web components with Kickflip.
 
 
 
 ### Hello
-
-http://requirebin.com/?gist=2918047d70e7d90f945b
 
 ```html
 <x-hello name="John"></x-hello>
 ```
 
 ```js
-var kickflip = require('kickflip');
-var div = kickflip.vdom.div;
+import kickflip from 'kickflip';
+import { div } from 'kickflip/src/vdom';
 
 kickflip('x-hello', {
   properties: {
     name: {}
   },
-  render: function (elem) {
-    return div('Hello, ', elem.name, '!');
+  render (elem) {
+    div(`Hello ${elem.name}!`);
   }
 });
 ```
@@ -57,16 +55,13 @@ kickflip('x-hello', {
 
 ### Counter
 
-http://requirebin.com/?gist=3991c87e28039497183d
-
 ```html
 <x-counter></x-counter>
 ```
 
 ```js
-var kickflip = require('kickflip');
-var div = kickflip.vdom.div;
-var state = kickflip.state;
+import kickflip from 'kickflip';
+import { div } from 'kickflip/src/vdom';
 
 var intervals = new WeakMap();
 
@@ -76,14 +71,14 @@ kickflip('x-counter', {
   },
   attached: function (elem) {
     intervals.set(elem, setInterval(function () {
-      state(elem, { count: elem.count + 1 });
+      ++elem.count;
     }, 1000));
   },
   detached: function (elem) {
     clearInterval(intervals.get(elem));
   },
-  render: function (elem) {
-    return div('Count: ', elem.count.toString());
+  render (elem) {
+    div(`Count: ${elem.count}`);
   }
 });
 ```
@@ -92,64 +87,71 @@ kickflip('x-counter', {
 
 ### Todos
 
-http://requirebin.com/?gist=0ebbba5726766500eb33
-
 ```html
-<x-todos>
+<x-todo>
   <x-item>Item 1</x-item>
   <x-item>Item 2</x-item>
   <x-item>Item 3</x-item>
-</x-todos>
+</x-todo>
 ```
 
 ```js
-var kickflip = require('kickflip');
-var state = kickflip.state;
-var vdom = kickflip.vdom;
+import './index.css';
+import kickflip, { emit, link, render } from '../../src/index';
+import create, { button, form, input, p, slot, text } from '../../src/vdom';
 
-var button = vdom.button;
-var div = vdom.div;
-var input = vdom.input;
-var li = vdom.li;
-var p = vdom.p;
-var ul = vdom.ul;
-
-kickflip('x-todos', {
-  slots: ['content'],
-  render: function (elem) {
-    function add (e) {
-      if (e.keyCode === 13) {
-        state(elem, {
-          content: elem.content.concat(vdom('x-item', e.target.value)),
-          value: ''
-        });
+const Xtodo = kickflip('x-todo', {
+  events: {
+    'list-add' (e) {
+      const item = Xitem();
+      item.textContent = e.detail;
+      this.appendChild(item);
+    },
+    'item-remove' (e) {
+      this.removeChild(e.detail);
+    }
+  },
+  properties: {
+    items: {
+      default () {
+        return [];
       }
     }
+  },
+  render (elem) {
+    create('x-list');
+  }
+});
 
-    function remove (index) {
-      return function () {
-        state(elem, {
-          content: elem.content.slice(0, index).concat(elem.content.slice(index + 1))
-        });
-      };
+const Xlist = kickflip('x-list', {
+  events: {
+    submit (e) {
+      e.preventDefault();
+      emit(this, 'list-add', { detail: this.value });
     }
-
-    var items = elem.content.map(function (item, index) {
-      return li(item, ' ', button({ onclick: remove(index) }, 'x'));
+  },
+  properties: {
+    value: { default: '' }
+  },
+  render (elem) {
+    form(function () {
+      input({ onkeyup: link(elem), value: elem.value });
+      button({ type: 'submit' }, 'add');
     });
+    slot({ name: '' });
+  }
+});
 
-    return div(
-      input({ onkeyup: add, value: elem.value }),
-      items.length ? ul(items) : p('There are no items.')
-    );
+const Xitem = kickflip('x-item', {
+  events: {
+    'click button' (e) {
+      emit(this, 'item-remove', { detail: this });
+    }
+  },
+  render () {
+    slot({ name: '' });
+    text(' ');
+    button('remove');
   }
 });
 ```
-
-
-
-### React Integration
-
-http://requirebin.com/?gist=451f1f4f94003e7af33f
-
-The example above is the same `<x-todos>` component rendered by a React app. It exists to show the seamless integration between native (or polyfilled) custom elements and React components.

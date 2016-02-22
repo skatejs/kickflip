@@ -1,59 +1,58 @@
 import './index.css';
-import create, { slot } from '../../src/vdom';
-import kickflip from '../../src/index';
-import React from 'react';
-import ReactDOM from 'react-dom';
+import kickflip, { emit, link, render } from '../../src/index';
+import create, { button, form, input, p, slot, text } from '../../src/vdom';
 
-
-kickflip('x-app', {
-  render () {
-    create('x-list', function () {
-      for (let key = 0; key < 10; key++) {
-        create('x-item', `Item ${key}`);
-      }
-    });
-  }
-});
-
-kickflip('x-list', {
-  render () {
-    slot({ name: '' });
-  }
-});
-
-kickflip('x-item', {
-  render () {
-    slot({ name: '' });
-  }
-});
-
-
-const Xapp = React.createClass({
-  render () {
-    const items = [];
-    for (let a = 0; a < 10; a++) {
-      items.push(a);
+const Xtodo = kickflip('x-todo', {
+  events: {
+    'list-add' (e) {
+      const item = Xitem();
+      item.textContent = e.detail;
+      this.appendChild(item);
+    },
+    'item-remove' (e) {
+      this.removeChild(e.detail);
     }
-    return React.createElement(Xlist, null,
-      items.map(function (key) {
-        return React.createElement(Xitem, { key }, `Item ${key}`);
-      })
-    );
+  },
+  properties: {
+    items: {
+      default () {
+        return [];
+      }
+    }
+  },
+  render (elem) {
+    create('x-list');
   }
 });
 
-const Xlist = React.createClass({
+const Xlist = kickflip('x-list', {
+  events: {
+    submit (e) {
+      e.preventDefault();
+      emit(this, 'list-add', { detail: this.value });
+    }
+  },
+  properties: {
+    value: { default: '' }
+  },
+  render (elem) {
+    form(function () {
+      input({ onkeyup: link(elem), value: elem.value });
+      button({ type: 'submit' }, 'add');
+    });
+    slot({ name: '' });
+  }
+});
+
+const Xitem = kickflip('x-item', {
+  events: {
+    'click button' (e) {
+      emit(this, 'item-remove', { detail: this });
+    }
+  },
   render () {
-    return React.createElement('div', null, this.props.children);
+    slot({ name: '' });
+    text(' ');
+    button('remove');
   }
 });
-
-const Xitem = React.createClass({
-  render () {
-    return React.createElement('div', null, this.props.children);
-  }
-});
-
-
-ReactDOM.render(React.createElement(Xapp), document.getElementById('react'));
-

@@ -10,6 +10,7 @@ import {
   text
 } from 'incremental-dom';
 
+// Specify an environment for iDOM in case we haven't yet.
 if (typeof process === 'undefined') {
   process = { env: { NODE_ENV: 'production' } };
 }
@@ -18,9 +19,12 @@ const factories = {};
 const slotAttributeName = 'slot-name';
 const slotElementName = 'slot';
 
+// The "key" and "statics" are specified as arguments in iDOM. For the purposes
+// of this API it's simpler to use the attributes object.
 attributes.key = attributes.statics = function () {};
 attributes.value = applyProp;
 
+// Creates a factory and returns it.
 function bind (tname) {
   return factories[tname] = function (attrs, chren) {
     const slot = tname === slotElementName;
@@ -51,10 +55,17 @@ function bind (tname) {
   };
 }
 
+// The default function requries a tag name.
 export default function (tname, attrs, chren) {
   return (factories[tname] || bind(tname))(attrs, chren);
 }
 
+// Export the Incremental DOM text() function directly as we don't need to do
+// any special processing for it.
+export { text };
+
+// Create factories for all HTML elements except for ones that match keywords
+// such as "var".
 export const a = bind('a');
 export const abbr = bind('abbr');
 export const address = bind('address');
