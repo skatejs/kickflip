@@ -1,3 +1,9 @@
 {
-  "base": "node_modules/skatejs-build/task"
+  "base": "node_modules/skatejs-build/task",
+  "perf": {
+    "scripts": [
+      "https://fb.me/react-0.14.7.min.js",
+      "https://fb.me/react-dom-0.14.7.min.js"
+    ]
+  }
 }
