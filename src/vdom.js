@@ -14,13 +14,6 @@ const factories = {};
 const slotAttributeName = 'slot-name';
 const slotElementName = 'slot';
 
-// Fake fast mode.
-window.process = {
-  env: {
-    NODE_ENV: 'production'
-  }
-};
-
 attributes.key = attributes.statics = function () {};
 attributes.value = applyProp;
 
