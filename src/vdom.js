@@ -10,6 +10,10 @@ import {
   text
 } from 'incremental-dom';
 
+if (typeof process === 'undefined') {
+  process = { env: { NODE_ENV: 'production' } };
+}
+
 const factories = {};
 const slotAttributeName = 'slot-name';
 const slotElementName = 'slot';
