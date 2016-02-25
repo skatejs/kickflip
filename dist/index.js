@@ -16,1636 +16,1193 @@
     var __commonjs_global = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : this;
     function __commonjs(fn, module) { return module = { exports: {} }, fn(module, module.exports, __commonjs_global), module.exports; }
 
-    var weakMap = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports);
-        global.weakMap = mod.exports;
+    var incrementalDomCjs = __commonjs(function (module, exports) {
+    /**
+     * @license
+     * Copyright 2015 The Incremental DOM Authors. All Rights Reserved.
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *      http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS-IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+
+    'use strict';
+
+    /**
+     * Copyright 2015 The Incremental DOM Authors. All Rights Reserved.
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *      http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS-IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+
+    /**
+      * Keeps track whether or not we are in an attributes declaration (after
+      * elementOpenStart, but before elementOpenEnd).
+      * @type {boolean}
+      */
+
+    var inAttributes = false;
+
+    /**
+      * Keeps track whether or not we are in an element that should not have its
+      * children cleared.
+      * @type {boolean}
+      */
+    var inSkip = false;
+
+    /**
+     * Makes sure that there is a current patch context.
+     * @param {*} context
+     */
+    var assertInPatch = function assertInPatch(context) {
+      if (!context) {
+        throw new Error('Cannot call currentElement() unless in patch');
       }
-    })(__commonjs_global, function (module, exports) {
-      'use strict';
+    };
 
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-      var index = 0;
-      var prefix = '__WEAK_MAP_POLYFILL_';
+    /**
+    * Makes sure that keyed Element matches the tag name provided.
+    * @param {!string} nodeName The nodeName of the node that is being matched.
+    * @param {string=} tag The tag name of the Element.
+    * @param {?string=} key The key of the Element.
+    */
+    var assertKeyedTagMatches = function assertKeyedTagMatches(nodeName, tag, key) {
+      if (nodeName !== tag) {
+        throw new Error('Was expecting node with key "' + key + '" to be a ' + tag + ', not a ' + nodeName + '.');
+      }
+    };
 
-      exports.default = function () {
-        if (typeof WeakMap !== 'undefined') {
-          return WeakMap;
+    /**
+     * Makes sure that a patch closes every node that it opened.
+     * @param {?Node} openElement
+     * @param {!Node|!DocumentFragment} root
+     */
+    var assertNoUnclosedTags = function assertNoUnclosedTags(openElement, root) {
+      if (openElement === root) {
+        return;
+      }
+
+      var currentElement = openElement;
+      var openTags = [];
+      while (currentElement && currentElement !== root) {
+        openTags.push(currentElement.nodeName.toLowerCase());
+        currentElement = currentElement.parentNode;
+      }
+
+      throw new Error('One or more tags were not closed:\n' + openTags.join('\n'));
+    };
+
+    /**
+     * Makes sure that the caller is not where attributes are expected.
+     * @param {string} functionName
+     */
+    var assertNotInAttributes = function assertNotInAttributes(functionName) {
+      if (inAttributes) {
+        throw new Error(functionName + '() may not be called between ' + 'elementOpenStart() and elementOpenEnd().');
+      }
+    };
+
+    /**
+     * Makes sure that the caller is not inside an element that has declared skip.
+     * @param {string} functionName
+     */
+    var assertNotInSkip = function assertNotInSkip(functionName) {
+      if (inSkip) {
+        throw new Error(functionName + '() may not be called inside an element ' + 'that has called skip().');
+      }
+    };
+
+    /**
+     * Makes sure that the caller is where attributes are expected.
+     * @param {string} functionName
+     */
+    var assertInAttributes = function assertInAttributes(functionName) {
+      if (!inAttributes) {
+        throw new Error(functionName + '() must be called after ' + 'elementOpenStart().');
+      }
+    };
+
+    /**
+     * Makes sure the patch closes virtual attributes call
+     */
+    var assertVirtualAttributesClosed = function assertVirtualAttributesClosed() {
+      if (inAttributes) {
+        throw new Error('elementOpenEnd() must be called after calling ' + 'elementOpenStart().');
+      }
+    };
+
+    /**
+      * Makes sure that placeholders have a key specified. Otherwise, conditional
+      * placeholders and conditional elements next to placeholders will cause
+      * placeholder elements to be re-used as non-placeholders and vice versa.
+      * @param {string} key
+      */
+    var assertPlaceholderKeySpecified = function assertPlaceholderKeySpecified(key) {
+      if (!key) {
+        throw new Error('Placeholder elements must have a key specified.');
+      }
+    };
+
+    /**
+      * Makes sure that tags are correctly nested.
+      * @param {string} nodeName
+      * @param {string} tag
+      */
+    var assertCloseMatchesOpenTag = function assertCloseMatchesOpenTag(nodeName, tag) {
+      if (nodeName !== tag) {
+        throw new Error('Received a call to close ' + tag + ' but ' + nodeName + ' was open.');
+      }
+    };
+
+    /**
+     * Makes sure that no children elements have been declared yet in the current
+     * element.
+     * @param {string} functionName
+     * @param {?Node} previousNode
+     */
+    var assertNoChildrenDeclaredYet = function assertNoChildrenDeclaredYet(functionName, previousNode) {
+      if (previousNode !== null) {
+        throw new Error(functionName + '() must come before any child ' + 'declarations inside the current element.');
+      }
+    };
+
+    /**
+     * Updates the state of being in an attribute declaration.
+     * @param {boolean} value
+     * @return {boolean} the previous value.
+     */
+    var setInAttributes = function setInAttributes(value) {
+      var previous = inAttributes;
+      inAttributes = value;
+      return previous;
+    };
+
+    /**
+     * Updates the state of being in a skip element.
+     * @param {boolean} value
+     * @return {boolean} the previous value.
+     */
+    var setInSkip = function setInSkip(value) {
+      var previous = inSkip;
+      inSkip = value;
+      return previous;
+    };
+
+    /**
+     * Copyright 2015 The Incremental DOM Authors. All Rights Reserved.
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *      http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS-IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+
+    /** */
+    exports.notifications = {
+      /**
+       * Called after patch has compleated with any Nodes that have been created
+       * and added to the DOM.
+       * @type {?function(Array<!Node>)}
+       */
+      nodesCreated: null,
+
+      /**
+       * Called after patch has compleated with any Nodes that have been removed
+       * from the DOM.
+       * Note it's an applications responsibility to handle any childNodes.
+       * @type {?function(Array<!Node>)}
+       */
+      nodesDeleted: null
+    };
+
+    /**
+     * Keeps track of the state of a patch.
+     * @constructor
+     */
+    function Context() {
+      /**
+       * @type {(Array<!Node>|undefined)}
+       */
+      this.created = exports.notifications.nodesCreated && [];
+
+      /**
+       * @type {(Array<!Node>|undefined)}
+       */
+      this.deleted = exports.notifications.nodesDeleted && [];
+    }
+
+    /**
+     * @param {!Node} node
+     */
+    Context.prototype.markCreated = function (node) {
+      if (this.created) {
+        this.created.push(node);
+      }
+    };
+
+    /**
+     * @param {!Node} node
+     */
+    Context.prototype.markDeleted = function (node) {
+      if (this.deleted) {
+        this.deleted.push(node);
+      }
+    };
+
+    /**
+     * Notifies about nodes that were created during the patch opearation.
+     */
+    Context.prototype.notifyChanges = function () {
+      if (this.created && this.created.length > 0) {
+        exports.notifications.nodesCreated(this.created);
+      }
+
+      if (this.deleted && this.deleted.length > 0) {
+        exports.notifications.nodesDeleted(this.deleted);
+      }
+    };
+
+    /**
+     * Copyright 2015 The Incremental DOM Authors. All Rights Reserved.
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *      http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS-IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+
+    /**
+     * A cached reference to the hasOwnProperty function.
+     */
+    var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+    /**
+     * A cached reference to the create function.
+     */
+    var create = Object.create;
+
+    /**
+     * Used to prevent property collisions between our "map" and its prototype.
+     * @param {!Object<string, *>} map The map to check.
+     * @param {string} property The property to check.
+     * @return {boolean} Whether map has property.
+     */
+    var has = function has(map, property) {
+      return hasOwnProperty.call(map, property);
+    };
+
+    /**
+     * Creates an map object without a prototype.
+     * @return {!Object}
+     */
+    var createMap = function createMap() {
+      return create(null);
+    };
+
+    /**
+     * Keeps track of information needed to perform diffs for a given DOM node.
+     * @param {!string} nodeName
+     * @param {?string=} key
+     * @constructor
+     */
+    function NodeData(nodeName, key) {
+      /**
+       * The attributes and their values.
+       * @const {!Object<string, *>}
+       */
+      this.attrs = createMap();
+
+      /**
+       * An array of attribute name/value pairs, used for quickly diffing the
+       * incomming attributes to see if the DOM node's attributes need to be
+       * updated.
+       * @const {Array<*>}
+       */
+      this.attrsArr = [];
+
+      /**
+       * The incoming attributes for this Node, before they are updated.
+       * @const {!Object<string, *>}
+       */
+      this.newAttrs = createMap();
+
+      /**
+       * The key used to identify this node, used to preserve DOM nodes when they
+       * move within their parent.
+       * @const
+       */
+      this.key = key;
+
+      /**
+       * Keeps track of children within this node by their key.
+       * {?Object<string, !Element>}
+       */
+      this.keyMap = null;
+
+      /**
+       * Whether or not the keyMap is currently valid.
+       * {boolean}
+       */
+      this.keyMapValid = true;
+
+      /**
+       * The node name for this node.
+       * @const {string}
+       */
+      this.nodeName = nodeName;
+
+      /**
+       * @type {?string}
+       */
+      this.text = null;
+    }
+
+    /**
+     * Initializes a NodeData object for a Node.
+     *
+     * @param {Node} node The node to initialize data for.
+     * @param {string} nodeName The node name of node.
+     * @param {?string=} key The key that identifies the node.
+     * @return {!NodeData} The newly initialized data object
+     */
+    var initData = function initData(node, nodeName, key) {
+      var data = new NodeData(nodeName, key);
+      node['__incrementalDOMData'] = data;
+      return data;
+    };
+
+    /**
+     * Retrieves the NodeData object for a Node, creating it if necessary.
+     *
+     * @param {Node} node The node to retrieve the data for.
+     * @return {!NodeData} The NodeData for this Node.
+     */
+    var getData = function getData(node) {
+      var data = node['__incrementalDOMData'];
+
+      if (!data) {
+        var nodeName = node.nodeName.toLowerCase();
+        var key = null;
+
+        if (node instanceof Element) {
+          key = node.getAttribute('key');
         }
 
-        function Polyfill() {
-          this.key = prefix + index;
-          ++index;
-        }
+        data = initData(node, nodeName, key);
+      }
 
-        Polyfill.prototype = {
-          get: function get(obj) {
-            return obj[this.key];
-          },
-          set: function set(obj, val) {
-            obj[this.key] = val;
+      return data;
+    };
+
+    /**
+     * Copyright 2015 The Incremental DOM Authors. All Rights Reserved.
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *      http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS-IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+
+    exports.symbols = {
+      default: '__default',
+
+      placeholder: '__placeholder'
+    };
+
+    /**
+     * Applies an attribute or property to a given Element. If the value is null
+     * or undefined, it is removed from the Element. Otherwise, the value is set
+     * as an attribute.
+     * @param {!Element} el
+     * @param {string} name The attribute's name.
+     * @param {?(boolean|number|string)=} value The attribute's value.
+     */
+    exports.applyAttr = function (el, name, value) {
+      if (value == null) {
+        el.removeAttribute(name);
+      } else {
+        el.setAttribute(name, value);
+      }
+    };
+
+    /**
+     * Applies a property to a given Element.
+     * @param {!Element} el
+     * @param {string} name The property's name.
+     * @param {*} value The property's value.
+     */
+    exports.applyProp = function (el, name, value) {
+      el[name] = value;
+    };
+
+    /**
+     * Applies a style to an Element. No vendor prefix expansion is done for
+     * property names/values.
+     * @param {!Element} el
+     * @param {string} name The attribute's name.
+     * @param {*} style The style to set. Either a string of css or an object
+     *     containing property-value pairs.
+     */
+    var applyStyle = function applyStyle(el, name, style) {
+      if (typeof style === 'string') {
+        el.style.cssText = style;
+      } else {
+        el.style.cssText = '';
+        var elStyle = el.style;
+        var obj = /** @type {!Object<string,string>} */style;
+
+        for (var prop in obj) {
+          if (has(obj, prop)) {
+            elStyle[prop] = obj[prop];
           }
-        };
-
-        return Polyfill;
-      }();
-
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$0$12 = (weakMap && typeof weakMap === 'object' && 'default' in weakMap ? weakMap['default'] : weakMap);
-
-    var realNodeMap = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', './weak-map'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$12);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.weakMap);
-        global.realNodeMap = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _weakMap) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-
-      var _weakMap2 = _interopRequireDefault(_weakMap);
-
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
-      }
-
-      exports.default = new _weakMap2.default();
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$0$17 = (realNodeMap && typeof realNodeMap === 'object' && 'default' in realNodeMap ? realNodeMap['default'] : realNodeMap);
-
-    var eventMap = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', './weak-map'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$12);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.weakMap);
-        global.eventMap = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _weakMap) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-
-      exports.default = function (elem) {
-        var events = map.get(elem);
-        events || map.set(elem, events = {});
-        return events;
-      };
-
-      var _weakMap2 = _interopRequireDefault(_weakMap);
-
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
-      }
-
-      var map = new _weakMap2.default();
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$0$18 = (eventMap && typeof eventMap === 'object' && 'default' in eventMap ? eventMap['default'] : eventMap);
-
-    var accessor = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['exports'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(exports);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod.exports);
-        global.accessor = mod.exports;
-      }
-    })(__commonjs_global, function (exports) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-      exports.getAccessor = getAccessor;
-      exports.mapAccessor = mapAccessor;
-      exports.removeAccessor = removeAccessor;
-      exports.setAccessor = setAccessor;
-
-      function classToString(obj) {
-        if (typeof obj === 'string') {
-          return obj;
         }
+      }
+    };
 
-        if (Array.isArray(obj)) {
-          return obj.join(' ');
-        }
+    /**
+     * Updates a single attribute on an Element.
+     * @param {!Element} el
+     * @param {string} name The attribute's name.
+     * @param {*} value The attribute's value. If the value is an object or
+     *     function it is set on the Element, otherwise, it is set as an HTML
+     *     attribute.
+     */
+    var applyAttributeTyped = function applyAttributeTyped(el, name, value) {
+      var type = typeof value === 'undefined' ? 'undefined' : babelHelpers.typeof(value);
 
-        return Object.keys(obj).filter(function (key) {
-          return obj[key] ? key : false;
-        }).join(' ');
+      if (type === 'object' || type === 'function') {
+        exports.applyProp(el, name, value);
+      } else {
+        exports.applyAttr(el, name, /** @type {?(boolean|number|string)} */value);
+      }
+    };
+
+    /**
+     * Calls the appropriate attribute mutator for this attribute.
+     * @param {!Element} el
+     * @param {string} name The attribute's name.
+     * @param {*} value The attribute's value.
+     */
+    var updateAttribute = function updateAttribute(el, name, value) {
+      var data = getData(el);
+      var attrs = data.attrs;
+
+      if (attrs[name] === value) {
+        return;
       }
 
-      function styleToString(obj) {
-        if (typeof obj === 'string') {
-          return obj;
-        }
+      var mutator = exports.attributes[name] || exports.attributes[exports.symbols.default];
+      mutator(el, name, value);
 
-        return Object.keys(obj).map(function (key) {
-          return key + ': ' + obj[key] + ';';
-        }).join(' ');
+      attrs[name] = value;
+    };
+
+    /**
+     * A publicly mutable object to provide custom mutators for attributes.
+     * @const {!Object<string, function(!Element, string, *)>}
+     */
+    exports.attributes = createMap();
+
+    // Special generic mutator that's called for any attribute that does not
+    // have a specific mutator.
+    exports.attributes[exports.symbols.default] = applyAttributeTyped;
+
+    exports.attributes[exports.symbols.placeholder] = function () {};
+
+    exports.attributes['style'] = applyStyle;
+
+    /**
+     * Gets the namespace to create an element (of a given tag) in.
+     * @param {string} tag The tag to get the namespace for.
+     * @param {?Node} parent
+     * @return {?string} The namespace to create the tag in.
+     */
+    var getNamespaceForTag = function getNamespaceForTag(tag, parent) {
+      if (tag === 'svg') {
+        return 'http://www.w3.org/2000/svg';
       }
 
-      function getAccessor(node, name) {
-        if (name === 'class') {
-          return node.className;
-        } else if (name === 'style') {
-          return node.style.cssText;
-        } else if (name !== 'type' && name in node) {
-          return node[name];
-        } else if (node.getAttribute) {
-          return node.getAttribute(name);
-        } else if (node.attributes && node.attributes[name]) {
-          return node.attributes[name].value;
+      if (getData(parent).nodeName === 'foreignObject') {
+        return null;
+      }
+
+      return parent.namespaceURI;
+    };
+
+    /**
+     * Creates an Element.
+     * @param {Document} doc The document with which to create the Element.
+     * @param {?Node} parent
+     * @param {string} tag The tag for the Element.
+     * @param {?string=} key A key to identify the Element.
+     * @param {?Array<*>=} statics An array of attribute name/value pairs of the
+     *     static attributes for the Element.
+     * @return {!Element}
+     */
+    var createElement = function createElement(doc, parent, tag, key, statics) {
+      var namespace = getNamespaceForTag(tag, parent);
+      var el;
+
+      if (namespace) {
+        el = doc.createElementNS(namespace, tag);
+      } else {
+        el = doc.createElement(tag);
+      }
+
+      initData(el, tag, key);
+
+      if (statics) {
+        for (var i = 0; i < statics.length; i += 2) {
+          updateAttribute(el, /** @type {!string}*/statics[i], statics[i + 1]);
         }
       }
 
-      function mapAccessor(node, name, value) {
-        if (name === 'class') {
-          node.className = classToString(value);
-        } else if (name === 'style') {
-          node.style = {
-            cssText: styleToString(value)
-          };
+      return el;
+    };
+
+    /**
+     * Creates a Text Node.
+     * @param {Document} doc The document with which to create the Element.
+     * @return {!Text}
+     */
+    var createText = function createText(doc) {
+      var node = doc.createTextNode('');
+      initData(node, '#text', null);
+      return node;
+    };
+
+    /**
+     * Creates a mapping that can be used to look up children using a key.
+     * @param {?Node} el
+     * @return {!Object<string, !Element>} A mapping of keys to the children of the
+     *     Element.
+     */
+    var createKeyMap = function createKeyMap(el) {
+      var map = createMap();
+      var children = el.children;
+      var count = children.length;
+
+      for (var i = 0; i < count; i += 1) {
+        var child = children[i];
+        var key = getData(child).key;
+
+        if (key) {
+          map[key] = child;
         }
       }
 
-      function removeAccessor(node, name) {
-        if (name === 'class') {
-          node.className = '';
-        } else if (name === 'style') {
-          node.style.cssText = '';
-        } else if (name !== 'type' && name in node) {
-          node[name] = '';
-        } else if (node.removeAttribute) {
-          node.removeAttribute(name);
-        } else if (node.attributes) {
-          delete node.attributes[name];
+      return map;
+    };
+
+    /**
+     * Retrieves the mapping of key to child node for a given Element, creating it
+     * if necessary.
+     * @param {?Node} el
+     * @return {!Object<string, !Node>} A mapping of keys to child Elements
+     */
+    var getKeyMap = function getKeyMap(el) {
+      var data = getData(el);
+
+      if (!data.keyMap) {
+        data.keyMap = createKeyMap(el);
+      }
+
+      return data.keyMap;
+    };
+
+    /**
+     * Retrieves a child from the parent with the given key.
+     * @param {?Node} parent
+     * @param {?string=} key
+     * @return {?Node} The child corresponding to the key.
+     */
+    var getChild = function getChild(parent, key) {
+      return key ? getKeyMap(parent)[key] : null;
+    };
+
+    /**
+     * Registers an element as being a child. The parent will keep track of the
+     * child using the key. The child can be retrieved using the same key using
+     * getKeyMap. The provided key should be unique within the parent Element.
+     * @param {?Node} parent The parent of child.
+     * @param {string} key A key to identify the child with.
+     * @param {!Node} child The child to register.
+     */
+    var registerChild = function registerChild(parent, key, child) {
+      getKeyMap(parent)[key] = child;
+    };
+
+    /** @type {?Context} */
+    var context = null;
+
+    /** @type {?Node} */
+    var currentNode;
+
+    /** @type {?Node} */
+    var currentParent;
+
+    /** @type {?Node} */
+    var previousNode;
+
+    /** @type {?Element|?DocumentFragment} */
+    var root;
+
+    /** @type {?Document} */
+    var doc;
+
+    /**
+     * Patches the document starting at el with the provided function. This function
+     * may be called during an existing patch operation.
+     * @param {!Element|!DocumentFragment} node The Element or Document
+     *     to patch.
+     * @param {!function(T)} fn A function containing elementOpen/elementClose/etc.
+     *     calls that describe the DOM.
+     * @param {T=} data An argument passed to fn to represent DOM state.
+     * @template T
+     */
+    exports.patch = function (node, fn, data) {
+      var prevContext = context;
+      var prevRoot = root;
+      var prevDoc = doc;
+      var prevCurrentNode = currentNode;
+      var prevCurrentParent = currentParent;
+      var prevPreviousNode = previousNode;
+      var previousInAttributes = false;
+      var previousInSkip = false;
+
+      context = new Context();
+      root = node;
+      doc = node.ownerDocument;
+      currentNode = node;
+      currentParent = null;
+      previousNode = null;
+
+      if (process.env.NODE_ENV !== 'production') {
+        previousInAttributes = setInAttributes(false);
+        previousInSkip = setInSkip(false);
+      }
+
+      enterNode();
+      fn(data);
+      exitNode();
+
+      if (process.env.NODE_ENV !== 'production') {
+        assertVirtualAttributesClosed();
+        assertNoUnclosedTags(previousNode, node);
+        setInAttributes(previousInAttributes);
+        setInSkip(previousInSkip);
+      }
+
+      context.notifyChanges();
+
+      context = prevContext;
+      root = prevRoot;
+      doc = prevDoc;
+      currentNode = prevCurrentNode;
+      currentParent = prevCurrentParent;
+      previousNode = prevPreviousNode;
+    };
+
+    /**
+     * Checks whether or not the current node matches the specified nodeName and
+     * key.
+     *
+     * @param {?string} nodeName The nodeName for this node.
+     * @param {?string=} key An optional key that identifies a node.
+     * @return {boolean} True if the node matches, false otherwise.
+     */
+    var matches = function matches(nodeName, key) {
+      var data = getData(currentNode);
+
+      // Key check is done using double equals as we want to treat a null key the
+      // same as undefined. This should be okay as the only values allowed are
+      // strings, null and undefined so the == semantics are not too weird.
+      return nodeName === data.nodeName && key == data.key;
+    };
+
+    /**
+     * Aligns the virtual Element definition with the actual DOM, moving the
+     * corresponding DOM node to the correct location or creating it if necessary.
+     * @param {string} nodeName For an Element, this should be a valid tag string.
+     *     For a Text, this should be #text.
+     * @param {?string=} key The key used to identify this element.
+     * @param {?Array<*>=} statics For an Element, this should be an array of
+     *     name-value pairs.
+     */
+    var alignWithDOM = function alignWithDOM(nodeName, key, statics) {
+      if (currentNode && matches(nodeName, key)) {
+        return;
+      }
+
+      var node;
+
+      // Check to see if the node has moved within the parent.
+      if (key) {
+        node = getChild(currentParent, key);
+        if (node && process.env.NODE_ENV !== 'production') {
+          assertKeyedTagMatches(getData(node).nodeName, nodeName, key);
         }
       }
 
-      function setAccessor(node, name, value) {
-        if (name === 'class') {
-          node.className = value;
-        } else if (name === 'style') {
-          node.style.cssText = value;
-        } else if (name !== 'type' && name in node || typeof value !== 'string') {
-          node[name] = value == null ? '' : value;
-        } else if (node.setAttribute) {
-          node.setAttribute(name, value);
-        } else if (node.attributes) {
-          node.attributes[node.attributes.length] = node.attributes[name] = {
-            name: name,
-            value: value
-          };
-        }
-      }
-    });
-    });
-
-    var require$$0$16 = (accessor && typeof accessor === 'object' && 'default' in accessor ? accessor['default'] : accessor);
-
-    var dom = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', '../util/accessor', '../util/event-map', '../util/real-node-map'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$16, require$$0$18, require$$0$17);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.accessor, global.eventMap, global.realNodeMap);
-        global.dom = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _accessor, _eventMap, _realNodeMap) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-      exports.default = render;
-
-      var _eventMap2 = _interopRequireDefault(_eventMap);
-
-      var _realNodeMap2 = _interopRequireDefault(_realNodeMap);
-
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
-      }
-
-      var _typeof = typeof Symbol === "function" && babelHelpers.typeof(Symbol.iterator) === "symbol" ? function (obj) {
-        return typeof obj === 'undefined' ? 'undefined' : babelHelpers.typeof(obj);
-      } : function (obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj === 'undefined' ? 'undefined' : babelHelpers.typeof(obj);
-      };
-
-      function createElement(el) {
-        var realNode = document.createElement(el.tagName);
-        var attributes = el.attributes;
-        var events = el.events;
-        var eventHandlers = (0, _eventMap2.default)(realNode);
-        var children = el.childNodes;
-
-        if (attributes) {
-          var attributesLen = attributes.length;
-
-          for (var a = 0; a < attributesLen; a++) {
-            var attr = attributes[a];
-            (0, _accessor.setAccessor)(realNode, attr.name, attr.value);
-          }
-        }
-
-        if (events) {
-          for (var name in events) {
-            realNode.addEventListener(name, eventHandlers[name] = events[name]);
-          }
-        }
-
-        if (children) {
-          var docfrag = document.createDocumentFragment();
-          var childrenLen = children.length;
-
-          for (var a = 0; a < childrenLen; a++) {
-            var ch = children[a];
-            ch && docfrag.appendChild(render(ch));
-          }
-
-          if (realNode.appendChild) {
-            realNode.appendChild(docfrag);
-          }
-        }
-
-        return realNode;
-      }
-
-      function createText(el) {
-        return document.createTextNode(el.textContent);
-      }
-
-      function render(el) {
-        if (el instanceof Node) {
-          return el;
-        }
-
-        if (Array.isArray(el)) {
-          var _ret = function () {
-            var frag = document.createDocumentFragment();
-            el.forEach(function (item) {
-              return frag.appendChild(render(item));
-            });
-            return {
-              v: frag
-            };
-          }();
-
-          if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
-        }
-
-        var realNode = el.tagName ? createElement(el) : createText(el);
-
-        _realNodeMap2.default.set(el, realNode);
-
-        return realNode;
-      }
-
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$0$13 = (dom && typeof dom === 'object' && 'default' in dom ? dom['default'] : dom);
-
-    var mount = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', './dom'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$13);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.dom);
-        global.mount = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _dom) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-
-      exports.default = function (elem, tree) {
-        removeChildNodes(elem);
-        elem.appendChild((0, _dom2.default)(tree));
-      };
-
-      var _dom2 = _interopRequireDefault(_dom);
-
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
-      }
-
-      function removeChildNodes(elem) {
-        while (elem.firstChild) {
-          var first = elem.firstChild;
-          first.parentNode.removeChild(first);
-        }
-      }
-
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$0$11 = (mount && typeof mount === 'object' && 'default' in mount ? mount['default'] : mount);
-
-    var realNode = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', './real-node-map'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$17);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.realNodeMap);
-        global.realNode = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _realNodeMap) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-
-      exports.default = function (node) {
-        return node instanceof Node ? node : _realNodeMap2.default.get(node);
-      };
-
-      var _realNodeMap2 = _interopRequireDefault(_realNodeMap);
-
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
-      }
-
-      var _window = window;
-      var Node = _window.Node;
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$1$9 = (realNode && typeof realNode === 'object' && 'default' in realNode ? realNode['default'] : realNode);
-
-    var textContent = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', '../util/real-node'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$1$9);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.realNode);
-        global.textContent = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _realNode) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-
-      exports.default = function (src, dst) {
-        (0, _realNode2.default)(src).textContent = dst.textContent;
-      };
-
-      var _realNode2 = _interopRequireDefault(_realNode);
-
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
-      }
-
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$0$19 = (textContent && typeof textContent === 'object' && 'default' in textContent ? textContent['default'] : textContent);
-
-    var setEvent = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', '../util/event-map', '../util/real-node'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$18, require$$1$9);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.eventMap, global.realNode);
-        global.setEvent = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _eventMap, _realNode) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-
-      exports.default = function (src, dst, data) {
-        var realSrc = (0, _realNode2.default)(src);
-        var eventHandlers = (0, _eventMap2.default)(realSrc);
-        var name = data.name;
-        var prevHandler = eventHandlers[name];
-        var nextHandler = data.value;
-
-        if (typeof prevHandler === 'function') {
-          delete eventHandlers[name];
-          realSrc.removeEventListener(name, prevHandler);
-        }
-
-        if (typeof nextHandler === 'function') {
-          eventHandlers[name] = nextHandler;
-          realSrc.addEventListener(name, nextHandler);
-        }
-      };
-
-      var _eventMap2 = _interopRequireDefault(_eventMap);
-
-      var _realNode2 = _interopRequireDefault(_realNode);
-
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
-      }
-
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$1$7 = (setEvent && typeof setEvent === 'object' && 'default' in setEvent ? setEvent['default'] : setEvent);
-
-    var setAttribute = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', '../util/accessor', '../util/real-node'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$16, require$$1$9);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.accessor, global.realNode);
-        global.setAttribute = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _accessor, _realNode) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-
-      exports.default = function (src, dst, data) {
-        (0, _accessor.setAccessor)((0, _realNode2.default)(src), data.name, data.value);
-      };
-
-      var _realNode2 = _interopRequireDefault(_realNode);
-
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
-      }
-
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$2$6 = (setAttribute && typeof setAttribute === 'object' && 'default' in setAttribute ? setAttribute['default'] : setAttribute);
-
-    var replaceChild = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', '../vdom/dom', '../util/real-node'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$13, require$$1$9);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.dom, global.realNode);
-        global.replaceChild = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _dom, _realNode) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-
-      exports.default = function (src, dst) {
-        var realSrc = (0, _realNode2.default)(src);
-        realSrc && realSrc.parentNode && realSrc.parentNode.replaceChild((0, _dom2.default)(dst), realSrc);
-      };
-
-      var _dom2 = _interopRequireDefault(_dom);
-
-      var _realNode2 = _interopRequireDefault(_realNode);
-
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
-      }
-
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$3$2 = (replaceChild && typeof replaceChild === 'object' && 'default' in replaceChild ? replaceChild['default'] : replaceChild);
-
-    var removeChild = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', '../util/real-node'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$1$9);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.realNode);
-        global.removeChild = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _realNode) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-
-      exports.default = function (src, dst) {
-        var realDst = (0, _realNode2.default)(dst);
-        var realSrc = (0, _realNode2.default)(src);
-
-        // We don't do parentNode.removeChild because parentNode may report
-        // incorrectly in some prollyfills since it's impossible (?) to spoof.
-        realSrc.removeChild(realDst);
-      };
-
-      var _realNode2 = _interopRequireDefault(_realNode);
-
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
-      }
-
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$4$3 = (removeChild && typeof removeChild === 'object' && 'default' in removeChild ? removeChild['default'] : removeChild);
-
-    var removeAttribute = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', '../util/accessor', '../util/real-node'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$16, require$$1$9);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.accessor, global.realNode);
-        global.removeAttribute = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _accessor, _realNode) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-
-      exports.default = function (src, dst, data) {
-        (0, _accessor.removeAccessor)((0, _realNode2.default)(src), data.name);
-      };
-
-      var _realNode2 = _interopRequireDefault(_realNode);
-
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
-      }
-
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$5$1 = (removeAttribute && typeof removeAttribute === 'object' && 'default' in removeAttribute ? removeAttribute['default'] : removeAttribute);
-
-    var appendChild = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', '../util/real-node', '../vdom/dom'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$1$9, require$$0$13);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.realNode, global.dom);
-        global.appendChild = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _realNode, _dom) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-
-      exports.default = function (src, dst) {
-        (0, _realNode2.default)(src).appendChild((0, _dom2.default)(dst));
-      };
-
-      var _realNode2 = _interopRequireDefault(_realNode);
-
-      var _dom2 = _interopRequireDefault(_dom);
-
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
-      }
-
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$6$1 = (appendChild && typeof appendChild === 'object' && 'default' in appendChild ? appendChild['default'] : appendChild);
-
-    var types = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(["exports"], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(exports);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod.exports);
-        global.types = mod.exports;
-      }
-    })(__commonjs_global, function (exports) {
-      "use strict";
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-      var APPEND_CHILD = exports.APPEND_CHILD = 1;
-      var REMOVE_CHILD = exports.REMOVE_CHILD = 2;
-      var REMOVE_ATTRIBUTE = exports.REMOVE_ATTRIBUTE = 3;
-      var REPLACE_CHILD = exports.REPLACE_CHILD = 4;
-      var SET_ATTRIBUTE = exports.SET_ATTRIBUTE = 5;
-      var SET_EVENT = exports.SET_EVENT = 6;
-      var SET_PROPERTY = exports.SET_PROPERTY = 7;
-      var TEXT_CONTENT = exports.TEXT_CONTENT = 8;
-    });
-    });
-
-    var require$$1$8 = (types && typeof types === 'object' && 'default' in types ? types['default'] : types);
-
-    var patch = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', './types', './patch/append-child', './patch/remove-attribute', './patch/remove-child', './patch/replace-child', './patch/set-attribute', './patch/set-event', './patch/text-content'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$1$8, require$$6$1, require$$5$1, require$$4$3, require$$3$2, require$$2$6, require$$1$7, require$$0$19);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.types, global.appendChild, global.removeAttribute, global.removeChild, global.replaceChild, global.setAttribute, global.setEvent, global.textContent);
-        global.patch = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _types, _appendChild, _removeAttribute, _removeChild, _replaceChild, _setAttribute, _setEvent, _textContent) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-
-      exports.default = function (instructions) {
-        instructions.forEach(patch);
-      };
-
-      var types = _interopRequireWildcard(_types);
-
-      var _appendChild2 = _interopRequireDefault(_appendChild);
-
-      var _removeAttribute2 = _interopRequireDefault(_removeAttribute);
-
-      var _removeChild2 = _interopRequireDefault(_removeChild);
-
-      var _replaceChild2 = _interopRequireDefault(_replaceChild);
-
-      var _setAttribute2 = _interopRequireDefault(_setAttribute);
-
-      var _setEvent2 = _interopRequireDefault(_setEvent);
-
-      var _textContent2 = _interopRequireDefault(_textContent);
-
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
-      }
-
-      function _interopRequireWildcard(obj) {
-        if (obj && obj.__esModule) {
-          return obj;
+      // Create the node if it doesn't exist.
+      if (!node) {
+        if (nodeName === '#text') {
+          node = createText(doc);
         } else {
-          var newObj = {};
-
-          if (obj != null) {
-            for (var key in obj) {
-              if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
-            }
-          }
-
-          newObj.default = obj;
-          return newObj;
+          node = createElement(doc, currentParent, nodeName, key, statics);
         }
+
+        if (key) {
+          registerChild(currentParent, key, node);
+        }
+
+        context.markCreated(node);
       }
 
-      var patchers = {};
-      patchers[types.APPEND_CHILD] = _appendChild2.default;
-      patchers[types.REMOVE_ATTRIBUTE] = _removeAttribute2.default;
-      patchers[types.REMOVE_CHILD] = _removeChild2.default;
-      patchers[types.REPLACE_CHILD] = _replaceChild2.default;
-      patchers[types.SET_ATTRIBUTE] = _setAttribute2.default;
-      patchers[types.SET_EVENT] = _setEvent2.default;
-      patchers[types.TEXT_CONTENT] = _textContent2.default;
-
-      function patch(instruction) {
-        patchers[instruction.type](instruction.source, instruction.destination, instruction.data);
-      }
-
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$0$14 = (patch && typeof patch === 'object' && 'default' in patch ? patch['default'] : patch);
-
-    var text$1 = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', '../types'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$1$8);
+      // If the node has a key, remove it from the DOM to prevent a large number
+      // of re-orders in the case that it moved far or was completely removed.
+      // Since we hold on to a reference through the keyMap, we can always add it
+      // back.
+      if (currentNode && getData(currentNode).key) {
+        currentParent.replaceChild(node, currentNode);
+        getData(currentParent).keyMapValid = false;
       } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.types);
-        global.text = mod.exports;
+        currentParent.insertBefore(node, currentNode);
       }
-    })(__commonjs_global, function (module, exports, _types) {
-      'use strict';
 
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
+      currentNode = node;
+    };
 
-      exports.default = function (src, dst) {
-        if (src.textContent === dst.textContent) {
-          return [];
+    /**
+     * Clears out any unvisited Nodes, as the corresponding virtual element
+     * functions were never called for them.
+     */
+    var clearUnvisitedDOM = function clearUnvisitedDOM() {
+      var node = currentParent;
+      var data = getData(node);
+      var keyMap = data.keyMap;
+      var keyMapValid = data.keyMapValid;
+      var child = node.lastChild;
+      var key;
+
+      if (child === previousNode && keyMapValid) {
+        return;
+      }
+
+      if (data.attrs[exports.symbols.placeholder] && node !== root) {
+        return;
+      }
+
+      while (child !== previousNode) {
+        node.removeChild(child);
+        context.markDeleted( /** @type {!Node}*/child);
+
+        key = getData(child).key;
+        if (key) {
+          delete keyMap[key];
         }
-
-        return [{
-          destination: dst,
-          source: src,
-          type: types.TEXT_CONTENT
-        }];
-      };
-
-      var types = _interopRequireWildcard(_types);
-
-      function _interopRequireWildcard(obj) {
-        if (obj && obj.__esModule) {
-          return obj;
-        } else {
-          var newObj = {};
-
-          if (obj != null) {
-            for (var key in obj) {
-              if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
-            }
-          }
-
-          newObj.default = obj;
-          return newObj;
-        }
+        child = node.lastChild;
       }
 
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$0$21 = (text$1 && typeof text$1 === 'object' && 'default' in text$1 ? text$1['default'] : text$1);
-
-    var comment = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', './text'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$21);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.text);
-        global.comment = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _text) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-
-      var _text2 = _interopRequireDefault(_text);
-
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
-      }
-
-      exports.default = _text2.default;
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$0$20 = (comment && typeof comment === 'object' && 'default' in comment ? comment['default'] : comment);
-
-    var events$1 = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', '../types', '../util/event-map'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$1$8, require$$0$18);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.types, global.eventMap);
-        global.events = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _types, _eventMap) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-
-      exports.default = function (src, dst) {
-        var dstEvents = dst.events;
-        var srcEvents = (0, _eventMap2.default)(src);
-        var instructions = [];
-
-        // Remove any source events that aren't in the destination before seeing if
-        // we need to add any from the destination.
-        if (srcEvents) {
-          for (var name in srcEvents) {
-            if (dstEvents && dstEvents[name] !== srcEvents[name]) {
-              instructions.push({
-                data: { name: name, value: undefined },
-                destination: dst,
-                source: src,
-                type: types.SET_EVENT
-              });
-            }
+      // Clean the keyMap, removing any unusued keys.
+      if (!keyMapValid) {
+        for (key in keyMap) {
+          child = keyMap[key];
+          if (child.parentNode !== node) {
+            context.markDeleted(child);
+            delete keyMap[key];
           }
         }
 
-        // After instructing to remove any old events, we then can instruct to add
-        // new events. This prevents the new events from being removed from earlier
-        // instructions.
-        if (dstEvents) {
-          for (var name in dstEvents) {
-            var value = dstEvents[name];
-            if (srcEvents[name] !== value) {
-              instructions.push({
-                data: { name: name, value: value },
-                destination: dst,
-                source: src,
-                type: types.SET_EVENT
-              });
-            }
-          }
-        }
+        data.keyMapValid = true;
+      }
+    };
 
-        return instructions;
-      };
+    /**
+     * Changes to the first child of the current node.
+     */
+    var enterNode = function enterNode() {
+      currentParent = currentNode;
+      currentNode = currentNode.firstChild;
+      previousNode = null;
+    };
 
-      var types = _interopRequireWildcard(_types);
+    /**
+     * Changes to the next sibling of the current node.
+     */
+    var nextNode = function nextNode() {
+      previousNode = currentNode;
+      currentNode = currentNode.nextSibling;
+    };
 
-      var _eventMap2 = _interopRequireDefault(_eventMap);
+    /**
+     * Changes to the parent of the current node, removing any unvisited children.
+     */
+    var exitNode = function exitNode() {
+      clearUnvisitedDOM();
 
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
+      previousNode = currentParent;
+      currentNode = currentParent.nextSibling;
+      currentParent = currentParent.parentNode;
+    };
+
+    /**
+     * Makes sure that the current node is an Element with a matching tagName and
+     * key.
+     *
+     * @param {string} tag The element's tag.
+     * @param {?string=} key The key used to identify this element. This can be an
+     *     empty string, but performance may be better if a unique value is used
+     *     when iterating over an array of items.
+     * @param {?Array<*>=} statics An array of attribute name/value pairs of the
+     *     static attributes for the Element. These will only be set once when the
+     *     Element is created.
+     * @return {!Element} The corresponding Element.
+     */
+    var _elementOpen = function _elementOpen(tag, key, statics) {
+      alignWithDOM(tag, key, statics);
+      enterNode();
+      return (/** @type {!Element} */currentParent
+      );
+    };
+
+    /**
+     * Closes the currently open Element, removing any unvisited children if
+     * necessary.
+     *
+     * @return {!Element} The corresponding Element.
+     */
+    var _elementClose = function _elementClose() {
+      if (process.env.NODE_ENV !== 'production') {
+        setInSkip(false);
       }
 
-      function _interopRequireWildcard(obj) {
-        if (obj && obj.__esModule) {
-          return obj;
-        } else {
-          var newObj = {};
+      exitNode();
+      return (/** @type {!Element} */previousNode
+      );
+    };
 
-          if (obj != null) {
-            for (var key in obj) {
-              if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
-            }
-          }
+    /**
+     * Makes sure the current node is a Text node and creates a Text node if it is
+     * not.
+     *
+     * @return {!Text} The corresponding Text Node.
+     */
+    var _text = function _text() {
+      alignWithDOM('#text', null, null);
+      nextNode();
+      return (/** @type {!Text} */previousNode
+      );
+    };
 
-          newObj.default = obj;
-          return newObj;
-        }
+    /**
+     * Gets the current Element being patched.
+     * @return {!Element}
+     */
+    exports.currentElement = function () {
+      if (process.env.NODE_ENV !== 'production') {
+        assertInPatch(context);
+        assertNotInAttributes('currentElement');
+      }
+      return (/** @type {!Element} */currentParent
+      );
+    };
+
+    /**
+     * Skips the children in a subtree, allowing an Element to be closed without
+     * clearing out the children.
+     */
+    exports.skip = function () {
+      if (process.env.NODE_ENV !== 'production') {
+        assertNoChildrenDeclaredYet('skip', previousNode);
+        setInSkip(true);
+      }
+      previousNode = currentParent.lastChild;
+    };
+
+    /**
+     * The offset in the virtual element declaration where the attributes are
+     * specified.
+     * @const
+     */
+    var ATTRIBUTES_OFFSET = 3;
+
+    /**
+     * Builds an array of arguments for use with elementOpenStart, attr and
+     * elementOpenEnd.
+     * @const {Array<*>}
+     */
+    var argsBuilder = [];
+
+    /**
+     * @param {string} tag The element's tag.
+     * @param {?string=} key The key used to identify this element. This can be an
+     *     empty string, but performance may be better if a unique value is used
+     *     when iterating over an array of items.
+     * @param {?Array<*>=} statics An array of attribute name/value pairs of the
+     *     static attributes for the Element. These will only be set once when the
+     *     Element is created.
+     * @param {...*} var_args Attribute name/value pairs of the dynamic attributes
+     *     for the Element.
+     * @return {!Element} The corresponding Element.
+     */
+    exports.elementOpen = function (tag, key, statics, var_args) {
+      if (process.env.NODE_ENV !== 'production') {
+        assertNotInAttributes('elementOpen');
+        assertNotInSkip('elementOpen');
       }
 
-      module.exports = exports['default'];
-    });
-    });
+      var node = _elementOpen(tag, key, statics);
+      var data = getData(node);
 
-    var require$$0$22 = (events$1 && typeof events$1 === 'object' && 'default' in events$1 ? events$1['default'] : events$1);
+      /*
+       * Checks to see if one or more attributes have changed for a given Element.
+       * When no attributes have changed, this is much faster than checking each
+       * individual argument. When attributes have changed, the overhead of this is
+       * minimal.
+       */
+      var attrsArr = data.attrsArr;
+      var newAttrs = data.newAttrs;
+      var attrsChanged = false;
+      var i = ATTRIBUTES_OFFSET;
+      var j = 0;
 
-    var attributes = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', '../types', '../util/accessor'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$1$8, require$$0$16);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.types, global.accessor);
-        global.attributes = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _types, _accessor) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-
-      exports.default = function (src, dst) {
-        var srcAttrs = src.attributes;
-        var dstAttrs = dst.attributes;
-        var srcAttrsLen = (srcAttrs || 0) && srcAttrs.length;
-        var dstAttrsLen = (dstAttrs || 0) && dstAttrs.length;
-        var instructions = [];
-
-        // Bail early if possible.
-        if (!srcAttrsLen && !dstAttrsLen) {
-          return instructions;
-        }
-
-        // Merge attributes that exist in source with destination's.
-        for (var a = 0; a < srcAttrsLen; a++) {
-          var srcAttr = srcAttrs[a];
-          var srcAttrName = srcAttr.name;
-          var srcAttrValue = (0, _accessor.getAccessor)(src, srcAttrName);
-          var dstAttr = dstAttrs[srcAttrName];
-          var dstAttrValue = (0, _accessor.getAccessor)(dst, srcAttrName);
-
-          if (!dstAttr) {
-            instructions.push({
-              data: { name: srcAttrName },
-              destination: dst,
-              source: src,
-              type: types.REMOVE_ATTRIBUTE
-            });
-          } else if (srcAttrValue !== dstAttrValue) {
-            instructions.push({
-              data: { name: srcAttrName, value: dstAttrValue },
-              destination: dst,
-              source: src,
-              type: types.SET_ATTRIBUTE
-            });
-          }
-        }
-
-        // We only need to worry about setting attributes that don't already exist
-        // in the source.
-        for (var a = 0; a < dstAttrsLen; a++) {
-          var dstAttr = dstAttrs[a];
-          var dstAttrName = dstAttr.name;
-          var dstAttrValue = (0, _accessor.getAccessor)(dst, dstAttrName);
-          var srcAttr = srcAttrs[dstAttrName];
-
-          if (!srcAttr) {
-            instructions.push({
-              data: { name: dstAttrName, value: dstAttrValue },
-              destination: dst,
-              source: src,
-              type: types.SET_ATTRIBUTE
-            });
-          }
-        }
-
-        return instructions;
-      };
-
-      var types = _interopRequireWildcard(_types);
-
-      function _interopRequireWildcard(obj) {
-        if (obj && obj.__esModule) {
-          return obj;
-        } else {
-          var newObj = {};
-
-          if (obj != null) {
-            for (var key in obj) {
-              if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
-            }
-          }
-
-          newObj.default = obj;
-          return newObj;
-        }
-      }
-
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$1$10 = (attributes && typeof attributes === 'object' && 'default' in attributes ? attributes['default'] : attributes);
-
-    var element$2 = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', './attributes', './events'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$1$10, require$$0$22);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.attributes, global.events);
-        global.element = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _attributes, _events) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-
-      exports.default = function (src, dst) {
-        if (src.tagName === dst.tagName) {
-          return (0, _attributes2.default)(src, dst).concat((0, _events2.default)(src, dst));
-        }
-      };
-
-      var _attributes2 = _interopRequireDefault(_attributes);
-
-      var _events2 = _interopRequireDefault(_events);
-
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
-      }
-
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$2$8 = (element$2 && typeof element$2 === 'object' && 'default' in element$2 ? element$2['default'] : element$2);
-
-    var node = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', './element', './text', './comment'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$2$8, require$$0$21, require$$0$20);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.element, global.text, global.comment);
-        global.node = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _element, _text, _comment) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-
-      exports.default = function (src, dst) {
-        var dstType = undefined,
-            srcType = undefined;
-
-        if (!dst || !src) {
-          return;
-        }
-
-        dstType = dst.nodeType;
-        srcType = src.nodeType;
-
-        if (dstType !== srcType) {
-          return;
-        } else if (dstType === NODE_ELEMENT) {
-          return (0, _element2.default)(src, dst);
-        } else if (dstType === NODE_TEXT) {
-          return (0, _text2.default)(src, dst);
-        } else if (dstType === NODE_COMMENT) {
-          return (0, _comment2.default)(src, dst);
-        }
-      };
-
-      var _element2 = _interopRequireDefault(_element);
-
-      var _text2 = _interopRequireDefault(_text);
-
-      var _comment2 = _interopRequireDefault(_comment);
-
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
-      }
-
-      var NODE_COMMENT = 8;
-      var NODE_ELEMENT = 1;
-      var NODE_TEXT = 3;
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$2$7 = (node && typeof node === 'object' && 'default' in node ? node['default'] : node);
-
-    var diff = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', './types', './compare/node', './util/real-node', './util/real-node-map'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$1$8, require$$2$7, require$$1$9, require$$0$17);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.types, global.node, global.realNode, global.realNodeMap);
-        global.diff = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _types, _node, _realNode, _realNodeMap) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-      exports.default = diff;
-
-      var types = _interopRequireWildcard(_types);
-
-      var _node2 = _interopRequireDefault(_node);
-
-      var _realNode2 = _interopRequireDefault(_realNode);
-
-      var _realNodeMap2 = _interopRequireDefault(_realNodeMap);
-
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
-      }
-
-      function _interopRequireWildcard(obj) {
-        if (obj && obj.__esModule) {
-          return obj;
-        } else {
-          var newObj = {};
-
-          if (obj != null) {
-            for (var key in obj) {
-              if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
-            }
-          }
-
-          newObj.default = obj;
-          return newObj;
+      for (; i < arguments.length; i += 1, j += 1) {
+        if (attrsArr[j] !== arguments[i]) {
+          attrsChanged = true;
+          break;
         }
       }
 
-      function diff() {
-        var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-        var src = opts.source;
-        var dst = opts.destination;
-        var instructions = [];
+      for (; i < arguments.length; i += 1, j += 1) {
+        attrsArr[j] = arguments[i];
+      }
 
-        if (!src || !dst) {
-          return [];
+      if (j < attrsArr.length) {
+        attrsChanged = true;
+        attrsArr.length = j;
+      }
+
+      /*
+       * Actually perform the attribute update.
+       */
+      if (attrsChanged) {
+        for (i = ATTRIBUTES_OFFSET; i < arguments.length; i += 2) {
+          newAttrs[arguments[i]] = arguments[i + 1];
         }
 
-        var srcChs = src.childNodes;
-        var dstChs = dst.childNodes;
-        var srcChsLen = srcChs ? srcChs.length : 0;
-        var dstChsLen = dstChs ? dstChs.length : 0;
+        for (var attr in newAttrs) {
+          updateAttribute(node, attr, newAttrs[attr]);
+          newAttrs[attr] = undefined;
+        }
+      }
 
-        for (var a = 0; a < dstChsLen; a++) {
-          var curSrc = srcChs[a];
-          var curDst = dstChs[a];
+      return node;
+    };
 
-          if (!curSrc) {
-            instructions.push({
-              destination: dstChs[a],
-              source: src,
-              type: types.APPEND_CHILD
-            });
-            continue;
-          } else {
-            if (!(curDst instanceof Node)) {
-              _realNodeMap2.default.set(curDst, (0, _realNode2.default)(curSrc));
-            }
-          }
+    /**
+     * Declares a virtual Element at the current location in the document. This
+     * corresponds to an opening tag and a elementClose tag is required. This is
+     * like elementOpen, but the attributes are defined using the attr function
+     * rather than being passed as arguments. Must be folllowed by 0 or more calls
+     * to attr, then a call to elementOpenEnd.
+     * @param {string} tag The element's tag.
+     * @param {?string=} key The key used to identify this element. This can be an
+     *     empty string, but performance may be better if a unique value is used
+     *     when iterating over an array of items.
+     * @param {?Array<*>=} statics An array of attribute name/value pairs of the
+     *     static attributes for the Element. These will only be set once when the
+     *     Element is created.
+     */
+    exports.elementOpenStart = function (tag, key, statics) {
+      if (process.env.NODE_ENV !== 'production') {
+        assertNotInAttributes('elementOpenStart');
+        setInAttributes(true);
+      }
 
-          var nodeInstructions = (0, _node2.default)(curSrc, curDst);
+      argsBuilder[0] = tag;
+      argsBuilder[1] = key;
+      argsBuilder[2] = statics;
+    };
 
-          if (nodeInstructions) {
-            var newOpts = opts;
-            newOpts.destination = curDst;
-            newOpts.source = curSrc;
-            instructions = instructions.concat(nodeInstructions, diff(newOpts));
-          } else {
-            instructions.push({
-              destination: curDst,
-              source: curSrc,
-              type: types.REPLACE_CHILD
-            });
-          }
+    /***
+     * Defines a virtual attribute at this point of the DOM. This is only valid
+     * when called between elementOpenStart and elementOpenEnd.
+     *
+     * @param {string} name
+     * @param {*} value
+     */
+    exports.attr = function (name, value) {
+      if (process.env.NODE_ENV !== 'production') {
+        assertInAttributes('attr');
+      }
+
+      argsBuilder.push(name, value);
+    };
+
+    /**
+     * Closes an open tag started with elementOpenStart.
+     * @return {!Element} The corresponding Element.
+     */
+    exports.elementOpenEnd = function () {
+      if (process.env.NODE_ENV !== 'production') {
+        assertInAttributes('elementOpenEnd');
+        setInAttributes(false);
+      }
+
+      var node = exports.elementOpen.apply(null, argsBuilder);
+      argsBuilder.length = 0;
+      return node;
+    };
+
+    /**
+     * Closes an open virtual Element.
+     *
+     * @param {string} tag The element's tag.
+     * @return {!Element} The corresponding Element.
+     */
+    exports.elementClose = function (tag) {
+      if (process.env.NODE_ENV !== 'production') {
+        assertNotInAttributes('elementClose');
+      }
+
+      var node = _elementClose();
+
+      if (process.env.NODE_ENV !== 'production') {
+        assertCloseMatchesOpenTag(getData(node).nodeName, tag);
+      }
+
+      return node;
+    };
+
+    /**
+     * Declares a virtual Element at the current location in the document that has
+     * no children.
+     * @param {string} tag The element's tag.
+     * @param {?string=} key The key used to identify this element. This can be an
+     *     empty string, but performance may be better if a unique value is used
+     *     when iterating over an array of items.
+     * @param {?Array<*>=} statics An array of attribute name/value pairs of the
+     *     static attributes for the Element. These will only be set once when the
+     *     Element is created.
+     * @param {...*} var_args Attribute name/value pairs of the dynamic attributes
+     *     for the Element.
+     * @return {!Element} The corresponding Element.
+     */
+    exports.elementVoid = function (tag, key, statics, var_args) {
+      var node = exports.elementOpen.apply(null, arguments);
+      exports.elementClose.apply(null, arguments);
+      return node;
+    };
+
+    /**
+     * Declares a virtual Element at the current location in the document that is a
+     * placeholder element. Children of this Element can be manually managed and
+     * will not be cleared by the library.
+     *
+     * A key must be specified to make sure that this node is correctly preserved
+     * across all conditionals.
+     *
+     * @param {string} tag The element's tag.
+     * @param {string} key The key used to identify this element.
+     * @param {?Array<*>=} statics An array of attribute name/value pairs of the
+     *     static attributes for the Element. These will only be set once when the
+     *     Element is created.
+     * @param {...*} var_args Attribute name/value pairs of the dynamic attributes
+     *     for the Element.
+     * @return {!Element} The corresponding Element.
+     */
+    exports.elementPlaceholder = function (tag, key, statics, var_args) {
+      if (process.env.NODE_ENV !== 'production') {
+        assertPlaceholderKeySpecified(key);
+      }
+
+      exports.elementOpen.apply(null, arguments);
+      exports.skip();
+      return exports.elementClose.apply(null, arguments);
+    };
+
+    /**
+     * Declares a virtual Text at this point in the document.
+     *
+     * @param {string|number|boolean} value The value of the Text.
+     * @param {...(function((string|number|boolean)):string)} var_args
+     *     Functions to format the value which are called only when the value has
+     *     changed.
+     * @return {!Text} The corresponding text node.
+     */
+    exports.text = function (value, var_args) {
+      if (process.env.NODE_ENV !== 'production') {
+        assertNotInAttributes('text');
+        assertNotInSkip('text');
+      }
+
+      var node = _text();
+      var data = getData(node);
+
+      if (data.text !== value) {
+        data.text = /** @type {string} */value;
+
+        var formatted = value;
+        for (var i = 1; i < arguments.length; i += 1) {
+          formatted = arguments[i](formatted);
         }
 
-        if (dstChsLen < srcChsLen) {
-          for (var a = dstChsLen; a < srcChsLen; a++) {
-            instructions.push({
-              destination: srcChs[a],
-              source: src,
-              type: types.REMOVE_CHILD
-            });
-          }
-        }
-
-        return instructions;
+        node.data = formatted;
       }
 
-      module.exports = exports['default'];
-    });
+      return node;
+    };
     });
 
-    var require$$1$6 = (diff && typeof diff === 'object' && 'default' in diff ? diff['default'] : diff);
-
-    var merge = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', './diff', './patch'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$1$6, require$$0$14);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.diff, global.patch);
-        global.merge = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _diff, _patch) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-
-      exports.default = function (opts) {
-        var inst = (0, _diff2.default)(opts);
-        (0, _patch2.default)(inst);
-        return inst;
-      };
-
-      var _diff2 = _interopRequireDefault(_diff);
-
-      var _patch2 = _interopRequireDefault(_patch);
-
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
-      }
-
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$1$5 = (merge && typeof merge === 'object' && 'default' in merge ? merge['default'] : merge);
-
-    var text = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(["module", "exports"], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports);
-        global.text = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports) {
-      "use strict";
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-      exports.default = createTextNode;
-
-      function createTextNode(item) {
-        return {
-          nodeType: 3,
-          textContent: item
-        };
-      }
-
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$0$15 = (text && typeof text === 'object' && 'default' in text ? text['default'] : text);
-
-    var element$1 = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', '../util/accessor', './text'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$16, require$$0$15);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.accessor, global.text);
-        global.element = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _accessor, _text) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-      exports.default = element;
-
-      var _text2 = _interopRequireDefault(_text);
-
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
-      }
-
-      var _typeof = typeof Symbol === "function" && babelHelpers.typeof(Symbol.iterator) === "symbol" ? function (obj) {
-        return typeof obj === 'undefined' ? 'undefined' : babelHelpers.typeof(obj);
-      } : function (obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj === 'undefined' ? 'undefined' : babelHelpers.typeof(obj);
-      };
-
-      function separateData(obj) {
-        var attrs = {};
-        var events = {};
-        var node = {};
-        var attrIdx = 0;
-
-        for (var name in obj) {
-          var value = obj[name];
-
-          if (name.indexOf('on') === 0) {
-            events[name.substring(2)] = value;
-          } else {
-            attrs[attrIdx++] = attrs[name] = {
-              name: name,
-              value: value
-            };
-            (0, _accessor.mapAccessor)(node, name, value);
-          }
-        }
-
-        attrs.length = attrIdx;
-        return {
-          attrs: attrs,
-          events: events,
-          node: node
-        };
-      }
-
-      function ensureNodes(arr) {
-        var out = [];
-
-        if (!Array.isArray(arr)) {
-          arr = [arr];
-        }
-
-        arr.filter(Boolean).forEach(function (item) {
-          if (Array.isArray(item)) {
-            out = out.concat(ensureNodes(item));
-          } else if ((typeof item === 'undefined' ? 'undefined' : _typeof(item)) === 'object') {
-            out.push(translateFromReact(item));
-          } else {
-            out.push((0, _text2.default)(item));
-          }
-        });
-        return out;
-      }
-
-      function ensureTagName(name) {
-        return (typeof name === 'function' ? name.id || name.name : name).toUpperCase();
-      }
-
-      function isChildren(arg) {
-        return arg && (typeof arg === 'string' || Array.isArray(arg) || typeof arg.nodeType === 'number' || isReactNode(arg));
-      }
-
-      function isReactNode(item) {
-        return item && item.type && item.props;
-      }
-
-      function translateFromReact(item) {
-        if (isReactNode(item)) {
-          var props = item.props;
-          var chren = ensureNodes(props.children);
-          delete props.children;
-          return {
-            nodeType: 1,
-            tagName: item.type,
-            attributes: props,
-            childNodes: chren
-          };
-        }
-
-        return item;
-      }
-
-      function element(name) {
-        var attrs = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-        var isAttrsNode = isChildren(attrs);
-        var data = separateData(isAttrsNode ? {} : attrs);
-        var node = data.node;
-        node.nodeType = 1;
-        node.tagName = ensureTagName(name);
-        node.attributes = data.attrs;
-        node.events = data.events;
-
-        for (var _len = arguments.length, chren = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
-          chren[_key - 2] = arguments[_key];
-        }
-
-        node.childNodes = ensureNodes(isAttrsNode ? [attrs].concat(chren) : chren);
-        return node;
-      }
-
-      element.array = ensureNodes;
-      ['a', 'abbr', 'address', 'area', 'article', 'aside', 'audio', 'b', 'base', 'bdi', 'bdo', 'bgsound', 'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'cite', 'code', 'col', 'colgroup', 'command', 'content', 'data', 'datalist', 'dd', 'del', 'details', 'dfn', 'dialog', 'div', 'dl', 'dt', 'element', 'em', 'embed', 'fieldset', 'figcaption', 'figure', 'font', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'hr', 'html', 'i', 'iframe', 'image', 'img', 'input', 'ins', 'kbd', 'keygen', 'label', 'legend', 'li', 'link', 'main', 'map', 'mark', 'marquee', 'menu', 'menuitem', 'meta', 'meter', 'multicol', 'nav', 'nobr', 'noembed', 'noframes', 'noscript', 'object', 'ol', 'optgroup', 'option', 'output', 'p', 'param', 'picture', 'pre', 'progress', 'q', 'rp', 'rt', 'rtc', 'ruby', 's', 'samp', 'script', 'section', 'select', 'shadow', 'small', 'source', 'span', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr', 'track', 'u', 'ul', 'var', 'video', 'wbr'].forEach(function (tag) {
-        element[tag] = element.bind(null, tag);
-      });
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$2$5 = (element$1 && typeof element$1 === 'object' && 'default' in element$1 ? element$1['default'] : element$1);
-
-    var render$1 = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', './util/weak-map', './vdom/element', './merge', './vdom/mount'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$12, require$$2$5, require$$1$5, require$$0$11);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.weakMap, global.element, global.merge, global.mount);
-        global.render = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _weakMap, _element, _merge, _mount) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-
-      exports.default = function (render) {
-        return function (elem) {
-          elem = elem instanceof Node ? elem : this;
-
-          if (!elem instanceof Node) {
-            throw new Error('No node provided to diff renderer as either the first argument or the context.');
-          }
-
-          // Create a new element to house the new tree since we diff / mount fragments.
-          var newTree = (0, _element2.default)('div', null, render(elem));
-          var oldTree = oldTreeMap.get(elem);
-
-          if (oldTree) {
-            (0, _merge2.default)({
-              destination: newTree,
-              source: oldTree
-            });
-          } else {
-            (0, _mount2.default)(elem, newTree.childNodes);
-          }
-
-          oldTreeMap.set(elem, newTree);
-        };
-      };
-
-      var _weakMap2 = _interopRequireDefault(_weakMap);
-
-      var _element2 = _interopRequireDefault(_element);
-
-      var _merge2 = _interopRequireDefault(_merge);
-
-      var _mount2 = _interopRequireDefault(_mount);
-
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
-      }
-
-      var _window = window;
-      var Node = _window.Node;
-      var oldTreeMap = new _weakMap2.default();
-      module.exports = exports['default'];
-    });
-    });
-
-    var ddRender = (render$1 && typeof render$1 === 'object' && 'default' in render$1 ? render$1['default'] : render$1);
+    var text = incrementalDomCjs.text;
+    var elementClose = incrementalDomCjs.elementClose;
+    var elementOpenEnd = incrementalDomCjs.elementOpenEnd;
+    var attr = incrementalDomCjs.attr;
+    var elementOpenStart = incrementalDomCjs.elementOpenStart;
+    var elementOpen = incrementalDomCjs.elementOpen;
+    var skip = incrementalDomCjs.skip;
+    var patch = incrementalDomCjs.patch;
+    var attributes = incrementalDomCjs.attributes;
+    var applyProp = incrementalDomCjs.applyProp;
 
     var index$4 = __commonjs(function (module) {
     module.exports = Date.now || now;
@@ -1655,14 +1212,14 @@
     }
     });
 
-    var require$$0$26 = (index$4 && typeof index$4 === 'object' && 'default' in index$4 ? index$4['default'] : index$4);
+    var require$$0$16 = (index$4 && typeof index$4 === 'object' && 'default' in index$4 ? index$4['default'] : index$4);
 
     var index = __commonjs(function (module) {
     /**
      * Module dependencies.
      */
 
-    var now = require$$0$26;
+    var now = require$$0$16;
 
     /**
      * Returns a function, that, as long as it continues to be invoked, will not
@@ -1714,7 +1271,7 @@
 
     var debounce = (index && typeof index === 'object' && 'default' in index ? index['default'] : index);
 
-    var patch$1 = __commonjs(function (module, exports, global) {
+    var prop = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(["module", "exports"], factory);
@@ -1725,7 +1282,33 @@
           exports: {}
         };
         factory(mod, mod.exports);
-        global.patch = mod.exports;
+        global.prop = mod.exports;
+      }
+    })(__commonjs_global, function (module, exports) {
+      "use strict";
+
+      Object.defineProperty(exports, "__esModule", {
+        value: true
+      });
+      exports.default = Object.defineProperty.bind(Object);
+      module.exports = exports['default'];
+    });
+    });
+
+    var require$$0$15 = (prop && typeof prop === 'object' && 'default' in prop ? prop['default'] : prop);
+
+    var mapPolyfilled = __commonjs(function (module, exports, global) {
+    (function (global, factory) {
+      if (typeof define === "function" && define.amd) {
+        define(["module", "exports"], factory);
+      } else if (typeof exports !== "undefined") {
+        factory(module, exports);
+      } else {
+        var mod = {
+          exports: {}
+        };
+        factory(mod, mod.exports);
+        global.mapPolyfilled = mod.exports;
       }
     })(__commonjs_global, function (module, exports) {
       "use strict";
@@ -1738,112 +1321,22 @@
     });
     });
 
-    var require$$0$23 = (patch$1 && typeof patch$1 === 'object' && 'default' in patch$1 ? patch$1['default'] : patch$1);
-
-    var polyfilled = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', './internal/map/patch'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$23);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.patch);
-        global.polyfilled = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _patch) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-
-      exports.default = function (elem) {
-        return _patch2.default.get(elem);
-      };
-
-      var _patch2 = _interopRequireDefault(_patch);
-
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
-      }
-
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$0$24 = (polyfilled && typeof polyfilled === 'object' && 'default' in polyfilled ? polyfilled['default'] : polyfilled);
-
-    var slotsDefault = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(["module", "exports"], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports);
-        global.slotsDefault = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports) {
-      "use strict";
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-      exports.default = new WeakMap();
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$0$25 = (slotsDefault && typeof slotsDefault === 'object' && 'default' in slotsDefault ? slotsDefault['default'] : slotsDefault);
-
-    var slots = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(["module", "exports"], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports);
-        global.slots = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports) {
-      "use strict";
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-      exports.default = new WeakMap();
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$1$12 = (slots && typeof slots === 'object' && 'default' in slots ? slots['default'] : slots);
+    var require$$1$5 = (mapPolyfilled && typeof mapPolyfilled === 'object' && 'default' in mapPolyfilled ? mapPolyfilled['default'] : mapPolyfilled);
 
     var polyfill = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', './internal/map/patch', './internal/map/slots', './internal/map/slots-default', './polyfilled'], factory);
+        define(['module', 'exports', './internal/map-polyfilled', './internal/prop'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$23, require$$1$12, require$$0$25, require$$0$24);
+        factory(module, exports, require$$1$5, require$$0$15);
       } else {
         var mod = {
           exports: {}
         };
-        factory(mod, mod.exports, global.patch, global.slots, global.slotsDefault, global.polyfilled);
+        factory(mod, mod.exports, global.mapPolyfilled, global.prop);
         global.polyfill = mod.exports;
       }
-    })(__commonjs_global, function (module, exports, _patch, _slots, _slotsDefault, _polyfilled) {
+    })(__commonjs_global, function (module, exports, _mapPolyfilled, _prop) {
       'use strict';
 
       Object.defineProperty(exports, "__esModule", {
@@ -1851,28 +1344,27 @@
       });
 
       exports.default = function (elem) {
-        if ((0, _polyfilled2.default)(elem)) {
+        if (_mapPolyfilled2.default.get(elem)) {
           return;
         }
 
+        // Polyfill properties.
         for (var name in props) {
-          prop(elem, name, props[name]);
+          (0, _prop2.default)(elem, name, props[name]);
         }
 
+        // Polyfill methods.
         for (var name in funcs) {
           elem[name] = funcs[name];
         }
 
-        _patch2.default.set(elem, true);
+        _mapPolyfilled2.default.set(elem, true);
+        return elem;
       };
 
-      var _patch2 = _interopRequireDefault(_patch);
+      var _mapPolyfilled2 = _interopRequireDefault(_mapPolyfilled);
 
-      var _slots2 = _interopRequireDefault(_slots);
-
-      var _slotsDefault2 = _interopRequireDefault(_slotsDefault);
-
-      var _polyfilled2 = _interopRequireDefault(_polyfilled);
+      var _prop2 = _interopRequireDefault(_prop);
 
       function _interopRequireDefault(obj) {
         return obj && obj.__esModule ? obj : {
@@ -1880,32 +1372,75 @@
         };
       }
 
-      var prop = Object.defineProperty.bind(Object);
-
-      function getSlot(elem, node) {
-        var key = getSlotName(elem, node);
-        var val = elem[key];
-        return key && val ? {
-          key: key,
-          val: val.slice()
-        } : null;
+      function applyParentNode(node, parent) {
+        (0, _prop2.default)(node, 'parentNode', {
+          configurable: true,
+          get: function get() {
+            return parent;
+          }
+        });
       }
 
-      function getSlotName(elem, node) {
-        return node.getAttribute && node.getAttribute('slot') || _slotsDefault2.default.get(elem);
-      }
-
-      function nodeToArray(node) {
-        return node instanceof DocumentFragment ? [].slice.call(node.childNodes) : [node];
+      function removeParentNode(node) {
+        (0, _prop2.default)(node, 'parentNode', {
+          configurable: true,
+          get: function get() {
+            return null;
+          }
+        });
       }
 
       function arrayItem(idx) {
         return this[idx];
       }
 
+      function doForNodesIfSlot(elem, node, func) {
+        nodeToArray(node).forEach(function (node) {
+          var slot = getSlot(elem, node);
+
+          if (slot) {
+            func(elem, node, slot);
+          }
+        });
+      }
+
+      function getSlot(elem, node) {
+        if (!node) {
+          return;
+        }
+
+        var name = node.getAttribute && node.getAttribute('slot') || 'content';
+
+        if (!elem.__slots) {
+          elem.__slots = {};
+        }
+
+        var slots = elem.__slots;
+
+        if (typeof slots[name] === 'undefined') {
+          var slot = elem.querySelector('[slot-name="' + (name === 'content' ? '' : name) + '"]');
+
+          if (slot) {
+            slots[name] = slot;
+          }
+        }
+
+        if (slots[name]) {
+          return slots[name];
+        }
+      }
+
       function makeLikeNodeList(arr) {
         arr.item = arrayItem;
         return arr;
+      }
+
+      function nodeToArray(node) {
+        return node instanceof DocumentFragment ? toArray(node.childNodes) : [node];
+      }
+
+      function toArray(obj) {
+        return Array.prototype.slice.call(obj);
       }
 
       var props = {
@@ -1916,11 +1451,22 @@
         },
         childNodes: {
           get: function get() {
-            var _this = this;
+            var nodes = [];
+            var slots = this.__slots;
 
-            return makeLikeNodeList((_slots2.default.get(this) || []).reduce(function (prev, curr) {
-              return prev.concat(_this[curr]);
-            }, []));
+            if (slots) {
+              for (var name in slots) {
+                var slot = slots[name];
+                var childNodes = slot.childNodes;
+                var childNodesLen = childNodes.length;
+
+                for (var a = 0; a < childNodesLen; a++) {
+                  nodes.push(childNodes[a]);
+                }
+              }
+            }
+
+            return makeLikeNodeList(nodes);
           }
         },
         children: {
@@ -1932,12 +1478,12 @@
         },
         firstChild: {
           get: function get() {
-            return this.childNodes[0];
+            return this.childNodes[0] || null;
           }
         },
         firstElementChild: {
           get: function get() {
-            return this.children[0];
+            return this.children[0] || null;
           }
         },
         innerHTML: {
@@ -1948,29 +1494,32 @@
           },
           set: function set(val) {
             var div = document.createElement('div');
+            var frag = document.createDocumentFragment();
             div.innerHTML = val;
 
             while (div.hasChildNodes()) {
-              this.appendChild(div.childNodes[0]);
+              frag.appendChild(div.firstChild);
             }
+
+            this.appendChild(frag);
           }
         },
         lastChild: {
           get: function get() {
             var ch = this.childNodes;
-            return ch[ch.length - 1];
+            return ch[ch.length - 1] || null;
           }
         },
         lastElementChild: {
           get: function get() {
             var ch = this.children;
-            return ch[ch.length - 1];
+            return ch[ch.length - 1] || null;
           }
         },
         outerHTML: {
           get: function get() {
             var name = this.tagName.toLowerCase();
-            var attributes = [].slice.call(this.attributes).map(function (attr) {
+            var attributes = toArray(this.attributes).map(function (attr) {
               return ' ' + attr.name + (attr.value ? '="' + attr.value + '"' : '');
             }).join('');
             return '<' + name + attributes + '>' + this.innerHTML + '</' + name + '>';
@@ -1983,30 +1532,17 @@
             }).join('');
           },
           set: function set(val) {
-            var slot = _slotsDefault2.default.get(this);
-
-            if (slot) {
-              this[slot] = document.createTextNode(val);
-            }
+            doForNodesIfSlot(this, val.toString(), function (elem, node, slot) {
+              slot.textContent = node;
+            });
           }
         }
       };
-
-      function doForNodesIfSlot(elem, node, func) {
-        nodeToArray(node).forEach(function (node) {
-          var slot = getSlot(elem, node);
-
-          if (slot) {
-            func(elem, node, slot);
-          }
-        });
-      }
-
       var funcs = {
         appendChild: function appendChild(newNode) {
           doForNodesIfSlot(this, newNode, function (elem, node, slot) {
-            slot.val.push(node);
-            elem[slot.key] = slot.val;
+            slot.appendChild(node);
+            applyParentNode(node, elem);
           });
           return newNode;
         },
@@ -2015,38 +1551,24 @@
         },
         insertBefore: function insertBefore(newNode, refNode) {
           doForNodesIfSlot(this, newNode, function (elem, node, slot) {
-            var index = slot.val.indexOf(refNode);
-
-            if (index === -1) {
-              slot.val.push(node);
-            } else {
-              slot.val.splice(index, 0, node);
-            }
-
-            elem[slot.key] = slot.val;
+            slot.insertBefore(node, refNode);
+            applyParentNode(node, elem);
           });
           return newNode;
         },
         removeChild: function removeChild(refNode) {
           doForNodesIfSlot(this, refNode, function (elem, node, slot) {
-            var index = slot.val.indexOf(node);
-
-            if (index !== -1) {
-              slot.val.splice(index, 1);
-              elem[slot.key] = slot.val;
-            }
+            slot.removeChild(node);
+            removeParentNode(node);
           });
           return refNode;
         },
         replaceChild: function replaceChild(newNode, refNode) {
-          doForNodesIfSlot(this, refNode, function (elem, node, slot) {
-            var index = slot.val.indexOf(refNode);
-
-            if (index !== -1) {
-              slot.val.splice(index, 1, newNode);
-              elem[slot.key] = slot.val;
-            }
+          doForNodesIfSlot(this, newNode, function (elem, node, slot) {
+            slot.replaceChild(node, refNode);
+            applyParentNode(node, elem);
           });
+          removeParentNode(refNode);
           return refNode;
         }
       };
@@ -2054,22 +1576,22 @@
     });
     });
 
-    var require$$1$11 = (polyfill && typeof polyfill === 'object' && 'default' in polyfill ? polyfill['default'] : polyfill);
+    var require$$0$14 = (polyfill && typeof polyfill === 'object' && 'default' in polyfill ? polyfill['default'] : polyfill);
 
-    var render$2 = __commonjs(function (module, exports, global) {
+    var render$3 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', './polyfill', './internal/map/patch'], factory);
+        define(['module', 'exports', './polyfill'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$1$11, require$$0$23);
+        factory(module, exports, require$$0$14);
       } else {
         var mod = {
           exports: {}
         };
-        factory(mod, mod.exports, global.polyfill, global.patch);
+        factory(mod, mod.exports, global.polyfill);
         global.render = mod.exports;
       }
-    })(__commonjs_global, function (module, exports, _polyfill, _patch) {
+    })(__commonjs_global, function (module, exports, _polyfill) {
       'use strict';
 
       Object.defineProperty(exports, "__esModule", {
@@ -2078,117 +1600,79 @@
 
       exports.default = function (fn) {
         return function (elem) {
-          if (_patch2.default.get(elem)) {
-            fn(elem);
+          var shadowRoot = elem.__shadowRoot;
+
+          if (shadowRoot) {
+            fn(elem, shadowRoot);
           } else {
-            fn(elem);
+            // We get a fragment of the initial DOM so that we can create the shadow
+            // root.
+            var initialLightDom = createFragmentFromChildNodes(elem);
+
+            // Create the shadow root and return the light DOM. We must get the light
+            // DOM before we template it so that we can distribute it after
+            // polyfilling.
+            shadowRoot = elem.__shadowRoot = createShadowRoot(elem);
+
+            // Render once we have the initial light DOM as this would likely blow
+            // that away.
+            fn(elem, shadowRoot);
+
+            // Now polyfill so that we can distribute after.
             (0, _polyfill2.default)(elem);
+
+            // Distribute the initial light DOM after polyfill so they get put into
+            // the right spots.
+            elem.appendChild(initialLightDom);
           }
         };
       };
 
       var _polyfill2 = _interopRequireDefault(_polyfill);
 
-      var _patch2 = _interopRequireDefault(_patch);
-
       function _interopRequireDefault(obj) {
         return obj && obj.__esModule ? obj : {
           default: obj
         };
       }
 
-      module.exports = exports['default'];
-    });
-    });
+      function createFragmentFromChildNodes(elem) {
+        var frag = document.createDocumentFragment();
 
-    var nsRender = (render$2 && typeof render$2 === 'object' && 'default' in render$2 ? render$2['default'] : render$2);
-
-    var slot = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', './internal/map/slots', './internal/map/slots-default'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$1$12, require$$0$25);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.slots, global.slotsDefault);
-        global.slot = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _slots, _slotsDefault) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-
-      exports.default = function (opts) {
-        if (!opts) {
-          opts = {
-            default: false,
-            set: null
-          };
+        while (elem.hasChildNodes()) {
+          frag.appendChild(elem.firstChild);
         }
 
-        return {
-          // Makes sure that whatever is passed in is an array.
-          coerce: function coerce(val) {
-            return Array.isArray(val) ? val : [val];
-          },
+        return frag;
+      }
 
-          // Registers the slot so we can check later.
-          created: function created(elem, data) {
-            var slots = _slots2.default.get(elem);
+      function createShadowRoot(elem) {
+        var root = document.createElement(isBlockLevel(elem) ? 'div' : 'span');
+        elem.appendChild(root);
+        return root;
+      }
 
-            if (!slots) {
-              _slots2.default.set(elem, slots = []);
-            }
-
-            slots.push(data.name);
-
-            if (opts.default) {
-              _slotsDefault2.default.set(elem, data.name);
-            }
-          },
-
-          // If an empty value is passed in, ensure that it's an array.
-          'default': function _default() {
-            return [];
-          },
-
-          // Return any initial nodes that match the slot.
-          initial: function initial(elem, data) {
-            return [].slice.call(elem.childNodes).filter(function (ch) {
-              if (ch.getAttribute) {
-                var slot = ch.getAttribute('slot') || opts.default && data.name;
-                return slot === data.name;
-              } else if (ch.nodeType === 3) {
-                return true;
-              }
-            });
-          },
-
-          // User-defined setter.
-          set: opts.set
-        };
-      };
-
-      var _slots2 = _interopRequireDefault(_slots);
-
-      var _slotsDefault2 = _interopRequireDefault(_slotsDefault);
-
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
+      function isBlockLevel(elem) {
+        return window.getComputedStyle(elem).display === 'block';
       }
 
       module.exports = exports['default'];
     });
     });
 
-    var nsSlot = (slot && typeof slot === 'object' && 'default' in slot ? slot['default'] : slot);
+    var render$4 = (render$3 && typeof render$3 === 'object' && 'default' in render$3 ? render$3['default'] : render$3);
+
+    function render$1 (opts) {
+      var internalRenderer = opts.render;
+
+      if (!internalRenderer) {
+        return;
+      }
+
+      return render$4(function (elem, shadowRoot) {
+        patch(shadowRoot, internalRenderer, elem);
+      });
+    }
 
     var ignored = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -2219,14 +1703,14 @@
     });
     });
 
-    var require$$0$4 = (ignored && typeof ignored === 'object' && 'default' in ignored ? ignored['default'] : ignored);
+    var require$$0$6 = (ignored && typeof ignored === 'object' && 'default' in ignored ? ignored['default'] : ignored);
 
     var walkTree = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', './ignored'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$4);
+        factory(module, exports, require$$0$6);
       } else {
         var mod = {
           exports: {}
@@ -2272,8 +1756,8 @@
 
         var chren = elem.childNodes;
         var child = chren && chren[0];
-        fn(elem);
 
+        fn(elem);
         while (child) {
           walk(child, fn);
           child = child.nextSibling;
@@ -2489,10 +1973,10 @@
 
     var require$$4 = (getAllPropertyDescriptors && typeof getAllPropertyDescriptors === 'object' && 'default' in getAllPropertyDescriptors ? getAllPropertyDescriptors['default'] : getAllPropertyDescriptors);
 
-    var element = __commonjs(function (module, exports, global) {
+    var registerElement = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
-        define(['module', 'exports'], factory);
+        define(["module", "exports"], factory);
       } else if (typeof exports !== "undefined") {
         factory(module, exports);
       } else {
@@ -2500,20 +1984,84 @@
           exports: {}
         };
         factory(mod, mod.exports);
-        global.element = mod.exports;
+        global.registerElement = mod.exports;
       }
     })(__commonjs_global, function (module, exports) {
+      "use strict";
+
+      Object.defineProperty(exports, "__esModule", {
+        value: true
+      });
+      var re = Document.prototype.registerElement;
+      exports.default = re && re.bind(document);
+      module.exports = exports['default'];
+    });
+    });
+
+    var require$$0$4 = (registerElement && typeof registerElement === 'object' && 'default' in registerElement ? registerElement['default'] : registerElement);
+
+    var createElement = __commonjs(function (module, exports, global) {
+    (function (global, factory) {
+      if (typeof define === "function" && define.amd) {
+        define(["module", "exports"], factory);
+      } else if (typeof exports !== "undefined") {
+        factory(module, exports);
+      } else {
+        var mod = {
+          exports: {}
+        };
+        factory(mod, mod.exports);
+        global.createElement = mod.exports;
+      }
+    })(__commonjs_global, function (module, exports) {
+      "use strict";
+
+      Object.defineProperty(exports, "__esModule", {
+        value: true
+      });
+      exports.default = Document.prototype.createElement.bind(document);
+      module.exports = exports['default'];
+    });
+    });
+
+    var require$$0$5 = (createElement && typeof createElement === 'object' && 'default' in createElement ? createElement['default'] : createElement);
+
+    var element$1 = __commonjs(function (module, exports, global) {
+    (function (global, factory) {
+      if (typeof define === "function" && define.amd) {
+        define(['module', 'exports', '../native/create-element', '../native/register-element'], factory);
+      } else if (typeof exports !== "undefined") {
+        factory(module, exports, require$$0$5, require$$0$4);
+      } else {
+        var mod = {
+          exports: {}
+        };
+        factory(mod, mod.exports, global.createElement, global.registerElement);
+        global.element = mod.exports;
+      }
+    })(__commonjs_global, function (module, exports, _createElement, _registerElement) {
       'use strict';
 
       Object.defineProperty(exports, "__esModule", {
         value: true
       });
-      var documentCreateElement = document.createElement.bind(document);
+
+      var _createElement2 = _interopRequireDefault(_createElement);
+
+      var _registerElement2 = _interopRequireDefault(_registerElement);
+
+      function _interopRequireDefault(obj) {
+        return obj && obj.__esModule ? obj : {
+          default: obj
+        };
+      }
+
       var reservedNames = ['annotation-xml', 'color-profile', 'font-face', 'font-face-src', 'font-face-uri', 'font-face-format', 'font-face-name', 'missing-glyph'];
       var customElementCriteria = ['contain at least one dash', 'not start with a dash', 'not be one of: ' + reservedNames.join(', ')];
+
       exports.default = {
         create: function create(Ctor) {
-          var elem = Ctor.extends ? documentCreateElement(Ctor.extends, Ctor.id) : documentCreateElement(Ctor.id);
+          var elem = Ctor.extends ? (0, _createElement2.default)(Ctor.extends, Ctor.id) : (0, _createElement2.default)(Ctor.id);
           if (!Ctor.isNative && Ctor.extends) {
             elem.setAttribute('is', Ctor.id);
           }
@@ -2548,7 +2096,7 @@
           if (Ctor.isNative) {
             var nativeDefinition = { prototype: Ctor.prototype };
             Ctor.extends && (nativeDefinition.extends = Ctor.extends);
-            document.registerElement(name, nativeDefinition);
+            (0, _registerElement2.default)(name, nativeDefinition);
           }
         }
       };
@@ -2556,7 +2104,7 @@
     });
     });
 
-    var require$$0$2 = (element && typeof element === 'object' && 'default' in element ? element['default'] : element);
+    var require$$0$2 = (element$1 && typeof element$1 === 'object' && 'default' in element$1 ? element$1['default'] : element$1);
 
     var vars = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -2626,6 +2174,7 @@
       var map = [];
       var types = [];
       var hasOwn = Object.prototype.hasOwnProperty;
+
       exports.default = _vars2.default.registerIfNotExists('registry', {
         get: function get(name) {
           return hasOwn.call(definitions, name) && definitions[name];
@@ -2662,27 +2211,63 @@
 
     var require$$0$3 = (registry && typeof registry === 'object' && 'default' in registry ? registry['default'] : registry);
 
-    var innerhtml = __commonjs(function (module, exports, global) {
+    var createEvent = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
-        define([], factory);
+        define(["module", "exports"], factory);
       } else if (typeof exports !== "undefined") {
-        factory();
+        factory(module, exports);
       } else {
         var mod = {
           exports: {}
         };
-        factory();
+        factory(mod, mod.exports);
+        global.createEvent = mod.exports;
+      }
+    })(__commonjs_global, function (module, exports) {
+      "use strict";
+
+      Object.defineProperty(exports, "__esModule", {
+        value: true
+      });
+      exports.default = Document.prototype.createEvent.bind(document);
+      module.exports = exports['default'];
+    });
+    });
+
+    var require$$0$11 = (createEvent && typeof createEvent === 'object' && 'default' in createEvent ? createEvent['default'] : createEvent);
+
+    var innerhtml = __commonjs(function (module, exports, global) {
+    (function (global, factory) {
+      if (typeof define === "function" && define.amd) {
+        define(['../../native/create-event'], factory);
+      } else if (typeof exports !== "undefined") {
+        factory(require$$0$11);
+      } else {
+        var mod = {
+          exports: {}
+        };
+        factory(global.createEvent);
         global.innerhtml = mod.exports;
       }
-    })(__commonjs_global, function () {
+    })(__commonjs_global, function (_createEvent) {
       'use strict';
+
+      var _createEvent2 = _interopRequireDefault(_createEvent);
+
+      function _interopRequireDefault(obj) {
+        return obj && obj.__esModule ? obj : {
+          default: obj
+        };
+      }
 
       var isIeUntil10 = /MSIE/.test(navigator.userAgent);
       var isIe11 = /Trident/.test(navigator.userAgent);
       var isIe = isIeUntil10 || isIe11;
       var elementPrototype = window.HTMLElement.prototype;
 
+      // ! This walkTree method differs from the implementation in ../../utils/walk-tree
+      // It invokes the callback only for the children, not the passed node and the second parameter to the callback is the parent node
       function walkTree(node, cb) {
         var childNodes = node.childNodes;
 
@@ -2705,13 +2290,15 @@
         var get = function get() {
           return originalInnerHTML.get.call(this);
         };
-
         get._hasBeenEnhanced = true;
+
+        // This redefines the innerHTML property so that we can ensure that events
+        // are properly triggered.
         Object.defineProperty(elementPrototype, 'innerHTML', {
           get: get,
           set: function set(html) {
             walkTree(this, function (node, parentNode) {
-              var mutationEvent = document.createEvent('MutationEvent');
+              var mutationEvent = (0, _createEvent2.default)('MutationEvent');
               mutationEvent.initMutationEvent('DOMNodeRemoved', true, false, parentNode, null, null, null, null);
               node.dispatchEvent(mutationEvent);
             });
@@ -2721,11 +2308,13 @@
       }
 
       if (isIe) {
+        // IE 9-11
         var propertyDescriptor = Object.getOwnPropertyDescriptor(elementPrototype, 'innerHTML');
         var hasBeenEnhanced = !!propertyDescriptor && propertyDescriptor.get._hasBeenEnhanced;
 
         if (!hasBeenEnhanced) {
           if (isIe11) {
+            // IE11's native MutationObserver needs some help as well :()
             window.MutationObserver = window.JsMutationObserver || window.MutationObserver;
           }
 
@@ -2735,14 +2324,14 @@
     });
     });
 
-    var require$$0$5 = (innerhtml && typeof innerhtml === 'object' && 'default' in innerhtml ? innerhtml['default'] : innerhtml);
+    var require$$0$7 = (innerhtml && typeof innerhtml === 'object' && 'default' in innerhtml ? innerhtml['default'] : innerhtml);
 
     var getClosestIgnoredElement = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', './ignored'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$4);
+        factory(module, exports, require$$0$6);
       } else {
         var mod = {
           exports: {}
@@ -2788,7 +2377,7 @@
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../util/get-closest-ignored-element', './vars', './registry', '../util/walk-tree', '../fix/ie/innerhtml'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$4$1, require$$3, require$$0$3, require$$0, require$$0$5);
+        factory(module, exports, require$$4$1, require$$3, require$$0$3, require$$0, require$$0$7);
       } else {
         var mod = {
           exports: {}
@@ -2820,10 +2409,14 @@
       function triggerAddedNodes(addedNodes) {
         (0, _walkTree2.default)(addedNodes, function (element) {
           var component = _registry2.default.find(element);
-
           if (component) {
-            component.prototype.createdCallback.call(element);
-            component.prototype.attachedCallback.call(element);
+            if (component.prototype.createdCallback) {
+              component.prototype.createdCallback.call(element);
+            }
+
+            if (component.prototype.attachedCallback) {
+              component.prototype.attachedCallback.call(element);
+            }
           }
         });
       }
@@ -2831,8 +2424,7 @@
       function triggerRemovedNodes(removedNodes) {
         (0, _walkTree2.default)(removedNodes, function (element) {
           var component = _registry2.default.find(element);
-
-          if (component) {
+          if (component && component.prototype.detachedCallback) {
             component.prototype.detachedCallback.call(element);
           }
         });
@@ -2840,15 +2432,18 @@
 
       function documentObserverHandler(mutations) {
         var mutationsLength = mutations.length;
-
         for (var a = 0; a < mutationsLength; a++) {
           var addedNodes = mutations[a].addedNodes;
           var removedNodes = mutations[a].removedNodes;
 
+          // Since siblings are batched together, we check the first node's parent
+          // node to see if it is ignored. If it is then we don't process any added
+          // nodes. This prevents having to check every node.
           if (addedNodes && addedNodes.length && !(0, _getClosestIgnoredElement2.default)(addedNodes[0].parentNode)) {
             triggerAddedNodes(addedNodes);
           }
 
+          // We can't check batched nodes here because they won't have a parent node.
           if (removedNodes && removedNodes.length) {
             triggerRemovedNodes(removedNodes);
           }
@@ -2862,7 +2457,6 @@
         if (!MutationObserver) {
           throw new Error('Mutation Observers are not supported by this browser. Skate requires them in order to polyfill the behaviour of Custom Elements. If you want to support this browser you should include a Mutation Observer polyfill before Skate.');
         }
-
         return new MutationObserver(documentObserverHandler);
       }
 
@@ -2895,9 +2489,9 @@
     });
     });
 
-    var require$$7 = (documentObserver && typeof documentObserver === 'object' && 'default' in documentObserver ? documentObserver['default'] : documentObserver);
+    var require$$8 = (documentObserver && typeof documentObserver === 'object' && 'default' in documentObserver ? documentObserver['default'] : documentObserver);
 
-    var data = __commonjs(function (module, exports, global) {
+    var data$1 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports'], factory);
@@ -2928,7 +2522,7 @@
     });
     });
 
-    var require$$1$2 = (data && typeof data === 'object' && 'default' in data ? data['default'] : data);
+    var require$$1$2 = (data$1 && typeof data$1 === 'object' && 'default' in data$1 ? data$1['default'] : data$1);
 
     var detached = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -2951,13 +2545,15 @@
       });
 
       exports.default = function (opts) {
-        return function () {
-          var info = (0, _data2.default)(this, 'lifecycle/' + opts.id);
+        var detached = opts.detached;
+
+        return detached ? function () {
+          var info = (0, _data2.default)(this);
           if (info.detached) return;
           info.detached = true;
           info.attached = false;
-          opts.detached(this);
-        };
+          detached(this);
+        } : undefined;
       };
 
       var _data2 = _interopRequireDefault(_data);
@@ -2972,7 +2568,7 @@
     });
     });
 
-    var require$$8 = (detached && typeof detached === 'object' && 'default' in detached ? detached['default'] : detached);
+    var require$$9 = (detached && typeof detached === 'object' && 'default' in detached ? detached['default'] : detached);
 
     var defaults = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -3002,20 +2598,20 @@
         };
       }
 
-      var noop = function noop() {};
+      var nope = null;
 
       exports.default = {
-        attached: noop,
-        attribute: noop,
-        created: noop,
-        render: noop,
-        detached: noop,
-        events: {},
-        extends: '',
-        properties: {},
+        attached: nope,
+        attribute: nope,
+        created: nope,
+        render: nope,
+        detached: nope,
+        events: nope,
+        extends: nope,
+        properties: nope,
         prototype: {},
         resolvedAttribute: 'resolved',
-        ready: noop,
+        ready: nope,
         type: _element2.default,
         unresolvedAttribute: 'unresolved'
       };
@@ -3023,7 +2619,7 @@
     });
     });
 
-    var require$$9 = (defaults && typeof defaults === 'object' && 'default' in defaults ? defaults['default'] : defaults);
+    var require$$10 = (defaults && typeof defaults === 'object' && 'default' in defaults ? defaults['default'] : defaults);
 
     var resolve = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -3045,17 +2641,15 @@
         value: true
       });
       exports.default = resolve;
-
       function resolve(elem, opts) {
         elem.removeAttribute(opts.unresolvedAttribute);
         elem.setAttribute(opts.resolvedAttribute, '');
       }
-
       module.exports = exports['default'];
     });
     });
 
-    var require$$0$6 = (resolve && typeof resolve === 'object' && 'default' in resolve ? resolve['default'] : resolve);
+    var require$$0$8 = (resolve && typeof resolve === 'object' && 'default' in resolve ? resolve['default'] : resolve);
 
     var prototype = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -3100,7 +2694,6 @@
           });
         };
       }
-
       module.exports = exports['default'];
     });
     });
@@ -3127,13 +2720,11 @@
         value: true
       });
       exports.default = propertiesApply;
-
       function propertiesApply(elem, properties) {
         Object.keys(properties).forEach(function (name) {
           properties[name].ready(elem);
         });
       }
-
       module.exports = exports['default'];
     });
     });
@@ -3160,16 +2751,28 @@
         value: true
       });
       exports.default = propertiesApply;
-
       function propertiesApply(elem, properties) {
         Object.keys(properties).forEach(function (name) {
           var prop = properties[name];
           var initialValue = prop.initial(elem);
+
+          // https://bugs.webkit.org/show_bug.cgi?id=49739
+          //
+          // When Webkit fixes that bug so that native property accessors can be
+          // retrieved, we can move defining the property to the prototype and away
+          // from having to do if for every instance as all other browsers support
+          // this.
           Object.defineProperty(elem, name, prop);
+
+          // This will still be needed to do any setup for the property if it needs
+          // any information from the element.
+          //
+          // Once that bug is fixed, the initial value being passed as the second
+          // argument to prop.created() can use the overridden property definition to
+          // get the initial value.
           prop.created(elem, initialValue);
         });
       }
-
       module.exports = exports['default'];
     });
     });
@@ -3204,7 +2807,7 @@
     });
     });
 
-    var require$$0$9 = (empty && typeof empty === 'object' && 'default' in empty ? empty['default'] : empty);
+    var require$$0$12 = (empty && typeof empty === 'object' && 'default' in empty ? empty['default'] : empty);
 
     var dashCase = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -3237,7 +2840,7 @@
     });
     });
 
-    var require$$2$4 = (dashCase && typeof dashCase === 'object' && 'default' in dashCase ? dashCase['default'] : dashCase);
+    var require$$2$5 = (dashCase && typeof dashCase === 'object' && 'default' in dashCase ? dashCase['default'] : dashCase);
 
     var index$5 = __commonjs(function (module) {
     /* eslint-disable no-unused-vars */
@@ -3282,14 +2885,14 @@
     };
     });
 
-    var require$$3$3 = (index$5 && typeof index$5 === 'object' && 'default' in index$5 ? index$5['default'] : index$5);
+    var require$$3$2 = (index$5 && typeof index$5 === 'object' && 'default' in index$5 ? index$5['default'] : index$5);
 
     var propertiesInit = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', 'object-assign', '../util/dash-case', '../util/data', '../util/empty'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$3$3, require$$2$4, require$$1$2, require$$0$9);
+        factory(module, exports, require$$3$2, require$$2$5, require$$1$2, require$$0$12);
       } else {
         var mod = {
           exports: {}
@@ -3364,16 +2967,22 @@
           info.linkedAttribute = getLinkedAttribute(name, opts.attribute);
           info.opts = opts;
           info.updatingProperty = false;
+
+          // Ensure we can get the info from inside the attribute methods.
           getData(elem, info.linkedAttribute).linkedProperty = name;
 
           if (typeof opts.default === 'function') {
-            info.defaultValue = opts.default(elem, {
-              name: name
-            });
+            info.defaultValue = opts.default(elem, { name: name });
           } else if (!(0, _empty2.default)(opts.default)) {
             info.defaultValue = opts.default;
           }
 
+          // TODO Refactor to be cleaner.
+          //
+          // We only override removeAttribute and setAttribute once. This means that
+          // if you define 10 properties, they still only get overridden once. For
+          // this reason, we must re-get info / opts from within the property methods
+          // since the functions aren't recreated for each scope.
           if (info.linkedAttribute) {
             if (!info.attributeMap) {
               info.attributeMap = {};
@@ -3424,6 +3033,7 @@
             info.attributeMap[info.linkedAttribute] = name;
           }
 
+          // Set up initial value if it wasn't specified.
           if ((0, _empty2.default)(initialValue)) {
             if (info.linkedAttribute && elem.hasAttribute(info.linkedAttribute)) {
               initialValue = opts.deserialize(elem.getAttribute(info.linkedAttribute));
@@ -3432,13 +3042,12 @@
             }
           }
 
+          // We must coerce the initial value just in case it wasn't already.
           var internalValue = info.internalValue = opts.coerce ? opts.coerce(initialValue) : initialValue;
 
+          // User-defined created callback.
           if (typeof opts.created === 'function') {
-            opts.created(elem, {
-              name: name,
-              internalValue: internalValue
-            });
+            opts.created(elem, { name: name, internalValue: internalValue });
           }
         };
 
@@ -3447,19 +3056,14 @@
           var internalValue = info.internalValue;
 
           if (opts.get) {
-            return opts.get(this, {
-              name: name,
-              internalValue: internalValue
-            });
+            return opts.get(this, { name: name, internalValue: internalValue });
           }
 
           return internalValue;
         };
 
         prop.initial = function (elem) {
-          return typeof opts.initial === 'function' ? opts.initial(elem, {
-            name: name
-          }) : elem[name];
+          return typeof opts.initial === 'function' ? opts.initial(elem, { name: name }) : elem[name];
         };
 
         prop.ready = function (elem) {
@@ -3489,7 +3093,6 @@
 
           if (info.linkedAttribute && !info.updatingAttribute) {
             var serializedValue = opts.serialize(newValue);
-
             if ((0, _empty2.default)(serializedValue)) {
               removeAttribute.call(this, info.linkedAttribute);
             } else {
@@ -3498,11 +3101,7 @@
           }
 
           if (typeof opts.set === 'function') {
-            opts.set(this, {
-              name: name,
-              newValue: newValue,
-              oldValue: oldValue
-            });
+            opts.set(this, { name: name, newValue: newValue, oldValue: oldValue });
           }
 
           info.oldValue = newValue;
@@ -3538,7 +3137,6 @@
         value: true
       });
       exports.default = patchAttributeMethods;
-
       function patchAttributeMethods(elem) {
         var removeAttribute = elem.removeAttribute;
         var setAttribute = elem.setAttribute;
@@ -3546,16 +3144,19 @@
         elem.removeAttribute = function (name) {
           var oldValue = this.getAttribute(name);
           removeAttribute.call(elem, name);
-          elem.attributeChangedCallback(name, oldValue, null);
+          if (elem.attributeChangedCallback) {
+            elem.attributeChangedCallback(name, oldValue, null);
+          }
         };
 
         elem.setAttribute = function (name, newValue) {
           var oldValue = this.getAttribute(name);
           setAttribute.call(elem, name, newValue);
-          elem.attributeChangedCallback(name, oldValue, String(newValue));
+          if (elem.attributeChangedCallback) {
+            elem.attributeChangedCallback(name, oldValue, String(newValue));
+          }
         };
       }
-
       module.exports = exports['default'];
     });
     });
@@ -3565,17 +3166,17 @@
     var matchesSelector = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
-        define(['module', 'exports'], factory);
+        define(['module', 'exports', '../native/create-element'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports);
+        factory(module, exports, require$$0$5);
       } else {
         var mod = {
           exports: {}
         };
-        factory(mod, mod.exports);
+        factory(mod, mod.exports, global.createElement);
         global.matchesSelector = mod.exports;
       }
-    })(__commonjs_global, function (module, exports) {
+    })(__commonjs_global, function (module, exports, _createElement) {
       'use strict';
 
       Object.defineProperty(exports, "__esModule", {
@@ -3585,27 +3186,38 @@
       exports.default = function (element, selector) {
         if (hasNativeMatchesSelectorDetattachedBug) {
           var clone = element.cloneNode();
-          document.createElement('div').appendChild(clone);
+          (0, _createElement2.default)('div').appendChild(clone);
           return nativeMatchesSelector.call(clone, selector);
         }
         return nativeMatchesSelector.call(element, selector);
       };
 
+      var _createElement2 = _interopRequireDefault(_createElement);
+
+      function _interopRequireDefault(obj) {
+        return obj && obj.__esModule ? obj : {
+          default: obj
+        };
+      }
+
       var elProto = window.HTMLElement.prototype;
       var nativeMatchesSelector = elProto.matches || elProto.msMatchesSelector || elProto.webkitMatchesSelector || elProto.mozMatchesSelector || elProto.oMatchesSelector;
-      var hasNativeMatchesSelectorDetattachedBug = !nativeMatchesSelector.call(document.createElement('div'), 'div');
+
+      // Only IE9 has this msMatchesSelector bug, but best to detect it.
+      var hasNativeMatchesSelectorDetattachedBug = !nativeMatchesSelector.call((0, _createElement2.default)('div'), 'div');
+
       module.exports = exports['default'];
     });
     });
 
-    var require$$0$10 = (matchesSelector && typeof matchesSelector === 'object' && 'default' in matchesSelector ? matchesSelector['default'] : matchesSelector);
+    var require$$0$13 = (matchesSelector && typeof matchesSelector === 'object' && 'default' in matchesSelector ? matchesSelector['default'] : matchesSelector);
 
     var events = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../util/matches-selector'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$10);
+        factory(module, exports, require$$0$13);
       } else {
         var mod = {
           exports: {}
@@ -3639,9 +3251,10 @@
       }
 
       function parseEvent(e) {
-        var parts = e.split(' ');
-        var name = parts.shift();
-        var selector = parts.join(' ').trim();
+        var indexOfSpace = e.indexOf(' ');
+        var hasSpace = indexOfSpace > 0;
+        var name = hasSpace ? e.substring(0, indexOfSpace) : e;
+        var selector = hasSpace ? e.substring(indexOfSpace + 1) : '';
         return {
           name: name,
           selector: selector
@@ -3652,14 +3265,12 @@
         return function (e) {
           var current = e.target;
           var selector = parsed.selector;
-
           while (current && current !== elem.parentNode) {
             if ((0, _matchesSelector2.default)(current, selector)) {
               readonly(e, 'currentTarget', current);
               readonly(e, 'delegateTarget', elem);
               return handler(e);
             }
-
             current = current.parentNode;
           }
         };
@@ -3676,208 +3287,40 @@
         var parsed = parseEvent(event);
         var name = parsed.name;
         var selector = parsed.selector;
+
         var capture = selector && (name === 'blur' || name === 'focus');
         handler = selector ? makeDelegateHandler(elem, handler, parsed) : makeNormalHandler(elem, handler);
         elem.addEventListener(name, handler, capture);
       }
 
       function events(opts) {
-        var events = opts.events;
+        var events = opts.events || {};
         return function (elem) {
-          Object.keys(events).forEach(function (name) {
+          for (var name in events) {
             bindEvent(elem, name, events[name].bind(elem));
-          });
+          }
         };
       }
-
       module.exports = exports['default'];
     });
     });
 
     var require$$6 = (events && typeof events === 'object' && 'default' in events ? events['default'] : events);
 
-    var elementContains = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(["module", "exports"], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports);
-        global.elementContains = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports) {
-      "use strict";
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-
-      exports.default = function (source, target) {
-        // The document element does not have the contains method in IE.
-        if (source === document && !source.contains) {
-          return document.head.contains(target) || document.body.contains(target);
-        }
-
-        return source.contains ? source.contains(target) : elementPrototypeContains.call(source, target);
-      };
-
-      var elementPrototype = window.HTMLElement.prototype;
-      var elementPrototypeContains = elementPrototype.contains;
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$0$8 = (elementContains && typeof elementContains === 'object' && 'default' in elementContains ? elementContains['default'] : elementContains);
-
-    var emit = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', '../util/element-contains'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$8);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.elementContains);
-        global.emit = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _elementContains) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-
-      exports.default = function (elem, name) {
-        var opts = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
-
-        var names = typeof name === 'string' ? name.split(' ') : name;
-        return names.reduce(function (prev, curr) {
-          if (emitOne(elem, curr, opts) === false) {
-            prev.push(curr);
-          }
-          return prev;
-        }, []);
-      };
-
-      var _elementContains2 = _interopRequireDefault(_elementContains);
-
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
-      }
-
-      var CustomEvent = function (CustomEvent) {
-        if (CustomEvent) {
-          try {
-            new CustomEvent();
-          } catch (e) {
-            return undefined;
-          }
-        }
-
-        return CustomEvent;
-      }(window.CustomEvent);
-
-      function dispatch(elem, cEvent) {
-        if (!elem.disabled) {
-          return elem.dispatchEvent(cEvent);
-        }
-
-        cEvent.isPropagationStopped = true;
-      }
-
-      var hasBubbleOnDetachedElements = function () {
-        var parent = document.createElement('div');
-        var child = document.createElement('div');
-        var hasBubbleOnDetachedElements = false;
-        parent.appendChild(child);
-        parent.addEventListener('test', function () {
-          return hasBubbleOnDetachedElements = true;
-        });
-        child.dispatchEvent(createCustomEvent('test', {
-          bubbles: true
-        }));
-        return hasBubbleOnDetachedElements;
-      }();
-
-      function createCustomEvent(name) {
-        var opts = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-
-        if (CustomEvent) {
-          return new CustomEvent(name, opts);
-        }
-
-        var e = document.createEvent('CustomEvent');
-        e.initCustomEvent(name, opts.bubbles, opts.cancelable, opts.detail);
-        return e;
-      }
-
-      function createReadableStopPropagation(oldStopPropagation) {
-        return function () {
-          this.isPropagationStopped = true;
-          oldStopPropagation.call(this);
-        };
-      }
-
-      function simulateBubbling(elem, cEvent) {
-        var didPreventDefault = undefined;
-        var currentElem = elem;
-        cEvent.stopPropagation = createReadableStopPropagation(cEvent.stopPropagation);
-        Object.defineProperty(cEvent, 'target', {
-          get: function get() {
-            return elem;
-          }
-        });
-
-        while (currentElem && !cEvent.isPropagationStopped) {
-          cEvent.currentTarget = currentElem;
-
-          if (dispatch(currentElem, cEvent) === false) {
-            didPreventDefault = false;
-          }
-
-          currentElem = currentElem.parentNode;
-        }
-
-        return didPreventDefault;
-      }
-
-      function emitOne(elem, name, opts) {
-        var cEvent, shouldSimulateBubbling;
-        opts.bubbles === undefined && (opts.bubbles = true);
-        opts.cancelable === undefined && (opts.cancelable = true);
-        cEvent = createCustomEvent(name, opts);
-        shouldSimulateBubbling = opts.bubbles && !hasBubbleOnDetachedElements && !(0, _elementContains2.default)(document, elem);
-        return shouldSimulateBubbling ? simulateBubbling(elem, cEvent) : dispatch(elem, cEvent);
-      }
-
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$7$1 = (emit && typeof emit === 'object' && 'default' in emit ? emit['default'] : emit);
-
     var created = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', '../util/data', '../api/emit', './events', './patch-attribute-methods', './properties-init', './properties-created', './properties-ready', './prototype', './resolve'], factory);
+        define(['module', 'exports', '../util/data', './events', './patch-attribute-methods', './properties-init', './properties-created', './properties-ready', './prototype', './resolve'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$1$2, require$$7$1, require$$6, require$$5, require$$4$2, require$$3$1, require$$2$2, require$$1$3, require$$0$6);
+        factory(module, exports, require$$1$2, require$$6, require$$5, require$$4$2, require$$3$1, require$$2$2, require$$1$3, require$$0$8);
       } else {
         var mod = {
           exports: {}
         };
-        factory(mod, mod.exports, global.data, global.emit, global.events, global.patchAttributeMethods, global.propertiesInit, global.propertiesCreated, global.propertiesReady, global.prototype, global.resolve);
+        factory(mod, mod.exports, global.data, global.events, global.patchAttributeMethods, global.propertiesInit, global.propertiesCreated, global.propertiesReady, global.prototype, global.resolve);
         global.created = mod.exports;
       }
-    })(__commonjs_global, function (module, exports, _data, _emit, _events, _patchAttributeMethods, _propertiesInit, _propertiesCreated, _propertiesReady, _prototype, _resolve) {
+    })(__commonjs_global, function (module, exports, _data, _events, _patchAttributeMethods, _propertiesInit, _propertiesCreated, _propertiesReady, _prototype, _resolve) {
       'use strict';
 
       Object.defineProperty(exports, "__esModule", {
@@ -3885,35 +3328,81 @@
       });
 
       exports.default = function (opts) {
+        var attribute = opts.attribute;
+        var created = opts.created;
+        var events = opts.events;
+        var isNative = opts.isNative;
+        var properties = opts.properties;
+        var prototype = opts.prototype;
+        var ready = opts.ready;
+        var render = opts.render;
+        var resolvedAttribute = opts.resolvedAttribute;
+
         var applyEvents = (0, _events2.default)(opts);
         var applyPrototype = (0, _prototype2.default)(opts);
         var propertyFunctions = ensurePropertyFunctions(opts);
 
+        // Performance critical code!
         return function () {
-          var info = (0, _data2.default)(this, 'lifecycle/' + opts.id);
-          var native = opts.isNative;
-          var resolved = this.hasAttribute('resolved');
+          var info = (0, _data2.default)(this);
+          var resolved = this.hasAttribute(resolvedAttribute);
+          var propertyDefinitions = properties ? ensurePropertyDefinitions(this, propertyFunctions) : null;
+          var readyCallbacks = info.readyCallbacks;
 
-          if (info.created) return;
+          if (info.created) {
+            return;
+          }
+
           info.created = true;
-          var propertyDefinitions = ensurePropertyDefinitions(this, propertyFunctions);
 
-          native || opts.attribute && (0, _patchAttributeMethods2.default)(this);
-          native || opts.prototype && applyPrototype(this);
-          opts.properties && (0, _propertiesCreated2.default)(this, propertyDefinitions);
-          opts.events && applyEvents(this);
-          opts.created && opts.created(this);
-          resolved || opts.render && opts.render(this);
-          opts.properties && (0, _propertiesReady2.default)(this, propertyDefinitions);
-          opts.ready && opts.ready(this);
-          (0, _emit2.default)(this, readyEventName, readyEventOptions);
-          resolved || (0, _resolve2.default)(this, opts);
+          if (!isNative) {
+            if (attribute) {
+              (0, _patchAttributeMethods2.default)(this);
+            }
+
+            if (prototype) {
+              applyPrototype(this);
+            }
+          }
+
+          if (propertyDefinitions) {
+            (0, _propertiesCreated2.default)(this, propertyDefinitions);
+          }
+
+          if (events) {
+            applyEvents(this);
+          }
+
+          if (created) {
+            created(this);
+          }
+
+          if (render && !resolved) {
+            render(this);
+          }
+
+          if (propertyDefinitions) {
+            (0, _propertiesReady2.default)(this, propertyDefinitions);
+          }
+
+          if (ready) {
+            ready(this);
+          }
+
+          if (readyCallbacks) {
+            readyCallbacks.forEach(function (cb) {
+              return cb();
+            });
+            info.readyCallbacks = null;
+          }
+
+          if (!resolved) {
+            (0, _resolve2.default)(this, opts);
+          }
         };
       };
 
       var _data2 = _interopRequireDefault(_data);
-
-      var _emit2 = _interopRequireDefault(_emit);
 
       var _events2 = _interopRequireDefault(_events);
 
@@ -3935,22 +3424,16 @@
         };
       }
 
-      var readyEventName = 'skate.ready';
-      var readyEventOptions = {
-        bubbles: false,
-        cancelable: false
-      };
-
+      // TODO Remove this when we no longer support the legacy definitions and only
+      // support a superset of a native property definition.
       function ensurePropertyFunctions(opts) {
         var properties = opts.properties;
         var names = Object.keys(properties || {});
         return names.reduce(function (descriptors, descriptorName) {
           descriptors[descriptorName] = opts.properties[descriptorName];
-
           if (typeof descriptors[descriptorName] !== 'function') {
             descriptors[descriptorName] = (0, _propertiesInit2.default)(descriptors[descriptorName]);
           }
-
           return descriptors;
         }, {});
       }
@@ -3966,7 +3449,7 @@
     });
     });
 
-    var require$$10 = (created && typeof created === 'object' && 'default' in created ? created['default'] : created);
+    var require$$12 = (created && typeof created === 'object' && 'default' in created ? created['default'] : created);
 
     var attribute = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -3989,14 +3472,14 @@
       });
 
       exports.default = function (opts) {
-        var callback = opts.attribute;
+        var attribute = opts.attribute;
 
-        if (typeof callback !== 'function') {
-          return noop;
+        if (typeof attribute !== 'function') {
+          return;
         }
 
         return function (name, oldValue, newValue) {
-          callback(this, {
+          attribute(this, {
             name: name,
             newValue: newValue === null ? undefined : newValue,
             oldValue: oldValue === null ? undefined : oldValue
@@ -4004,13 +3487,11 @@
         };
       };
 
-      var noop = function noop() {};
-
       module.exports = exports['default'];
     });
     });
 
-    var require$$11 = (attribute && typeof attribute === 'object' && 'default' in attribute ? attribute['default'] : attribute);
+    var require$$13 = (attribute && typeof attribute === 'object' && 'default' in attribute ? attribute['default'] : attribute);
 
     var attached = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -4033,13 +3514,15 @@
       });
 
       exports.default = function (opts) {
-        return function () {
-          var info = (0, _data2.default)(this, 'lifecycle/' + opts.id);
+        var attached = opts.attached;
+
+        return attached ? function () {
+          var info = (0, _data2.default)(this);
           if (info.attached) return;
           info.attached = true;
           info.detached = false;
-          opts.attached(this);
-        };
+          attached(this);
+        } : undefined;
       };
 
       var _data2 = _interopRequireDefault(_data);
@@ -4054,7 +3537,7 @@
     });
     });
 
-    var require$$12 = (attached && typeof attached === 'object' && 'default' in attached ? attached['default'] : attached);
+    var require$$14 = (attached && typeof attached === 'object' && 'default' in attached ? attached['default'] : attached);
 
     var version$1 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -4080,9 +3563,9 @@
     });
     });
 
-    var require$$14 = (version$1 && typeof version$1 === 'object' && 'default' in version$1 ? version$1['default'] : version$1);
+    var require$$16 = (version$1 && typeof version$1 === 'object' && 'default' in version$1 ? version$1['default'] : version$1);
 
-    var render = __commonjs(function (module, exports, global) {
+    var render$2 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../shared/registry'], factory);
@@ -4121,9 +3604,9 @@
     });
     });
 
-    var require$$15 = (render && typeof render === 'object' && 'default' in render ? render['default'] : render);
+    var require$$17 = (render$2 && typeof render$2 === 'object' && 'default' in render$2 ? render$2['default'] : render$2);
 
-    var ready = __commonjs(function (module, exports, global) {
+    var ready$1 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../util/data', '../shared/registry'], factory);
@@ -4149,6 +3632,7 @@
         var readyCount = 0;
 
         function callbackIfReady() {
+          ++readyCount;
           if (readyCount === collectionLength) {
             callback(elements);
           }
@@ -4158,19 +3642,16 @@
           var elem = collection[a];
 
           if (ready(elem)) {
-            ++readyCount;
+            callbackIfReady();
           } else {
-            // skate.ready is only fired if the element has not been initialised yet.
-            elem.addEventListener('skate.ready', function () {
-              ++readyCount;
-              callbackIfReady();
-            });
+            var info = (0, _data2.default)(elem);
+            if (info.readyCallbacks) {
+              info.readyCallbacks.push(callbackIfReady);
+            } else {
+              info.readyCallbacks = [callbackIfReady];
+            }
           }
         }
-
-        // If the elements are all ready by this time that means nothing was ever
-        // bound to skate.ready above.
-        callbackIfReady();
       };
 
       var _data2 = _interopRequireDefault(_data);
@@ -4185,22 +3666,21 @@
 
       function ready(element) {
         var component = _registry2.default.find(element);
-
-        return !component || (0, _data2.default)(element, 'lifecycle/' + component.id).created;
+        return component && (0, _data2.default)(element).created;
       }
 
       module.exports = exports['default'];
     });
     });
 
-    var require$$16 = (ready && typeof ready === 'object' && 'default' in ready ? ready['default'] : ready);
+    var require$$18 = (ready$1 && typeof ready$1 === 'object' && 'default' in ready$1 ? ready$1['default'] : ready$1);
 
     var string = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../../util/empty'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$9);
+        factory(module, exports, require$$0$12);
       } else {
         var mod = {
           exports: {}
@@ -4236,14 +3716,14 @@
     });
     });
 
-    var require$$0$7 = (string && typeof string === 'object' && 'default' in string ? string['default'] : string);
+    var require$$0$9 = (string && typeof string === 'object' && 'default' in string ? string['default'] : string);
 
     var number = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../../util/empty'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$9);
+        factory(module, exports, require$$0$12);
       } else {
         var mod = {
           exports: {}
@@ -4318,12 +3798,12 @@
 
     var require$$2$3 = (boolean && typeof boolean === 'object' && 'default' in boolean ? boolean['default'] : boolean);
 
-    var index$3 = __commonjs(function (module, exports, global) {
+    var index$2 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', 'object-assign', './boolean', './number', './string'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$3$3, require$$2$3, require$$1$4, require$$0$7);
+        factory(module, exports, require$$3$2, require$$2$3, require$$1$4, require$$0$9);
       } else {
         var mod = {
           exports: {}
@@ -4372,14 +3852,55 @@
     });
     });
 
-    var require$$17 = (index$3 && typeof index$3 === 'object' && 'default' in index$3 ? index$3['default'] : index$3);
+    var require$$19 = (index$2 && typeof index$2 === 'object' && 'default' in index$2 ? index$2['default'] : index$2);
 
-    var init = __commonjs(function (module, exports, global) {
+    var elementContains = __commonjs(function (module, exports, global) {
+    (function (global, factory) {
+      if (typeof define === "function" && define.amd) {
+        define(["module", "exports"], factory);
+      } else if (typeof exports !== "undefined") {
+        factory(module, exports);
+      } else {
+        var mod = {
+          exports: {}
+        };
+        factory(mod, mod.exports);
+        global.elementContains = mod.exports;
+      }
+    })(__commonjs_global, function (module, exports) {
+      "use strict";
+
+      Object.defineProperty(exports, "__esModule", {
+        value: true
+      });
+
+      exports.default = function (source, target) {
+        // The document element does not have the contains method in IE.
+        if (source === document && !source.contains) {
+          return head.contains(target) || body.contains(target);
+        }
+        return source.contains ? source.contains(target) : elementPrototypeContains.call(source, target);
+      };
+
+      var _document = document;
+      var body = _document.body;
+      var head = _document.head;
+
+      var elementPrototype = window.HTMLElement.prototype;
+      var elementPrototypeContains = elementPrototype.contains;
+
+      module.exports = exports['default'];
+    });
+    });
+
+    var require$$0$10 = (elementContains && typeof elementContains === 'object' && 'default' in elementContains ? elementContains['default'] : elementContains);
+
+    var init$1 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../util/element-contains', '../shared/registry', '../util/walk-tree'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$8, require$$0$3, require$$0);
+        factory(module, exports, require$$0$10, require$$0$3, require$$0);
       } else {
         var mod = {
           exports: {}
@@ -4404,8 +3925,13 @@
           (0, _walkTree2.default)(arg, function (descendant) {
             var component = _registry2.default.find(descendant);
             if (component && !component.isNative) {
-              component.prototype.createdCallback.call(descendant);
-              isInDom && component.prototype.attachedCallback.call(descendant);
+              if (component.prototype.createdCallback) {
+                component.prototype.createdCallback.call(descendant);
+              }
+
+              if (isInDom && component.prototype.attachedCallback) {
+                isInDom && component.prototype.attachedCallback.call(descendant);
+              }
             }
           });
         });
@@ -4427,28 +3953,58 @@
     });
     });
 
-    var require$$1$1 = (init && typeof init === 'object' && 'default' in init ? init['default'] : init);
+    var require$$1$1 = (init$1 && typeof init$1 === 'object' && 'default' in init$1 ? init$1['default'] : init$1);
 
-    var fragment = __commonjs(function (module, exports, global) {
+    var createDocumentFragment = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', './init'], factory);
+        define(["module", "exports"], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$1$1);
+        factory(module, exports);
       } else {
         var mod = {
           exports: {}
         };
-        factory(mod, mod.exports, global.init);
+        factory(mod, mod.exports);
+        global.createDocumentFragment = mod.exports;
+      }
+    })(__commonjs_global, function (module, exports) {
+      "use strict";
+
+      Object.defineProperty(exports, "__esModule", {
+        value: true
+      });
+      exports.default = Document.prototype.createDocumentFragment.bind(document);
+      module.exports = exports['default'];
+    });
+    });
+
+    var require$$2$4 = (createDocumentFragment && typeof createDocumentFragment === 'object' && 'default' in createDocumentFragment ? createDocumentFragment['default'] : createDocumentFragment);
+
+    var fragment$1 = __commonjs(function (module, exports, global) {
+    (function (global, factory) {
+      if (typeof define === "function" && define.amd) {
+        define(['module', 'exports', '../native/create-document-fragment', '../native/create-element', './init'], factory);
+      } else if (typeof exports !== "undefined") {
+        factory(module, exports, require$$2$4, require$$0$5, require$$1$1);
+      } else {
+        var mod = {
+          exports: {}
+        };
+        factory(mod, mod.exports, global.createDocumentFragment, global.createElement, global.init);
         global.fragment = mod.exports;
       }
-    })(__commonjs_global, function (module, exports, _init) {
+    })(__commonjs_global, function (module, exports, _createDocumentFragment, _createElement, _init) {
       'use strict';
 
       Object.defineProperty(exports, "__esModule", {
         value: true
       });
       exports.default = fragment;
+
+      var _createDocumentFragment2 = _interopRequireDefault(_createDocumentFragment);
+
+      var _createElement2 = _interopRequireDefault(_createElement);
 
       var _init2 = _interopRequireDefault(_init);
 
@@ -4461,6 +4017,7 @@
       var _window = window;
       var Node = _window.Node;
       var NodeList = _window.NodeList;
+
       var slice = Array.prototype.slice;
       var specialMap = {
         caption: 'table',
@@ -4474,7 +4031,7 @@
       };
 
       function resolveParent(tag, html) {
-        var container = document.createElement('div');
+        var container = (0, _createElement2.default)('div');
         var levels = 0;
         var parentTag = specialMap[tag];
 
@@ -4485,12 +4042,11 @@
         }
 
         container.innerHTML = html;
-        var parent = container;
 
+        var parent = container;
         for (var a = 0; a < levels; a++) {
           parent = parent.firstElementChild;
         }
-
         return parent;
       }
 
@@ -4522,29 +4078,156 @@
           }
 
           return frag;
-        }, document.createDocumentFragment());
+        }, (0, _createDocumentFragment2.default)());
+      }
+      module.exports = exports['default'];
+    });
+    });
+
+    var require$$21 = (fragment$1 && typeof fragment$1 === 'object' && 'default' in fragment$1 ? fragment$1['default'] : fragment$1);
+
+    var emit$1 = __commonjs(function (module, exports, global) {
+    (function (global, factory) {
+      if (typeof define === "function" && define.amd) {
+        define(['module', 'exports', '../native/create-element', '../native/create-event', '../util/element-contains'], factory);
+      } else if (typeof exports !== "undefined") {
+        factory(module, exports, require$$0$5, require$$0$11, require$$0$10);
+      } else {
+        var mod = {
+          exports: {}
+        };
+        factory(mod, mod.exports, global.createElement, global.createEvent, global.elementContains);
+        global.emit = mod.exports;
+      }
+    })(__commonjs_global, function (module, exports, _createElement, _createEvent, _elementContains) {
+      'use strict';
+
+      Object.defineProperty(exports, "__esModule", {
+        value: true
+      });
+
+      exports.default = function (elem, name) {
+        var opts = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+
+        var names = typeof name === 'string' ? name.split(' ') : name;
+        return names.reduce(function (prev, curr) {
+          if (emitOne(elem, curr, opts) === false) {
+            prev.push(curr);
+          }
+          return prev;
+        }, []);
+      };
+
+      var _createElement2 = _interopRequireDefault(_createElement);
+
+      var _createEvent2 = _interopRequireDefault(_createEvent);
+
+      var _elementContains2 = _interopRequireDefault(_elementContains);
+
+      function _interopRequireDefault(obj) {
+        return obj && obj.__esModule ? obj : {
+          default: obj
+        };
+      }
+
+      var CustomEvent = function (CustomEvent) {
+        if (CustomEvent) {
+          try {
+            new CustomEvent();
+          } catch (e) {
+            return undefined;
+          }
+        }
+        return CustomEvent;
+      }(window.CustomEvent);
+
+      function dispatch(elem, cEvent) {
+        if (!elem.disabled) {
+          return elem.dispatchEvent(cEvent);
+        }
+        cEvent.isPropagationStopped = true;
+      }
+
+      var hasBubbleOnDetachedElements = function () {
+        var parent = (0, _createElement2.default)('div');
+        var child = (0, _createElement2.default)('div');
+        var hasBubbleOnDetachedElements = false;
+        parent.appendChild(child);
+        parent.addEventListener('test', function () {
+          return hasBubbleOnDetachedElements = true;
+        });
+        child.dispatchEvent(createCustomEvent('test', { bubbles: true }));
+        return hasBubbleOnDetachedElements;
+      }();
+
+      function createCustomEvent(name) {
+        var opts = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+        if (CustomEvent) {
+          return new CustomEvent(name, opts);
+        }
+
+        var e = (0, _createEvent2.default)('CustomEvent');
+        e.initCustomEvent(name, opts.bubbles, opts.cancelable, opts.detail);
+        return e;
+      }
+
+      function createReadableStopPropagation(oldStopPropagation) {
+        return function () {
+          this.isPropagationStopped = true;
+          oldStopPropagation.call(this);
+        };
+      }
+
+      function simulateBubbling(elem, cEvent) {
+        var didPreventDefault = undefined;
+        var currentElem = elem;
+        cEvent.stopPropagation = createReadableStopPropagation(cEvent.stopPropagation);
+        Object.defineProperty(cEvent, 'target', { get: function get() {
+            return elem;
+          } });
+        while (currentElem && !cEvent.isPropagationStopped) {
+          cEvent.currentTarget = currentElem;
+          if (dispatch(currentElem, cEvent) === false) {
+            didPreventDefault = false;
+          }
+          currentElem = currentElem.parentNode;
+        }
+        return didPreventDefault;
+      }
+
+      function emitOne(elem, name, opts) {
+        var cEvent, shouldSimulateBubbling;
+
+        /* jshint expr: true */
+        opts.bubbles === undefined && (opts.bubbles = true);
+        opts.cancelable === undefined && (opts.cancelable = true);
+        cEvent = createCustomEvent(name, opts);
+        shouldSimulateBubbling = opts.bubbles && !hasBubbleOnDetachedElements && !(0, _elementContains2.default)(document, elem);
+
+        return shouldSimulateBubbling ? simulateBubbling(elem, cEvent) : dispatch(elem, cEvent);
       }
 
       module.exports = exports['default'];
     });
     });
 
-    var require$$19 = (fragment && typeof fragment === 'object' && 'default' in fragment ? fragment['default'] : fragment);
+    var require$$22 = (emit$1 && typeof emit$1 === 'object' && 'default' in emit$1 ? emit$1['default'] : emit$1);
 
-    var create = __commonjs(function (module, exports, global) {
+    var create$1 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', 'object-assign', './init', '../shared/registry'], factory);
+        define(['module', 'exports', 'object-assign', '../native/create-element', './init', '../shared/registry'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$3$3, require$$1$1, require$$0$3);
+        factory(module, exports, require$$3$2, require$$0$5, require$$1$1, require$$0$3);
       } else {
         var mod = {
           exports: {}
         };
-        factory(mod, mod.exports, global.objectAssign, global.init, global.registry);
+        factory(mod, mod.exports, global.objectAssign, global.createElement, global.init, global.registry);
         global.create = mod.exports;
       }
-    })(__commonjs_global, function (module, exports, _objectAssign, _init, _registry) {
+    })(__commonjs_global, function (module, exports, _objectAssign, _createElement, _init, _registry) {
       'use strict';
 
       Object.defineProperty(exports, "__esModule", {
@@ -4553,12 +4236,14 @@
 
       exports.default = function (name, props) {
         var Ctor = _registry2.default.get(name);
-        var elem = Ctor ? Ctor.type.create(Ctor) : document.createElement(name);
+        var elem = Ctor ? Ctor.type.create(Ctor) : (0, _createElement2.default)(name);
         Ctor && (0, _init2.default)(elem);
         return (0, _objectAssign2.default)(elem, props);
       };
 
       var _objectAssign2 = _interopRequireDefault(_objectAssign);
+
+      var _createElement2 = _interopRequireDefault(_createElement);
 
       var _init2 = _interopRequireDefault(_init);
 
@@ -4574,22 +4259,22 @@
     });
     });
 
-    var require$$21 = (create && typeof create === 'object' && 'default' in create ? create['default'] : create);
+    var require$$23 = (create$1 && typeof create$1 === 'object' && 'default' in create$1 ? create$1['default'] : create$1);
 
-    var index$2 = __commonjs(function (module, exports, global) {
+    var index$1 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', './api/create', './api/emit', './api/fragment', './api/init', './api/properties/index', './api/ready', './api/render', './api/version', 'object-assign', './lifecycle/attached', './lifecycle/attribute', './lifecycle/created', './defaults', './lifecycle/detached', './shared/document-observer', './shared/registry', './type/element', './util/get-all-property-descriptors', './util/get-own-property-descriptors', './util/debounce', './util/define-properties', './util/walk-tree'], factory);
+        define(['module', 'exports', './api/create', './api/emit', './api/fragment', './api/init', './api/properties/index', './api/ready', './api/render', './api/version', 'object-assign', './lifecycle/attached', './lifecycle/attribute', './lifecycle/created', './native/create-element', './defaults', './lifecycle/detached', './shared/document-observer', './native/register-element', './shared/registry', './type/element', './util/get-all-property-descriptors', './util/get-own-property-descriptors', './util/debounce', './util/define-properties', './util/walk-tree'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$21, require$$7$1, require$$19, require$$1$1, require$$17, require$$16, require$$15, require$$14, require$$3$3, require$$12, require$$11, require$$10, require$$9, require$$8, require$$7, require$$0$3, require$$0$2, require$$4, require$$0$1, require$$2, require$$1, require$$0);
+        factory(module, exports, require$$23, require$$22, require$$21, require$$1$1, require$$19, require$$18, require$$17, require$$16, require$$3$2, require$$14, require$$13, require$$12, require$$0$5, require$$10, require$$9, require$$8, require$$0$4, require$$0$3, require$$0$2, require$$4, require$$0$1, require$$2, require$$1, require$$0);
       } else {
         var mod = {
           exports: {}
         };
-        factory(mod, mod.exports, global.create, global.emit, global.fragment, global.init, global.index, global.ready, global.render, global.version, global.objectAssign, global.attached, global.attribute, global.created, global.defaults, global.detached, global.documentObserver, global.registry, global.element, global.getAllPropertyDescriptors, global.getOwnPropertyDescriptors, global.debounce, global.defineProperties, global.walkTree);
+        factory(mod, mod.exports, global.create, global.emit, global.fragment, global.init, global.index, global.ready, global.render, global.version, global.objectAssign, global.attached, global.attribute, global.created, global.createElement, global.defaults, global.detached, global.documentObserver, global.registerElement, global.registry, global.element, global.getAllPropertyDescriptors, global.getOwnPropertyDescriptors, global.debounce, global.defineProperties, global.walkTree);
         global.index = mod.exports;
       }
-    })(__commonjs_global, function (module, exports, _create, _emit, _fragment, _init, _index, _ready, _render, _version, _objectAssign, _attached, _attribute, _created, _defaults, _detached, _documentObserver, _registry, _element, _getAllPropertyDescriptors, _getOwnPropertyDescriptors, _debounce, _defineProperties, _walkTree) {
+    })(__commonjs_global, function (module, exports, _create, _emit, _fragment, _init, _index, _ready, _render, _version, _objectAssign, _attached, _attribute, _created, _createElement, _defaults, _detached, _documentObserver, _registerElement, _registry, _element, _getAllPropertyDescriptors, _getOwnPropertyDescriptors, _debounce, _defineProperties, _walkTree) {
       'use strict';
 
       Object.defineProperty(exports, "__esModule", {
@@ -4620,11 +4305,15 @@
 
       var _created2 = _interopRequireDefault(_created);
 
+      var _createElement2 = _interopRequireDefault(_createElement);
+
       var _defaults2 = _interopRequireDefault(_defaults);
 
       var _detached2 = _interopRequireDefault(_detached);
 
       var _documentObserver2 = _interopRequireDefault(_documentObserver);
+
+      var _registerElement2 = _interopRequireDefault(_registerElement);
 
       var _registry2 = _interopRequireDefault(_registry);
 
@@ -4647,17 +4336,24 @@
       }
 
       var HTMLElement = window.HTMLElement;
+
+      // A function that initialises the document once in a given event loop.
       var initDocument = (0, _debounce2.default)(function () {
         (0, _walkTree2.default)(document.documentElement.childNodes, function (element) {
           var component = _registry2.default.find(element);
-
           if (component) {
-            component.prototype.createdCallback.call(element);
-            component.prototype.attachedCallback.call(element);
+            if (component.prototype.createdCallback) {
+              component.prototype.createdCallback.call(element);
+            }
+
+            if (component.prototype.attachedCallback) {
+              component.prototype.attachedCallback.call(element);
+            }
           }
         });
       });
 
+      // Creates a configurable, non-writable, non-enumerable property.
       function fixedProp(obj, name, value) {
         Object.defineProperty(obj, name, {
           configurable: true,
@@ -4667,16 +4363,28 @@
         });
       }
 
+      // Makes a function / constructor that can be called as either.
       function makeCtor(name, opts) {
         var func = _create2.default.bind(null, name);
 
+        // Assigning defaults gives a predictable definition and prevents us from
+        // having to do defaults checks everywhere.
         (0, _objectAssign2.default)(func, _defaults2.default);
+
+        // Inherit all options. This takes into account object literals as well as
+        // ES2015 classes that may have inherited static props which would not be
+        // considered "own".
         (0, _defineProperties2.default)(func, (0, _getAllPropertyDescriptors2.default)(opts));
+
+        // Fixed info.
         fixedProp(func.prototype, 'constructor', func);
         fixedProp(func, 'id', name);
-        fixedProp(func, 'isNative', func.type === _element2.default && document.registerElement);
-        var nameProp = Object.getOwnPropertyDescriptor(func, 'name');
+        fixedProp(func, 'isNative', func.type === _element2.default && _registerElement2.default);
 
+        // In native, the function name is the same as the custom element name, but
+        // WebKit prevents this from being defined. We do this where possible and
+        // still define `id` for cross-browser compatibility.
+        var nameProp = Object.getOwnPropertyDescriptor(func, 'name');
         if (nameProp && nameProp.configurable) {
           fixedProp(func, 'name', name);
         }
@@ -4684,34 +4392,46 @@
         return func;
       }
 
+      // The main skate() function.
       function skate(name, opts) {
         var Ctor = makeCtor(name, opts);
 
+        // If the options don't inherit a native element prototype, we ensure it does
+        // because native requires you explicitly do this. Here we solve the common
+        // use case by defaulting to HTMLElement.prototype.
         if (!HTMLElement.prototype.isPrototypeOf(Ctor.prototype) && !SVGElement.prototype.isPrototypeOf(Ctor.prototype)) {
-          var proto = (Ctor.extends ? document.createElement(Ctor.extends).constructor : HTMLElement).prototype;
+          var proto = (Ctor.extends ? (0, _createElement2.default)(Ctor.extends).constructor : HTMLElement).prototype;
           Ctor.prototype = Object.create(proto, (0, _getOwnPropertyDescriptors2.default)(Ctor.prototype));
         }
 
+        // We not assign native callbacks to handle the callbacks specified in the
+        // Skate definition. This allows us to abstract away any changes that may
+        // occur in the spec.
         Ctor.prototype.createdCallback = (0, _created2.default)(Ctor);
         Ctor.prototype.attachedCallback = (0, _attached2.default)(Ctor);
         Ctor.prototype.detachedCallback = (0, _detached2.default)(Ctor);
         Ctor.prototype.attributeChangedCallback = (0, _attribute2.default)(Ctor);
 
+        // In polyfill land we must emulate what the browser would normally do in
+        // native.
         if (!Ctor.isNative) {
           initDocument();
-
           _documentObserver2.default.register();
         }
 
+        // Call register hook. We could put this in the registry, but since the
+        // registry is shared across versions, we try and churn that as little as
+        // possible. It's fine here for now.
         var type = Ctor.type;
-
         if (type.register) {
           type.register(Ctor);
         }
 
+        // We keep our own registry since we can't access the native one.
         return _registry2.default.set(name, Ctor);
       }
 
+      // Public API.
       skate.create = _create2.default;
       skate.emit = _emit2.default;
       skate.fragment = _fragment2.default;
@@ -4720,25 +4440,36 @@
       skate.ready = _ready2.default;
       skate.render = _render2.default;
       skate.version = _version2.default;
+
       exports.default = skate;
       module.exports = exports['default'];
     });
     });
 
-    var skate = (index$2 && typeof index$2 === 'object' && 'default' in index$2 ? index$2['default'] : index$2);
+    var skate = (index$1 && typeof index$1 === 'object' && 'default' in index$1 ? index$1['default'] : index$1);
 
     var $debounce = Symbol();
 
+    // Defaults all properties to be linked to an attribute unless explicitly
+    // specified.
     function createAttributeLinks(opts) {
       var props = opts.properties;
       Object.keys(props).forEach(function (name) {
         var prop = props[name];
+
+        if (!prop) {
+          prop = props[name] = {};
+        }
+
         if (typeof prop.attribute === 'undefined') {
           prop.attribute = true;
+          attributes[name] = applyProp;
         }
       });
     }
 
+    // Creates properties that add / remove event listeners. This is mostly for
+    // seemless integration with React.
     function createEventProperties(opts) {
       var props = opts.properties;
       opts.listeners.forEach(function (name) {
@@ -4761,17 +4492,7 @@
       });
     }
 
-    function createSlotProperties(opts) {
-      var props = opts.properties;
-      opts.slots.forEach(function (name, index) {
-        props[name] = nsSlot({
-          attribute: false,
-          default: index === 0,
-          set: skate.render
-        });
-      });
-    }
-
+    // Normalises options to safe defaults.
     function ensureOpts(opts) {
       if (!opts.listeners) {
         opts.listeners = [];
@@ -4786,6 +4507,7 @@
       }
     }
 
+    // Creates a safe default for the render option for properties.
     function normalizePropertyRender(render) {
       if (typeof render === 'undefined') {
         return function (elem, data) {
@@ -4800,6 +4522,8 @@
       };
     }
 
+    // Re-renders the component when a property is set, debouncing it so that it is
+    // only rendered once on the tail end of consecutive subsequent property sets.
     function setStateOnPropertySet(opts) {
       var props = opts.properties;
       Object.keys(props).forEach(function (name) {
@@ -4817,21 +4541,24 @@
       });
     }
 
+    // Wraps the provided render function with our custom renderer that does all
+    // the diffing / patching.
     function wrapRender(opts) {
-      opts.render = nsRender(ddRender(opts.render));
+      opts.render = render$1(opts);
     }
 
+    // Proxies skate() ensuring everything is set up before the component is
+    // registered and returned.
     function kickflip (name, opts) {
       ensureOpts(opts);
       createAttributeLinks(opts);
       setStateOnPropertySet(opts);
       createEventProperties(opts);
-      createSlotProperties(opts);
       wrapRender(opts);
       return skate(name, opts);
     }
 
-    var index$1 = __commonjs(function (module) {
+    var index$3 = __commonjs(function (module) {
     /* eslint-disable no-unused-vars */
     'use strict';
 
@@ -4874,25 +4601,191 @@
     };
     });
 
-    var assign = (index$1 && typeof index$1 === 'object' && 'default' in index$1 ? index$1['default'] : index$1);
-
-    function get(elem) {
-      return Object.keys(elem.constructor.properties || {}).reduce(function (prev, curr) {
-        prev[curr] = elem[curr];
-        return prev;
-      }, {});
+    // Specify an environment for iDOM in case we haven't yet.
+    if (typeof process === 'undefined') {
+      process = { env: { NODE_ENV: 'production' } };
     }
 
-    function state (elem, newState) {
-      return typeof newState === 'undefined' ? get(elem) : assign(elem, newState);
+    var factories = {};
+    var slotAttributeName = 'slot-name';
+    var slotElementName = 'slot';
+
+    // The "key" and "statics" are specified as arguments in iDOM. For the purposes
+    // of this API it's simpler to use the attributes object.
+    attributes.key = attributes.skip = attributes.statics = function () {};
+    attributes.value = applyProp;
+
+    // Creates a factory and returns it.
+    function bind(tname) {
+      if (typeof tname === 'function') {
+        tname = tname.id || tname.name;
+      }
+
+      return factories[tname] = function (attrs, chren) {
+        var slot = tname === slotElementName;
+
+        if ((typeof attrs === 'undefined' ? 'undefined' : babelHelpers.typeof(attrs)) === 'object') {
+          elementOpenStart(tname, attrs.key, attrs.statics);
+          for (var _a in attrs) {
+            attr(slot && _a === 'name' ? slotAttributeName : _a, attrs[_a]);
+          }
+          elementOpenEnd();
+        } else {
+          elementOpen(tname);
+          chren = attrs;
+        }
+
+        if (slot || attrs.skip) {
+          skip();
+        } else {
+          var chrenType = typeof chren === 'undefined' ? 'undefined' : babelHelpers.typeof(chren);
+          if (chrenType === 'function') {
+            chren();
+          } else if (chrenType === 'string' || chrenType === 'number') {
+            text(chren);
+          }
+        }
+
+        return elementClose(tname);
+      };
     }
 
-    var version = '0.0.7';
+    // Create factories for all HTML elements except for ones that match keywords
+    // such as "var".
+    var a = bind('a');
+    var abbr = bind('abbr');
+    var address = bind('address');
+    var area = bind('area');
+    var article = bind('article');
+    var aside = bind('aside');
+    var audio = bind('audio');
+    var b = bind('b');
+    var base = bind('base');
+    var bdi = bind('bdi');
+    var bdo = bind('bdo');
+    var bgsound = bind('bgsound');
+    var blockquote = bind('blockquote');
+    var body = bind('body');
+    var br = bind('br');
+    var button = bind('button');
+    var canvas = bind('canvas');
+    var caption = bind('caption');
+    var cite = bind('cite');
+    var code = bind('code');
+    var col = bind('col');
+    var colgroup = bind('colgroup');
+    var command = bind('command');
+    var content = bind('content');
+    var data = bind('data');
+    var datalist = bind('datalist');
+    var dd = bind('dd');
+    var del = bind('del');
+    var details = bind('details');
+    var dfn = bind('dfn');
+    var dialog = bind('dialog');
+    var div = bind('div');
+    var dl = bind('dl');
+    var dt = bind('dt');
+    var element = bind('element');
+    var em = bind('em');
+    var embed = bind('embed');
+    var fieldset = bind('fieldset');
+    var figcaption = bind('figcaption');
+    var figure = bind('figure');
+    var font = bind('font');
+    var footer = bind('footer');
+    var form = bind('form');
+    var h1 = bind('h1');
+    var h2 = bind('h2');
+    var h3 = bind('h3');
+    var h4 = bind('h4');
+    var h5 = bind('h5');
+    var h6 = bind('h6');
+    var head = bind('head');
+    var header = bind('header');
+    var hgroup = bind('hgroup');
+    var hr = bind('hr');
+    var html = bind('html');
+    var i = bind('i');
+    var iframe = bind('iframe');
+    var image = bind('image');
+    var img = bind('img');
+    var input = bind('input');
+    var ins = bind('ins');
+    var kbd = bind('kbd');
+    var keygen = bind('keygen');
+    var label = bind('label');
+    var legend = bind('legend');
+    var li = bind('li');
+    var link$1 = bind('link');
+    var main = bind('main');
+    var map = bind('map');
+    var mark = bind('mark');
+    var marquee = bind('marquee');
+    var menu = bind('menu');
+    var menuitem = bind('menuitem');
+    var meta = bind('meta');
+    var meter = bind('meter');
+    var multicol = bind('multicol');
+    var nav = bind('nav');
+    var nobr = bind('nobr');
+    var noembed = bind('noembed');
+    var noframes = bind('noframes');
+    var noscript = bind('noscript');
+    var object = bind('object');
+    var ol = bind('ol');
+    var optgroup = bind('optgroup');
+    var option = bind('option');
+    var output = bind('output');
+    var p = bind('p');
+    var param = bind('param');
+    var picture = bind('picture');
+    var pre = bind('pre');
+    var progress = bind('progress');
+    var q = bind('q');
+    var rp = bind('rp');
+    var rt = bind('rt');
+    var rtc = bind('rtc');
+    var ruby = bind('ruby');
+    var s = bind('s');
+    var samp = bind('samp');
+    var script = bind('script');
+    var section = bind('section');
+    var select = bind('select');
+    var shadow = bind('shadow');
+    var slot = bind(slotElementName);
+    var small = bind('small');
+    var source = bind('source');
+    var span = bind('span');
+    var strong = bind('strong');
+    var style = bind('style');
+    var sub = bind('sub');
+    var summary = bind('summary');
+    var sup = bind('sup');
+    var table = bind('table');
+    var tbody = bind('tbody');
+    var td = bind('td');
+    var template = bind('template');
+    var textarea = bind('textarea');
+    var tfoot = bind('tfoot');
+    var th = bind('th');
+    var thead = bind('thead');
+    var time = bind('time');
+    var title = bind('title');
+    var tr = bind('tr');
+    var track = bind('track');
+    var u = bind('u');
+    var ul = bind('ul');
+    var video = bind('video');
+    var wbr = bind('wbr');
 
-    kickflip.emit = skate.emit;
-    kickflip.state = state;
-    kickflip.vdom = require$$2$5;
-    kickflip.version = version;
+    var create = skate.create;
+    var emit = skate.emit;
+    var fragment = skate.fragment;
+    var init = skate.init;
+    var properties = skate.properties;
+    var ready = skate.ready;
+    var render = skate.render;
 
     var previousGlobal = window.kickflip;
     kickflip.noConflict = function noConflict() {
