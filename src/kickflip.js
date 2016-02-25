@@ -1,3 +1,4 @@
+import { applyProp, attributes } from 'incremental-dom';
 import debounce from 'debounce';
 import render from './render';
 import skate from 'skatejs';
@@ -17,6 +18,7 @@ function createAttributeLinks (opts) {
 
     if (typeof prop.attribute === 'undefined') {
       prop.attribute = true;
+      attributes[name] = applyProp;
     }
   });
 }
