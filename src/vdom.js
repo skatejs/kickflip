@@ -21,7 +21,7 @@ const slotElementName = 'slot';
 
 // The "key" and "statics" are specified as arguments in iDOM. For the purposes
 // of this API it's simpler to use the attributes object.
-attributes.key = attributes.statics = function () {};
+attributes.key = attributes.skip = attributes.statics = function () {};
 attributes.value = applyProp;
 
 // Creates a factory and returns it.
@@ -44,7 +44,7 @@ function bind (tname) {
       chren = attrs;
     }
 
-    if (slot) {
+    if (slot || attrs.skip) {
       skip();
     } else {
       const chrenType = typeof chren;
