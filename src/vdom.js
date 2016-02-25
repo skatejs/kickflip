@@ -26,6 +26,10 @@ attributes.value = applyProp;
 
 // Creates a factory and returns it.
 function bind (tname) {
+  if (typeof tname === 'function') {
+    tname = tname.id || tname.name;
+  }
+
   return factories[tname] = function (attrs, chren) {
     const slot = tname === slotElementName;
 
