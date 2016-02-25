@@ -1,5 +1,5 @@
 import { patch } from 'incremental-dom';
-import { render } from 'skatejs-named-slots';
+import render from 'skatejs-named-slots/lib/render';
 
 export default function (opts) {
   const internalRenderer = opts.render;
