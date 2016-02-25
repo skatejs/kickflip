@@ -1204,7 +1204,7 @@
     var attributes = incrementalDomCjs.attributes;
     var applyProp = incrementalDomCjs.applyProp;
 
-    var index$4 = __commonjs(function (module) {
+    var index$5 = __commonjs(function (module) {
     module.exports = Date.now || now;
 
     function now() {
@@ -1212,9 +1212,9 @@
     }
     });
 
-    var require$$0$16 = (index$4 && typeof index$4 === 'object' && 'default' in index$4 ? index$4['default'] : index$4);
+    var require$$0$16 = (index$5 && typeof index$5 === 'object' && 'default' in index$5 ? index$5['default'] : index$5);
 
-    var index = __commonjs(function (module) {
+    var index$3 = __commonjs(function (module) {
     /**
      * Module dependencies.
      */
@@ -1269,7 +1269,7 @@
     };
     });
 
-    var debounce = (index && typeof index === 'object' && 'default' in index ? index['default'] : index);
+    var debounce$1 = (index$3 && typeof index$3 === 'object' && 'default' in index$3 ? index$3['default'] : index$3);
 
     var prop = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -1811,7 +1811,7 @@
 
     var require$$1 = (defineProperties && typeof defineProperties === 'object' && 'default' in defineProperties ? defineProperties['default'] : defineProperties);
 
-    var debounce$1 = __commonjs(function (module, exports, global) {
+    var debounce = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(["module", "exports"], factory);
@@ -1855,7 +1855,7 @@
     });
     });
 
-    var require$$2 = (debounce$1 && typeof debounce$1 === 'object' && 'default' in debounce$1 ? debounce$1['default'] : debounce$1);
+    var require$$2 = (debounce && typeof debounce === 'object' && 'default' in debounce ? debounce['default'] : debounce);
 
     var getOwnPropertyDescriptors = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -2842,7 +2842,7 @@
 
     var require$$2$5 = (dashCase && typeof dashCase === 'object' && 'default' in dashCase ? dashCase['default'] : dashCase);
 
-    var index$5 = __commonjs(function (module) {
+    var index$4 = __commonjs(function (module) {
     /* eslint-disable no-unused-vars */
     'use strict';
 
@@ -2885,7 +2885,7 @@
     };
     });
 
-    var require$$3$2 = (index$5 && typeof index$5 === 'object' && 'default' in index$5 ? index$5['default'] : index$5);
+    var require$$3$2 = (index$4 && typeof index$4 === 'object' && 'default' in index$4 ? index$4['default'] : index$4);
 
     var propertiesInit = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -3798,25 +3798,66 @@
 
     var require$$2$3 = (boolean && typeof boolean === 'object' && 'default' in boolean ? boolean['default'] : boolean);
 
-    var index$2 = __commonjs(function (module, exports, global) {
+    var array = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', 'object-assign', './boolean', './number', './string'], factory);
+        define(['module', 'exports'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$3$2, require$$2$3, require$$1$4, require$$0$9);
+        factory(module, exports);
       } else {
         var mod = {
           exports: {}
         };
-        factory(mod, mod.exports, global.objectAssign, global.boolean, global.number, global.string);
-        global.index = mod.exports;
+        factory(mod, mod.exports);
+        global.array = mod.exports;
       }
-    })(__commonjs_global, function (module, exports, _objectAssign, _boolean, _number, _string) {
+    })(__commonjs_global, function (module, exports) {
       'use strict';
 
       Object.defineProperty(exports, "__esModule", {
         value: true
       });
+      exports.default = {
+        coerce: function coerce(val) {
+          return Array.isArray(val) ? val : [val];
+        },
+        default: function _default() {
+          return [];
+        },
+        deserialize: function deserialize(val) {
+          return val.split(',');
+        },
+        serialize: function serialize(val) {
+          return val.join(',');
+        }
+      };
+      module.exports = exports['default'];
+    });
+    });
+
+    var require$$4$3 = (array && typeof array === 'object' && 'default' in array ? array['default'] : array);
+
+    var index$1 = __commonjs(function (module, exports, global) {
+    (function (global, factory) {
+      if (typeof define === "function" && define.amd) {
+        define(['module', 'exports', './array', 'object-assign', './boolean', './number', './string'], factory);
+      } else if (typeof exports !== "undefined") {
+        factory(module, exports, require$$4$3, require$$3$2, require$$2$3, require$$1$4, require$$0$9);
+      } else {
+        var mod = {
+          exports: {}
+        };
+        factory(mod, mod.exports, global.array, global.objectAssign, global.boolean, global.number, global.string);
+        global.index = mod.exports;
+      }
+    })(__commonjs_global, function (module, exports, _array, _objectAssign, _boolean, _number, _string) {
+      'use strict';
+
+      Object.defineProperty(exports, "__esModule", {
+        value: true
+      });
+
+      var _array2 = _interopRequireDefault(_array);
 
       var _objectAssign2 = _interopRequireDefault(_objectAssign);
 
@@ -3844,6 +3885,7 @@
       }
 
       exports.default = {
+        array: prop(_array2.default),
         boolean: prop(_boolean2.default),
         number: prop(_number2.default),
         string: prop(_string2.default)
@@ -3852,7 +3894,7 @@
     });
     });
 
-    var require$$19 = (index$2 && typeof index$2 === 'object' && 'default' in index$2 ? index$2['default'] : index$2);
+    var require$$19 = (index$1 && typeof index$1 === 'object' && 'default' in index$1 ? index$1['default'] : index$1);
 
     var elementContains = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -4261,7 +4303,7 @@
 
     var require$$23 = (create$1 && typeof create$1 === 'object' && 'default' in create$1 ? create$1['default'] : create$1);
 
-    var index$1 = __commonjs(function (module, exports, global) {
+    var index = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', './api/create', './api/emit', './api/fragment', './api/init', './api/properties/index', './api/ready', './api/render', './api/version', 'object-assign', './lifecycle/attached', './lifecycle/attribute', './lifecycle/created', './native/create-element', './defaults', './lifecycle/detached', './shared/document-observer', './native/register-element', './shared/registry', './type/element', './util/get-all-property-descriptors', './util/get-own-property-descriptors', './util/debounce', './util/define-properties', './util/walk-tree'], factory);
@@ -4446,7 +4488,7 @@
     });
     });
 
-    var skate = (index$1 && typeof index$1 === 'object' && 'default' in index$1 ? index$1['default'] : index$1);
+    var skate = (index && typeof index === 'object' && 'default' in index ? index['default'] : index);
 
     var $debounce = Symbol();
 
@@ -4534,7 +4576,7 @@
           set && set(elem, data);
           if (render(elem, data)) {
             var deb = elem[$debounce];
-            !deb && (deb = elem[$debounce] = debounce(skate.render, 1));
+            !deb && (deb = elem[$debounce] = debounce$1(skate.render, 1));
             deb(elem);
           }
         };
@@ -4558,7 +4600,7 @@
       return skate(name, opts);
     }
 
-    var index$3 = __commonjs(function (module) {
+    var index$2 = __commonjs(function (module) {
     /* eslint-disable no-unused-vars */
     'use strict';
 
