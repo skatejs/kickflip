@@ -24,6 +24,25 @@ const slotElementName = 'slot';
 attributes.key = attributes.skip = attributes.statics = function () {};
 attributes.value = applyProp;
 
+function applyEvent (eName) {
+  return function (elem, name, value) {
+    let events = elem.__events;
+
+    if (!events) {
+      events = elem.__events = {};
+    }
+
+    const eFunc = events[eName];
+
+    if (eFunc) {
+      elem.removeEventListener(eName, eFunc);
+    }
+
+    events[eName] = value;
+    elem.addEventListener(eName, value);
+  };
+}
+
 // Creates a factory and returns it.
 function bind (tname) {
   if (typeof tname === 'function') {
@@ -36,7 +55,13 @@ function bind (tname) {
     if (typeof attrs === 'object') {
       elementOpenStart(tname, attrs.key, attrs.statics);
       for (let a in attrs) {
-        attr(slot && a === 'name' ? slotAttributeName : a, attrs[a]);
+        let val = attrs[a];
+        if (slot && a === 'name') {
+          a = slotAttributeName;
+        } else if (!attributes[a] && a.indexOf('on') === 0) {
+          attributes[a] = applyEvent(a.substring(2));
+        }
+        attr(a, val);
       }
       elementOpenEnd();
     } else {
