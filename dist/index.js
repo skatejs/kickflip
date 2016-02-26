@@ -1214,7 +1214,7 @@
 
     var require$$0$16 = (index$5 && typeof index$5 === 'object' && 'default' in index$5 ? index$5['default'] : index$5);
 
-    var index$3 = __commonjs(function (module) {
+    var index$2 = __commonjs(function (module) {
     /**
      * Module dependencies.
      */
@@ -1269,7 +1269,7 @@
     };
     });
 
-    var debounce$1 = (index$3 && typeof index$3 === 'object' && 'default' in index$3 ? index$3['default'] : index$3);
+    var debounce$1 = (index$2 && typeof index$2 === 'object' && 'default' in index$2 ? index$2['default'] : index$2);
 
     var prop = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -2842,7 +2842,7 @@
 
     var require$$2$5 = (dashCase && typeof dashCase === 'object' && 'default' in dashCase ? dashCase['default'] : dashCase);
 
-    var index$4 = __commonjs(function (module) {
+    var index$3 = __commonjs(function (module) {
     /* eslint-disable no-unused-vars */
     'use strict';
 
@@ -2885,7 +2885,7 @@
     };
     });
 
-    var require$$3$2 = (index$4 && typeof index$4 === 'object' && 'default' in index$4 ? index$4['default'] : index$4);
+    var require$$3$2 = (index$3 && typeof index$3 === 'object' && 'default' in index$3 ? index$3['default'] : index$3);
 
     var propertiesInit = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -4600,7 +4600,7 @@
       return skate(name, opts);
     }
 
-    var index$2 = __commonjs(function (module) {
+    var index$4 = __commonjs(function (module) {
     /* eslint-disable no-unused-vars */
     'use strict';
 
@@ -4657,6 +4657,25 @@
     attributes.key = attributes.skip = attributes.statics = function () {};
     attributes.value = applyProp;
 
+    function applyEvent(eName) {
+      return function (elem, name, value) {
+        var events = elem.__events;
+
+        if (!events) {
+          events = elem.__events = {};
+        }
+
+        var eFunc = events[eName];
+
+        if (eFunc) {
+          elem.removeEventListener(eName, eFunc);
+        }
+
+        events[eName] = value;
+        elem.addEventListener(eName, value);
+      };
+    }
+
     // Creates a factory and returns it.
     function bind(tname) {
       if (typeof tname === 'function') {
@@ -4669,7 +4688,13 @@
         if ((typeof attrs === 'undefined' ? 'undefined' : babelHelpers.typeof(attrs)) === 'object') {
           elementOpenStart(tname, attrs.key, attrs.statics);
           for (var _a in attrs) {
-            attr(slot && _a === 'name' ? slotAttributeName : _a, attrs[_a]);
+            var val = attrs[_a];
+            if (slot && _a === 'name') {
+              _a = slotAttributeName;
+            } else if (!attributes[_a] && _a.indexOf('on') === 0) {
+              attributes[_a] = applyEvent(_a.substring(2));
+            }
+            attr(_a, val);
           }
           elementOpenEnd();
         } else {
