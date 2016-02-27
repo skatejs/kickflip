@@ -1,5 +1,17 @@
-export default function (elem, prop = 'value') {
+function getInputValue (input) {
+  if (input.type === 'checkbox') {
+    return input.checked ? input.value || true : false;
+  }
+  if (input.type === 'radio') {
+    return input.checked ? input.value : null;
+  }
+  return input.value;
+}
+
+export default function (elem, prop = '', getValue = getInputValue) {
   return function (e) {
-    elem[prop] = e.currentTarget.value;
+    const input = e.currentTarget;
+    const name = prop || input.name || 'value';
+    (elem || input)[name] = getValue(input);
   };
 }
