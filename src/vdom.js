@@ -22,7 +22,7 @@ const slotElementName = 'slot';
 // The "key" and "statics" are specified as arguments in iDOM. For the purposes
 // of this API it's simpler to use the attributes object.
 attributes.key = attributes.skip = attributes.statics = function () {};
-attributes.checked = attributes.value = applyProp;
+attributes.checked = attributes.className = attributes.value = applyProp;
 
 function applyEvent (eName) {
   return function (elem, name, value) {
@@ -60,6 +60,8 @@ function bind (tname) {
           a = slotAttributeName;
         } else if (!attributes[a] && a.indexOf('on') === 0) {
           attributes[a] = applyEvent(a.substring(2));
+        } else if (a === 'class') {
+          a = 'className';
         }
         attr(a, val);
       }
@@ -69,7 +71,7 @@ function bind (tname) {
       chren = attrs;
     }
 
-    if (slot || attrs.skip) {
+    if (slot || (attrs && attrs.skip)) {
       skip();
     } else {
       const chrenType = typeof chren;
