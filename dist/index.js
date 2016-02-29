@@ -2125,7 +2125,7 @@
       Object.defineProperty(exports, "__esModule", {
         value: true
       });
-      var VERSION = '__skate_0_14_0';
+      var VERSION = '__skate_0_16_0';
 
       if (!window[VERSION]) {
         window[VERSION] = {
@@ -3675,7 +3675,7 @@
 
     var require$$18 = (ready$1 && typeof ready$1 === 'object' && 'default' in ready$1 ? ready$1['default'] : ready$1);
 
-    var string = __commonjs(function (module, exports, global) {
+    var string$1 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../../util/empty'], factory);
@@ -3716,9 +3716,9 @@
     });
     });
 
-    var require$$0$9 = (string && typeof string === 'object' && 'default' in string ? string['default'] : string);
+    var require$$0$9 = (string$1 && typeof string$1 === 'object' && 'default' in string$1 ? string$1['default'] : string$1);
 
-    var number = __commonjs(function (module, exports, global) {
+    var number$1 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../../util/empty'], factory);
@@ -3759,9 +3759,9 @@
     });
     });
 
-    var require$$1$4 = (number && typeof number === 'object' && 'default' in number ? number['default'] : number);
+    var require$$1$4 = (number$1 && typeof number$1 === 'object' && 'default' in number$1 ? number$1['default'] : number$1);
 
-    var boolean = __commonjs(function (module, exports, global) {
+    var boolean$1 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports'], factory);
@@ -3796,9 +3796,9 @@
     });
     });
 
-    var require$$2$3 = (boolean && typeof boolean === 'object' && 'default' in boolean ? boolean['default'] : boolean);
+    var require$$2$3 = (boolean$1 && typeof boolean$1 === 'object' && 'default' in boolean$1 ? boolean$1['default'] : boolean$1);
 
-    var array = __commonjs(function (module, exports, global) {
+    var array$1 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports'], factory);
@@ -3835,7 +3835,7 @@
     });
     });
 
-    var require$$4$3 = (array && typeof array === 'object' && 'default' in array ? array['default'] : array);
+    var require$$4$3 = (array$1 && typeof array$1 === 'object' && 'default' in array$1 ? array$1['default'] : array$1);
 
     var index$1 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -4643,6 +4643,12 @@
     };
     });
 
+    var props = skate.properties;
+    var array = props.array;
+    var boolean = props.boolean;
+    var number = props.number;
+    var string = props.string;
+
     // Specify an environment for iDOM in case we haven't yet.
     if (typeof process === 'undefined') {
       process = { env: { NODE_ENV: 'production' } };
@@ -4655,7 +4661,7 @@
     // The "key" and "statics" are specified as arguments in iDOM. For the purposes
     // of this API it's simpler to use the attributes object.
     attributes.key = attributes.skip = attributes.statics = function () {};
-    attributes.value = applyProp;
+    attributes.checked = attributes.value = applyProp;
 
     function applyEvent(eName) {
       return function (elem, name, value) {
@@ -4850,7 +4856,6 @@
     var emit = skate.emit;
     var fragment = skate.fragment;
     var init = skate.init;
-    var properties = skate.properties;
     var ready = skate.ready;
     var render = skate.render;
 
