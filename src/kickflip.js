@@ -1,7 +1,7 @@
 import { applyProp, attributes } from 'incremental-dom';
 import debounce from 'debounce';
 import render from './render';
-import skate from 'skatejs';
+import skate from '../node_modules/skatejs/lib/index';
 
 const $debounce = Symbol();
 
