@@ -10,6 +10,22 @@
     } : function (obj) {
       return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
     };
+
+    babelHelpers.defineProperty = function (obj, key, value) {
+      if (key in obj) {
+        Object.defineProperty(obj, key, {
+          value: value,
+          enumerable: true,
+          configurable: true,
+          writable: true
+        });
+      } else {
+        obj[key] = value;
+      }
+
+      return obj;
+    };
+
     babelHelpers;
 
 
@@ -1271,6 +1287,10 @@
 
     var debounce$1 = (index$2 && typeof index$2 === 'object' && 'default' in index$2 ? index$2['default'] : index$2);
 
+    var data$1 = {
+      shadowId: ''
+    };
+
     var prop = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
@@ -1418,7 +1438,7 @@
         var slots = elem.__slots;
 
         if (typeof slots[name] === 'undefined') {
-          var slot = elem.querySelector('[slot-name="' + (name === 'content' ? '' : name) + '"]');
+          var slot = elem.querySelector('[slot-name="' + elem.__shadowId + (name === 'content' ? '' : name) + '"]');
 
           if (slot) {
             slots[name] = slot;
@@ -1599,6 +1619,8 @@
       });
 
       exports.default = function (fn) {
+        var opts = arguments.length <= 1 || arguments[1] === undefined ? defaults : arguments[1];
+
         return function (elem) {
           var shadowRoot = elem.__shadowRoot;
 
@@ -1609,14 +1631,20 @@
             // root.
             var initialLightDom = createFragmentFromChildNodes(elem);
 
+            // Create a shadow ID so that it can be used to get a slot that is unique
+            // to this shadow root. Since we don't polyfill querySelector() et al, we
+            // need a way to be able to refer to slots that are unique to this
+            // shadow root.
+            elem.__shadowId = opts.shadowId;
+
             // Create the shadow root and return the light DOM. We must get the light
             // DOM before we template it so that we can distribute it after
             // polyfilling.
-            shadowRoot = elem.__shadowRoot = createShadowRoot(elem);
+            elem.__shadowRoot = createShadowRoot(elem);
 
             // Render once we have the initial light DOM as this would likely blow
             // that away.
-            fn(elem, shadowRoot);
+            fn(elem, elem.__shadowRoot);
 
             // Now polyfill so that we can distribute after.
             (0, _polyfill2.default)(elem);
@@ -1635,6 +1663,8 @@
           default: obj
         };
       }
+
+      var shadowId = 0;
 
       function createFragmentFromChildNodes(elem) {
         var frag = document.createDocumentFragment();
@@ -1656,12 +1686,16 @@
         return window.getComputedStyle(elem).display === 'block';
       }
 
+      var defaults = {
+        shadowId: ''
+      };
       module.exports = exports['default'];
     });
     });
 
     var render$4 = (render$3 && typeof render$3 === 'object' && 'default' in render$3 ? render$3['default'] : render$3);
 
+    var shadowIdCount = 0;
     function render$1 (opts) {
       var internalRenderer = opts.render;
 
@@ -1669,8 +1703,26 @@
         return;
       }
 
+      // Keep the internal shadow ID static as this is used to locate the slots
+      // that belong to the shadow root excluding any that may belong to descendant
+      // components of the shadow root.
+      var internalShadowId = ++shadowIdCount;
+
       return render$4(function (elem, shadowRoot) {
+        // Record the current shadow ID so we can restore it.
+        var shadowId = data$1.shadowId;
+
+        // Set the new shadow ID so that the vDOM API can use it.
+        data$1.shadowId = internalShadowId;
+
+        // Patch once the shadow ID is set.
         patch(shadowRoot, internalRenderer, elem);
+
+        // Restore to the previous ID so that any subsequent elements refer to the
+        // proper scope.
+        data$1.shadowId = shadowId;
+      }, {
+        shadowId: internalShadowId
       });
     }
 
@@ -2491,7 +2543,7 @@
 
     var require$$8 = (documentObserver && typeof documentObserver === 'object' && 'default' in documentObserver ? documentObserver['default'] : documentObserver);
 
-    var data$1 = __commonjs(function (module, exports, global) {
+    var data$2 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports'], factory);
@@ -2522,7 +2574,7 @@
     });
     });
 
-    var require$$1$2 = (data$1 && typeof data$1 === 'object' && 'default' in data$1 ? data$1['default'] : data$1);
+    var require$$1$2 = (data$2 && typeof data$2 === 'object' && 'default' in data$2 ? data$2['default'] : data$2);
 
     var detached = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -4661,7 +4713,7 @@
     // The "key" and "statics" are specified as arguments in iDOM. For the purposes
     // of this API it's simpler to use the attributes object.
     attributes.key = attributes.skip = attributes.statics = function () {};
-    attributes.checked = attributes.value = applyProp;
+    attributes.checked = attributes.className = attributes.value = applyProp;
 
     function applyEvent(eName) {
       return function (elem, name, value) {
@@ -4695,10 +4747,18 @@
           elementOpenStart(tname, attrs.key, attrs.statics);
           for (var _a in attrs) {
             var val = attrs[_a];
-            if (slot && _a === 'name') {
+            if (slot && _a === 'name' || _a === slotAttributeName) {
+              // Normalize the slot attribute name so the named-slot API can find
+              // it.
               _a = slotAttributeName;
+
+              // Prepend the shadow ID so that the named-slot API can find it if it
+              // has specified one.
+              val = data$1.shadowId + val;
             } else if (!attributes[_a] && _a.indexOf('on') === 0) {
               attributes[_a] = applyEvent(_a.substring(2));
+            } else if (_a === 'class') {
+              _a = 'className';
             }
             attr(_a, val);
           }
@@ -4708,7 +4768,7 @@
           chren = attrs;
         }
 
-        if (slot || attrs.skip) {
+        if (slot || attrs && (attrs.skip || attrs[slotAttributeName] !== undefined)) {
           skip();
         } else {
           var chrenType = typeof chren === 'undefined' ? 'undefined' : babelHelpers.typeof(chren);
