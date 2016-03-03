@@ -1,17 +1,34 @@
-function getInputValue (input) {
-  if (input.type === 'checkbox') {
-    return input.checked ? input.value || true : false;
+import state from './state';
+
+function getValue (elem) {
+  const type = elem.type;
+  if (type === 'checkbox' || type === 'radio') {
+    return elem.checked ? elem.value || true : false;
   }
-  if (input.type === 'radio') {
-    return input.checked ? input.value : null;
-  }
-  return input.value;
+  return elem.value;
 }
 
-export default function (elem, prop = '', getValue = getInputValue) {
+export default function (elem, target) {
   return function (e) {
-    const input = e.currentTarget;
-    const name = prop || input.name || 'value';
-    (elem || input)[name] = getValue(input);
+    const value = getValue(e.target);
+    const localTarget = target || e.target.name || 'value';
+
+    if (localTarget.indexOf('.') > -1) {
+      const parts = localTarget.split('.');
+      const firstPart = parts[0];
+      const propName = parts.pop();
+      const obj = parts.reduce(function (prev, curr) {
+        return prev && prev[curr];
+      }, elem);
+
+      obj[propName || e.target.name] = value;
+      state(elem, {
+        [firstPart]: elem[firstPart]
+      });
+    } else {
+      state(elem, {
+        [localTarget]: value
+      });
+    }
   };
 }
