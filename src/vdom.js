@@ -71,7 +71,7 @@ function bind (tname) {
       chren = attrs;
     }
 
-    if (slot || (attrs && attrs.skip)) {
+    if (slot || (attrs && (attrs.skip || attrs[slotAttributeName] !== undefined))) {
       skip();
     } else {
       const chrenType = typeof chren;
