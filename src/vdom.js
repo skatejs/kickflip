@@ -9,6 +9,7 @@ import {
   skip,
   text
 } from 'incremental-dom';
+import internalData from './data';
 
 // Specify an environment for iDOM in case we haven't yet.
 if (typeof process === 'undefined') {
@@ -56,8 +57,14 @@ function bind (tname) {
       elementOpenStart(tname, attrs.key, attrs.statics);
       for (let a in attrs) {
         let val = attrs[a];
-        if (slot && a === 'name') {
+        if (slot && a === 'name' || a === slotAttributeName) {
+          // Normalize the slot attribute name so the named-slot API can find
+          // it.
           a = slotAttributeName;
+
+          // Prepend the shadow ID so that the named-slot API can find it if it
+          // has specified one.
+          val = internalData.shadowId + val;
         } else if (!attributes[a] && a.indexOf('on') === 0) {
           attributes[a] = applyEvent(a.substring(2));
         } else if (a === 'class') {
