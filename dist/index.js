@@ -47,7 +47,7 @@
 
     var require$$0$16 = (index$5 && typeof index$5 === 'object' && 'default' in index$5 ? index$5['default'] : index$5);
 
-    var index$4 = __commonjs(function (module) {
+    var index$2 = __commonjs(function (module) {
     /**
      * Module dependencies.
      */
@@ -102,7 +102,7 @@
     };
     });
 
-    var debounce$1 = (index$4 && typeof index$4 === 'object' && 'default' in index$4 ? index$4['default'] : index$4);
+    var debounce$1 = (index$2 && typeof index$2 === 'object' && 'default' in index$2 ? index$2['default'] : index$2);
 
     var incrementalDomCjs = __commonjs(function (module, exports) {
     /**
@@ -2896,7 +2896,7 @@
 
     var require$$2$5 = (dashCase && typeof dashCase === 'object' && 'default' in dashCase ? dashCase['default'] : dashCase);
 
-    var index$2 = __commonjs(function (module) {
+    var index$4 = __commonjs(function (module) {
     /* eslint-disable no-unused-vars */
     'use strict';
 
@@ -2939,7 +2939,7 @@
     };
     });
 
-    var require$$3$2 = (index$2 && typeof index$2 === 'object' && 'default' in index$2 ? index$2['default'] : index$2);
+    var require$$3$2 = (index$4 && typeof index$4 === 'object' && 'default' in index$4 ? index$4['default'] : index$4);
 
     var propertiesInit = __commonjs(function (module, exports, global) {
     (function (global, factory) {
