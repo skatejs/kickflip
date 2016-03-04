@@ -265,7 +265,7 @@ select({ name: 'my-select' }, function () {
 The `text()` function is also exported directly from Incremental DOM and you could use that if you wanted to instead of specifying as string:
 
 ```js
-import { option, select } from 'kickflip/src/vdom';
+import { option, select, text } from 'kickflip/src/vdom';
 
 select({ name: 'my-select' }, function () {
   option({ value: 'myval' }, function () {
