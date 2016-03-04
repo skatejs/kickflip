@@ -22,7 +22,7 @@ const factories = {};
 attributes.key = attributes.skip = attributes.statics = function () {};
 
 // Attributes that *must* be set via a property.
-attributes.checked = attributes.className = attributes.value = applyProp;
+attributes.checked = attributes.className = attributes.disabled = attributes.value = applyProp;
 
 function applyEvent (eName) {
   return function (elem, name, value) {
@@ -50,7 +50,7 @@ function bind (tname) {
   }
 
   return factories[tname] = function (attrs, chren) {
-    if (typeof attrs === 'object') {
+    if (attrs && typeof attrs === 'object') {
       elementOpenStart(tname, attrs.key, attrs.statics);
       for (let a in attrs) {
         let val = attrs[a];
@@ -60,6 +60,12 @@ function bind (tname) {
         // Class attribute handling.
         } else if (a === 'class') {
           a = 'className';
+        // True becomes an empty string (boolean attributes).
+        } else if (val === true) {
+          val = '';
+        // False is not set at all (boolean attributes).
+        } else if (val === false) {
+          continue;
         }
         attr(a, val);
       }
@@ -97,7 +103,7 @@ export { text };
 // Creates an element that acts as a slot.
 export function slot (attrs, chren) {
   // Attributes must be an object so that we can add slot info.
-  if (typeof attrs !== 'object') {
+  if (attrs && typeof attrs !== 'object') {
     chren = attrs;
     attrs = {};
   }
