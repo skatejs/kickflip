@@ -72,10 +72,7 @@ function bind (tname) {
         // Class attribute handling.
         } else if (a === 'class') {
           a = 'className';
-        // True becomes an empty string (boolean attributes).
-        } else if (val === true) {
-          val = '';
-        // False is not set at all (boolean attributes).
+        // False is not set at all.
         } else if (val === false) {
           continue;
         }
