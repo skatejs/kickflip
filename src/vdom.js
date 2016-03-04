@@ -17,12 +17,11 @@ if (typeof process === 'undefined') {
 }
 
 const factories = {};
-const slotAttributeName = 'slot-name';
-const slotElementName = 'slot';
 
-// The "key" and "statics" are specified as arguments in iDOM. For the purposes
-// of this API it's simpler to use the attributes object.
+// Attributes that are not handled by Incremental DOM.
 attributes.key = attributes.skip = attributes.statics = function () {};
+
+// Attributes that *must* be set via a property.
 attributes.checked = attributes.className = attributes.value = applyProp;
 
 function applyEvent (eName) {
@@ -51,22 +50,14 @@ function bind (tname) {
   }
 
   return factories[tname] = function (attrs, chren) {
-    const slot = tname === slotElementName;
-
     if (typeof attrs === 'object') {
       elementOpenStart(tname, attrs.key, attrs.statics);
       for (let a in attrs) {
         let val = attrs[a];
-        if (slot && a === 'name' || a === slotAttributeName) {
-          // Normalize the slot attribute name so the named-slot API can find
-          // it.
-          a = slotAttributeName;
-
-          // Prepend the shadow ID so that the named-slot API can find it if it
-          // has specified one.
-          val = internalData.shadowId + val;
-        } else if (!attributes[a] && a.indexOf('on') === 0) {
+        // Event binding using on* names.
+        if (!attributes[a] && a.indexOf('on') === 0) {
           attributes[a] = applyEvent(a.substring(2));
+        // Class attribute handling.
         } else if (a === 'class') {
           a = 'className';
         }
@@ -76,9 +67,10 @@ function bind (tname) {
     } else {
       elementOpen(tname);
       chren = attrs;
+      attrs = {};
     }
 
-    if (slot || (attrs && (attrs.skip || attrs[slotAttributeName] !== undefined))) {
+    if (attrs.skip) {
       skip();
     } else {
       const chrenType = typeof chren;
@@ -94,13 +86,41 @@ function bind (tname) {
 }
 
 // The default function requries a tag name.
-export default function (tname, attrs, chren) {
+export default function create (tname, attrs, chren) {
   return (factories[tname] || bind(tname))(attrs, chren);
 }
 
 // Export the Incremental DOM text() function directly as we don't need to do
 // any special processing for it.
 export { text };
+
+// Creates an element that acts as a slot.
+export function slot (attrs, chren) {
+  // Attributes must be an object so that we can add slot info.
+  if (typeof attrs !== 'object') {
+    chren = attrs;
+    attrs = {};
+  }
+
+  // Default to a <slot /> element.
+  const tname = attrs.type || 'slot';
+
+  // Always add a slot-name attribute, even if it's empty so that the named-
+  // slot API can pick it up. We must also prepend a shadowId if there is one
+  // so that the named-slot API only finds slot elements that belong to its
+  // shadow root, not descendant component shadow roots.
+  attrs['slot-name'] = internalData.shadowId + (attrs.name || '');
+
+  // Since this is a slot we *must* skip it so that Incremental DOM doesn't
+  // diff / patch the content of it.
+  attrs.skip = true;
+
+  // Ensure special attributes aren't passed on.
+  delete attrs.name;
+  delete attrs.type;
+
+  return create(tname, attrs, chren);
+}
 
 // Create factories for all HTML elements except for ones that match keywords
 // such as "var".
@@ -205,7 +225,6 @@ export const script = bind('script');
 export const section = bind('section');
 export const select = bind('select');
 export const shadow = bind('shadow');
-export const slot = bind(slotElementName);
 export const small = bind('small');
 export const source = bind('source');
 export const span = bind('span');
