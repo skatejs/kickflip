@@ -1,5 +1,4 @@
 import {
-  applyAttr,
   applyProp,
   attr,
   attributes,
