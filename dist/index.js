@@ -4308,7 +4308,7 @@
 
     var require$$22 = (emit$1 && typeof emit$1 === 'object' && 'default' in emit$1 ? emit$1['default'] : emit$1);
 
-    var create$1 = __commonjs(function (module, exports, global) {
+    var create$2 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', 'object-assign', '../native/create-element', './init', '../shared/registry'], factory);
@@ -4353,7 +4353,7 @@
     });
     });
 
-    var require$$23 = (create$1 && typeof create$1 === 'object' && 'default' in create$1 ? create$1['default'] : create$1);
+    var require$$23 = (create$2 && typeof create$2 === 'object' && 'default' in create$2 ? create$2['default'] : create$2);
 
     var index = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -4707,12 +4707,11 @@
     }
 
     var factories = {};
-    var slotAttributeName = 'slot-name';
-    var slotElementName = 'slot';
 
-    // The "key" and "statics" are specified as arguments in iDOM. For the purposes
-    // of this API it's simpler to use the attributes object.
+    // Attributes that are not handled by Incremental DOM.
     attributes.key = attributes.skip = attributes.statics = function () {};
+
+    // Attributes that *must* be set via a property.
     attributes.checked = attributes.className = attributes.value = applyProp;
 
     function applyEvent(eName) {
@@ -4741,34 +4740,27 @@
       }
 
       return factories[tname] = function (attrs, chren) {
-        var slot = tname === slotElementName;
-
         if ((typeof attrs === 'undefined' ? 'undefined' : babelHelpers.typeof(attrs)) === 'object') {
           elementOpenStart(tname, attrs.key, attrs.statics);
           for (var _a in attrs) {
             var val = attrs[_a];
-            if (slot && _a === 'name' || _a === slotAttributeName) {
-              // Normalize the slot attribute name so the named-slot API can find
-              // it.
-              _a = slotAttributeName;
-
-              // Prepend the shadow ID so that the named-slot API can find it if it
-              // has specified one.
-              val = data$1.shadowId + val;
-            } else if (!attributes[_a] && _a.indexOf('on') === 0) {
+            // Event binding using on* names.
+            if (!attributes[_a] && _a.indexOf('on') === 0) {
               attributes[_a] = applyEvent(_a.substring(2));
+              // Class attribute handling.
             } else if (_a === 'class') {
-              _a = 'className';
-            }
+                _a = 'className';
+              }
             attr(_a, val);
           }
           elementOpenEnd();
         } else {
           elementOpen(tname);
           chren = attrs;
+          attrs = {};
         }
 
-        if (slot || attrs && (attrs.skip || attrs[slotAttributeName] !== undefined)) {
+        if (attrs.skip) {
           skip();
         } else {
           var chrenType = typeof chren === 'undefined' ? 'undefined' : babelHelpers.typeof(chren);
@@ -4886,7 +4878,6 @@
     var section = bind('section');
     var select = bind('select');
     var shadow = bind('shadow');
-    var slot = bind(slotElementName);
     var small = bind('small');
     var source = bind('source');
     var span = bind('span');
