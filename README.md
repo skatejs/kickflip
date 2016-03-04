@@ -187,7 +187,7 @@ The `render()` function is wrapped so that it always creates a shadow root and r
 
 ### `link (element, propertyName)`
 
-The `link()` function returns a function that you can bind as an event listenr. The handler will take the event and propagte the changes back to the `element`.
+The `link()` function returns a function that you can bind as an event listener. The handler will take the event and propagte the changes back to the `element`.
 
 This is useful if you want to link the value of an input element back to the component.
 
