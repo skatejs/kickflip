@@ -32,6 +32,78 @@
     var __commonjs_global = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : this;
     function __commonjs(fn, module) { return module = { exports: {} }, fn(module, module.exports, __commonjs_global), module.exports; }
 
+    var data$1 = {
+      applyProp: {},
+      shadowId: ''
+    };
+
+    var index$5 = __commonjs(function (module) {
+    module.exports = Date.now || now;
+
+    function now() {
+        return new Date().getTime();
+    }
+    });
+
+    var require$$0$16 = (index$5 && typeof index$5 === 'object' && 'default' in index$5 ? index$5['default'] : index$5);
+
+    var index$4 = __commonjs(function (module) {
+    /**
+     * Module dependencies.
+     */
+
+    var now = require$$0$16;
+
+    /**
+     * Returns a function, that, as long as it continues to be invoked, will not
+     * be triggered. The function will be called after it stops being called for
+     * N milliseconds. If `immediate` is passed, trigger the function on the
+     * leading edge, instead of the trailing.
+     *
+     * @source underscore.js
+     * @see http://unscriptable.com/2009/03/20/debouncing-javascript-methods/
+     * @param {Function} function to wrap
+     * @param {Number} timeout in ms (`100`)
+     * @param {Boolean} whether to execute at the beginning (`false`)
+     * @api public
+     */
+
+    module.exports = function debounce(func, wait, immediate) {
+      var timeout, args, context, timestamp, result;
+      if (null == wait) wait = 100;
+
+      function later() {
+        var last = now() - timestamp;
+
+        if (last < wait && last > 0) {
+          timeout = setTimeout(later, wait - last);
+        } else {
+          timeout = null;
+          if (!immediate) {
+            result = func.apply(context, args);
+            if (!timeout) context = args = null;
+          }
+        }
+      };
+
+      return function debounced() {
+        context = this;
+        args = arguments;
+        timestamp = now();
+        var callNow = immediate && !timeout;
+        if (!timeout) timeout = setTimeout(later, wait);
+        if (callNow) {
+          result = func.apply(context, args);
+          context = args = null;
+        }
+
+        return result;
+      };
+    };
+    });
+
+    var debounce$1 = (index$4 && typeof index$4 === 'object' && 'default' in index$4 ? index$4['default'] : index$4);
+
     var incrementalDomCjs = __commonjs(function (module, exports) {
     /**
      * @license
@@ -1219,77 +1291,7 @@
     var patch = incrementalDomCjs.patch;
     var attributes = incrementalDomCjs.attributes;
     var applyProp = incrementalDomCjs.applyProp;
-
-    var index$5 = __commonjs(function (module) {
-    module.exports = Date.now || now;
-
-    function now() {
-        return new Date().getTime();
-    }
-    });
-
-    var require$$0$16 = (index$5 && typeof index$5 === 'object' && 'default' in index$5 ? index$5['default'] : index$5);
-
-    var index$2 = __commonjs(function (module) {
-    /**
-     * Module dependencies.
-     */
-
-    var now = require$$0$16;
-
-    /**
-     * Returns a function, that, as long as it continues to be invoked, will not
-     * be triggered. The function will be called after it stops being called for
-     * N milliseconds. If `immediate` is passed, trigger the function on the
-     * leading edge, instead of the trailing.
-     *
-     * @source underscore.js
-     * @see http://unscriptable.com/2009/03/20/debouncing-javascript-methods/
-     * @param {Function} function to wrap
-     * @param {Number} timeout in ms (`100`)
-     * @param {Boolean} whether to execute at the beginning (`false`)
-     * @api public
-     */
-
-    module.exports = function debounce(func, wait, immediate) {
-      var timeout, args, context, timestamp, result;
-      if (null == wait) wait = 100;
-
-      function later() {
-        var last = now() - timestamp;
-
-        if (last < wait && last > 0) {
-          timeout = setTimeout(later, wait - last);
-        } else {
-          timeout = null;
-          if (!immediate) {
-            result = func.apply(context, args);
-            if (!timeout) context = args = null;
-          }
-        }
-      };
-
-      return function debounced() {
-        context = this;
-        args = arguments;
-        timestamp = now();
-        var callNow = immediate && !timeout;
-        if (!timeout) timeout = setTimeout(later, wait);
-        if (callNow) {
-          result = func.apply(context, args);
-          context = args = null;
-        }
-
-        return result;
-      };
-    };
-    });
-
-    var debounce$1 = (index$2 && typeof index$2 === 'object' && 'default' in index$2 ? index$2['default'] : index$2);
-
-    var data$1 = {
-      shadowId: ''
-    };
+    var symbols = incrementalDomCjs.symbols;
 
     var prop = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -2894,7 +2896,7 @@
 
     var require$$2$5 = (dashCase && typeof dashCase === 'object' && 'default' in dashCase ? dashCase['default'] : dashCase);
 
-    var index$3 = __commonjs(function (module) {
+    var index$2 = __commonjs(function (module) {
     /* eslint-disable no-unused-vars */
     'use strict';
 
@@ -2937,7 +2939,7 @@
     };
     });
 
-    var require$$3$2 = (index$3 && typeof index$3 === 'object' && 'default' in index$3 ? index$3['default'] : index$3);
+    var require$$3$2 = (index$2 && typeof index$2 === 'object' && 'default' in index$2 ? index$2['default'] : index$2);
 
     var propertiesInit = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -4546,10 +4548,15 @@
 
     // Defaults all properties to be linked to an attribute unless explicitly
     // specified.
-    function createAttributeLinks(opts) {
+    function createAttributeLinks(elem, opts) {
       var props = opts.properties;
+      var tname = elem.toUpperCase();
       Object.keys(props).forEach(function (name) {
+        var dataName = tname + '.' + name;
         var prop = props[name];
+
+        // Ensure virtual-DOM knows to set this as a property.
+        data$1.applyProp[dataName] = true;
 
         if (!prop) {
           prop = props[name] = {};
@@ -4557,7 +4564,6 @@
 
         if (typeof prop.attribute === 'undefined') {
           prop.attribute = true;
-          attributes[name] = applyProp;
         }
       });
     }
@@ -4645,14 +4651,14 @@
     // registered and returned.
     function kickflip (name, opts) {
       ensureOpts(opts);
-      createAttributeLinks(opts);
+      createAttributeLinks(name, opts);
       setStateOnPropertySet(opts);
       createEventProperties(opts);
       wrapRender(opts);
       return skate(name, opts);
     }
 
-    var index$4 = __commonjs(function (module) {
+    var index$3 = __commonjs(function (module) {
     /* eslint-disable no-unused-vars */
     'use strict';
 
@@ -4706,13 +4712,24 @@
       process = { env: { NODE_ENV: 'production' } };
     }
 
+    var applyDefault = attributes[symbols.default];
     var factories = {};
 
     // Attributes that are not handled by Incremental DOM.
     attributes.key = attributes.skip = attributes.statics = function () {};
 
-    // Attributes that *must* be set via a property.
-    attributes.checked = attributes.className = attributes.value = applyProp;
+    // Attributes that *must* be set via a property on all elements.
+    attributes.checked = attributes.className = attributes.disabled = attributes.value = applyProp;
+
+    // Default attribute applicator.
+    attributes[symbols.default] = function (element, name, value) {
+      var dataName = element.tagName + '.' + name;
+      if (data$1.applyProp[dataName]) {
+        applyProp(element, name, value);
+      } else {
+        applyDefault(element, name, value);
+      }
+    };
 
     function applyEvent(eName) {
       return function (elem, name, value) {
@@ -4740,7 +4757,7 @@
       }
 
       return factories[tname] = function (attrs, chren) {
-        if ((typeof attrs === 'undefined' ? 'undefined' : babelHelpers.typeof(attrs)) === 'object') {
+        if (attrs && (typeof attrs === 'undefined' ? 'undefined' : babelHelpers.typeof(attrs)) === 'object') {
           elementOpenStart(tname, attrs.key, attrs.statics);
           for (var _a in attrs) {
             var val = attrs[_a];
@@ -4750,7 +4767,10 @@
               // Class attribute handling.
             } else if (_a === 'class') {
                 _a = 'className';
-              }
+                // False is not set at all.
+              } else if (val === false) {
+                  continue;
+                }
             attr(_a, val);
           }
           elementOpenEnd();
