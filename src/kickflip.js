@@ -1,4 +1,4 @@
-import { applyProp, attributes } from 'incremental-dom';
+import data from './data';
 import debounce from 'debounce';
 import render from './render';
 import skate from '../node_modules/skatejs/lib/index';
@@ -7,10 +7,15 @@ const $debounce = Symbol();
 
 // Defaults all properties to be linked to an attribute unless explicitly
 // specified.
-function createAttributeLinks (opts) {
+function createAttributeLinks (elem, opts) {
   const props = opts.properties;
+  const tname = elem.toUpperCase();
   Object.keys(props).forEach(function (name) {
+    const dataName = tname + '.' + name;
     let prop = props[name];
+
+    // Ensure virtual-DOM knows to set this as a property.
+    data.applyProp[dataName] = true;
 
     if (!prop) {
       prop = props[name] = {};
@@ -18,7 +23,6 @@ function createAttributeLinks (opts) {
 
     if (typeof prop.attribute === 'undefined') {
       prop.attribute = true;
-      attributes[name] = applyProp;
     }
   });
 }
@@ -106,7 +110,7 @@ function wrapRender (opts) {
 // registered and returned.
 export default function (name, opts) {
   ensureOpts(opts);
-  createAttributeLinks(opts);
+  createAttributeLinks(name, opts);
   setStateOnPropertySet(opts);
   createEventProperties(opts);
   wrapRender(opts);

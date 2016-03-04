@@ -1,4 +1,5 @@
 import {
+  applyAttr,
   applyProp,
   attr,
   attributes,
@@ -7,6 +8,7 @@ import {
   elementOpenEnd,
   elementOpenStart,
   skip,
+  symbols,
   text
 } from 'incremental-dom';
 import internalData from './data';
@@ -16,13 +18,24 @@ if (typeof process === 'undefined') {
   process = { env: { NODE_ENV: 'production' } };
 }
 
+const applyDefault = attributes[symbols.default];
 const factories = {};
 
 // Attributes that are not handled by Incremental DOM.
 attributes.key = attributes.skip = attributes.statics = function () {};
 
-// Attributes that *must* be set via a property.
+// Attributes that *must* be set via a property on all elements.
 attributes.checked = attributes.className = attributes.disabled = attributes.value = applyProp;
+
+// Default attribute applicator.
+attributes[symbols.default] = function (element, name, value) {
+  const dataName = element.tagName + '.' + name;
+  if (internalData.applyProp[dataName]) {
+    applyProp(element, name, value);
+  } else {
+    applyDefault(element, name, value);
+  }
+};
 
 function applyEvent (eName) {
   return function (elem, name, value) {
@@ -103,7 +116,7 @@ export { text };
 // Creates an element that acts as a slot.
 export function slot (attrs, chren) {
   // Attributes must be an object so that we can add slot info.
-  if (attrs && typeof attrs !== 'object') {
+  if (!attrs || typeof attrs !== 'object') {
     chren = attrs;
     attrs = {};
   }
