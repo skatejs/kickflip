@@ -1440,7 +1440,7 @@
         var slots = elem.__slots;
 
         if (typeof slots[name] === 'undefined') {
-          var slot = elem.querySelector('[slot-name="' + elem.__shadowId + (name === 'content' ? '' : name) + '"]');
+          var slot = elem.querySelector('[slot-name="' + (elem.__shadowId || '') + (name === 'content' ? '' : name) + '"]');
 
           if (slot) {
             slots[name] = slot;
@@ -1518,6 +1518,10 @@
             var div = document.createElement('div');
             var frag = document.createDocumentFragment();
             div.innerHTML = val;
+
+            while (this.hasChildNodes()) {
+              this.removeChild(this.firstChild);
+            }
 
             while (div.hasChildNodes()) {
               frag.appendChild(div.firstChild);
@@ -4701,11 +4705,68 @@
     };
     });
 
+    var assign = (index$3 && typeof index$3 === 'object' && 'default' in index$3 ? index$3['default'] : index$3);
+
+    function get(elem) {
+      var props = elem.constructor.properties;
+      var state = {};
+      for (var key in props) {
+        var val = elem[key];
+        if (typeof val !== 'undefined') {
+          state[key] = val;
+        }
+      }
+      return state;
+    }
+
+    function state (elem, newState) {
+      return typeof newState === 'undefined' ? get(elem) : assign(elem, newState);
+    }
+
+    function getValue(elem) {
+      var type = elem.type;
+      if (type === 'checkbox' || type === 'radio') {
+        return elem.checked ? elem.value || true : false;
+      }
+      return elem.value;
+    }
+
+    function link (elem, target) {
+      return function (e) {
+        var value = getValue(e.target);
+        var localTarget = target || e.target.name || 'value';
+
+        if (localTarget.indexOf('.') > -1) {
+          var parts = localTarget.split('.');
+          var firstPart = parts[0];
+          var propName = parts.pop();
+          var obj = parts.reduce(function (prev, curr) {
+            return prev && prev[curr];
+          }, elem);
+
+          obj[propName || e.target.name] = value;
+          state(elem, babelHelpers.defineProperty({}, firstPart, elem[firstPart]));
+        } else {
+          state(elem, babelHelpers.defineProperty({}, localTarget, value));
+        }
+      };
+    }
+
     var props = skate.properties;
     var array = props.array;
     var boolean = props.boolean;
     var number = props.number;
     var string = props.string;
+
+
+
+    var properties = Object.freeze({
+    	default: props,
+    	array: array,
+    	boolean: boolean,
+    	number: number,
+    	string: string
+    });
 
     // Specify an environment for iDOM in case we haven't yet.
     if (typeof process === 'undefined') {
@@ -4793,6 +4854,39 @@
 
         return elementClose(tname);
       };
+    }
+
+    // The default function requries a tag name.
+    function create$1(tname, attrs, chren) {
+      return (factories[tname] || bind(tname))(attrs, chren);
+    }
+
+    // Creates an element that acts as a slot.
+    function slot(attrs, chren) {
+      // Attributes must be an object so that we can add slot info.
+      if (!attrs || (typeof attrs === 'undefined' ? 'undefined' : babelHelpers.typeof(attrs)) !== 'object') {
+        chren = attrs;
+        attrs = {};
+      }
+
+      // Default to a <slot /> element.
+      var tname = attrs.type || 'slot';
+
+      // Always add a slot-name attribute, even if it's empty so that the named-
+      // slot API can pick it up. We must also prepend a shadowId if there is one
+      // so that the named-slot API only finds slot elements that belong to its
+      // shadow root, not descendant component shadow roots.
+      attrs['slot-name'] = data$1.shadowId + (attrs.name || '');
+
+      // Since this is a slot we *must* skip it so that Incremental DOM doesn't
+      // diff / patch the content of it.
+      attrs.skip = true;
+
+      // Ensure special attributes aren't passed on.
+      delete attrs.name;
+      delete attrs.type;
+
+      return create$1(tname, attrs, chren);
     }
 
     // Create factories for all HTML elements except for ones that match keywords
@@ -4923,6 +5017,139 @@
     var video = bind('video');
     var wbr = bind('wbr');
 
+var vdom = Object.freeze({
+      default: create$1,
+      text: text,
+      slot: slot,
+      a: a,
+      abbr: abbr,
+      address: address,
+      area: area,
+      article: article,
+      aside: aside,
+      audio: audio,
+      b: b,
+      base: base,
+      bdi: bdi,
+      bdo: bdo,
+      bgsound: bgsound,
+      blockquote: blockquote,
+      body: body,
+      br: br,
+      button: button,
+      canvas: canvas,
+      caption: caption,
+      cite: cite,
+      code: code,
+      col: col,
+      colgroup: colgroup,
+      command: command,
+      content: content,
+      data: data,
+      datalist: datalist,
+      dd: dd,
+      del: del,
+      details: details,
+      dfn: dfn,
+      dialog: dialog,
+      div: div,
+      dl: dl,
+      dt: dt,
+      element: element,
+      em: em,
+      embed: embed,
+      fieldset: fieldset,
+      figcaption: figcaption,
+      figure: figure,
+      font: font,
+      footer: footer,
+      form: form,
+      h1: h1,
+      h2: h2,
+      h3: h3,
+      h4: h4,
+      h5: h5,
+      h6: h6,
+      head: head,
+      header: header,
+      hgroup: hgroup,
+      hr: hr,
+      html: html,
+      i: i,
+      iframe: iframe,
+      image: image,
+      img: img,
+      input: input,
+      ins: ins,
+      kbd: kbd,
+      keygen: keygen,
+      label: label,
+      legend: legend,
+      li: li,
+      link: link$1,
+      main: main,
+      map: map,
+      mark: mark,
+      marquee: marquee,
+      menu: menu,
+      menuitem: menuitem,
+      meta: meta,
+      meter: meter,
+      multicol: multicol,
+      nav: nav,
+      nobr: nobr,
+      noembed: noembed,
+      noframes: noframes,
+      noscript: noscript,
+      object: object,
+      ol: ol,
+      optgroup: optgroup,
+      option: option,
+      output: output,
+      p: p,
+      param: param,
+      picture: picture,
+      pre: pre,
+      progress: progress,
+      q: q,
+      rp: rp,
+      rt: rt,
+      rtc: rtc,
+      ruby: ruby,
+      s: s,
+      samp: samp,
+      script: script,
+      section: section,
+      select: select,
+      shadow: shadow,
+      small: small,
+      source: source,
+      span: span,
+      strong: strong,
+      style: style,
+      sub: sub,
+      summary: summary,
+      sup: sup,
+      table: table,
+      tbody: tbody,
+      td: td,
+      template: template,
+      textarea: textarea,
+      tfoot: tfoot,
+      th: th,
+      thead: thead,
+      time: time,
+      title: title,
+      tr: tr,
+      track: track,
+      u: u,
+      ul: ul,
+      video: video,
+      wbr: wbr
+    });
+
+    var version = '0.0.7';
+
     var create = skate.create;
     var emit = skate.emit;
     var fragment = skate.fragment;
@@ -4930,12 +5157,32 @@
     var ready = skate.ready;
     var render = skate.render;
 
+
+
+    var api = Object.freeze({
+    	default: kickflip,
+    	create: create,
+    	emit: emit,
+    	fragment: fragment,
+    	init: init,
+    	link: link,
+    	properties: properties,
+    	ready: ready,
+    	render: render,
+    	state: state,
+    	vdom: vdom,
+    	version: version
+    });
+
     var previousGlobal = window.kickflip;
     kickflip.noConflict = function noConflict() {
       window.kickflip = previousGlobal;
       return this;
     };
     window.kickflip = kickflip;
+    for (var name in api) {
+      kickflip[name] = api[name];
+    }
 
     return kickflip;
 
