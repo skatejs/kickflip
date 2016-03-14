@@ -1,4 +1,9 @@
-import {
+import * as IncrementalDOM from 'incremental-dom';
+import internalData from './data';
+
+// Could import these, but we have to import all of IncrementalDOM anyways so
+// so that we can export our configured IncrementalDOM.
+const {
   applyProp,
   attr,
   attributes,
@@ -9,11 +14,11 @@ import {
   skip,
   symbols,
   text
-} from 'incremental-dom';
-import internalData from './data';
+} = IncrementalDOM;
 
 // Specify an environment for iDOM in case we haven't yet.
 if (typeof process === 'undefined') {
+  /* eslint no-undef: 0 */
   process = { env: { NODE_ENV: 'production' } };
 }
 

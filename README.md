@@ -381,6 +381,48 @@ div({ statics: ['attr1', 'prop2'] });
 
 If you specify `false` as any attribute value, the attribute will not be added, it will simply be ignored.
 
+### JSX and other templating languages
+
+The `vdom` module is provided for a simple way to write virtual DOM without having to add a build step to your project. If you don't want to do that, you can use any templating language that compiles down to Incremental DOM calls.
+
+If you wanted to use JSX, for example, you'd have to add support for compiling JSX down to Incremental DOM calls. This can be doen using the following modules:
+
+- https://github.com/thejameskyle/incremental-dom-react-helper
+- https://github.com/jridgewell/babel-plugin-incremental-dom
+
+Once that is set up, you may write a component using JSX. For example, a simple blog element may look something like:
+
+```js
+import { string } from 'kickflip/src/properties';
+import { IncrementalDOM } from 'kickflip/src/vdom';
+import kickflip from 'kickflip';
+
+kickflip('my-element', {
+  properties: {
+    title: string()
+  },
+  render () {
+    <div>
+      <h1>{elem.title}</h1>
+      <slot name="description" />
+      <article>
+        <slot />
+      </article>
+    </div>
+  }
+});
+```
+
+And it could be used like:
+
+```html
+<my-element title="Eggs">
+  <p slot="description">Article description.</p>
+  <p>Main paragraph 1.</p>
+  <p>Main paragraph 2.</p>
+</my-element>
+```
+
 ### version
 
 Returns the current version of Kickflip.
