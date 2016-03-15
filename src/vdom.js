@@ -51,6 +51,7 @@ function applyEvent (eName) {
 
     const eFunc = events[eName];
 
+    // This ensures events never double up.
     if (eFunc) {
       elem.removeEventListener(eName, eFunc);
     }
