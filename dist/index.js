@@ -32,12 +32,12 @@
     var __commonjs_global = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : this;
     function __commonjs(fn, module) { return module = { exports: {} }, fn(module, module.exports, __commonjs_global), module.exports; }
 
-    var data$1 = {
+    var internalData = {
       applyProp: {},
       shadowId: ''
     };
 
-    var index$5 = __commonjs(function (module) {
+    var index$1 = __commonjs(function (module) {
     module.exports = Date.now || now;
 
     function now() {
@@ -45,14 +45,14 @@
     }
     });
 
-    var require$$0$17 = (index$5 && typeof index$5 === 'object' && 'default' in index$5 ? index$5['default'] : index$5);
+    var require$$0 = (index$1 && typeof index$1 === 'object' && 'default' in index$1 ? index$1['default'] : index$1);
 
-    var index$3 = __commonjs(function (module) {
+    var index = __commonjs(function (module) {
     /**
      * Module dependencies.
      */
 
-    var now = require$$0$17;
+    var now = require$$0;
 
     /**
      * Returns a function, that, as long as it continues to be invoked, will not
@@ -102,7 +102,7 @@
     };
     });
 
-    var debounce$1 = (index$3 && typeof index$3 === 'object' && 'default' in index$3 ? index$3['default'] : index$3);
+    var debounce = (index && typeof index === 'object' && 'default' in index ? index['default'] : index);
 
     var incrementalDomCjs = __commonjs(function (module, exports) {
     /**
@@ -1317,7 +1317,7 @@
     });
     });
 
-    var require$$0$16 = (prop && typeof prop === 'object' && 'default' in prop ? prop['default'] : prop);
+    var require$$0$2 = (prop && typeof prop === 'object' && 'default' in prop ? prop['default'] : prop);
 
     var mapPolyfilled = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -1343,14 +1343,14 @@
     });
     });
 
-    var require$$1$5 = (mapPolyfilled && typeof mapPolyfilled === 'object' && 'default' in mapPolyfilled ? mapPolyfilled['default'] : mapPolyfilled);
+    var require$$1 = (mapPolyfilled && typeof mapPolyfilled === 'object' && 'default' in mapPolyfilled ? mapPolyfilled['default'] : mapPolyfilled);
 
     var polyfill = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', './internal/map-polyfilled', './internal/prop'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$1$5, require$$0$16);
+        factory(module, exports, require$$1, require$$0$2);
       } else {
         var mod = {
           exports: {}
@@ -1602,14 +1602,14 @@
     });
     });
 
-    var require$$0$15 = (polyfill && typeof polyfill === 'object' && 'default' in polyfill ? polyfill['default'] : polyfill);
+    var require$$0$1 = (polyfill && typeof polyfill === 'object' && 'default' in polyfill ? polyfill['default'] : polyfill);
 
-    var render$3 = __commonjs(function (module, exports, global) {
+    var render$2 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', './polyfill'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$15);
+        factory(module, exports, require$$0$1);
       } else {
         var mod = {
           exports: {}
@@ -1699,7 +1699,7 @@
     });
     });
 
-    var render$4 = (render$3 && typeof render$3 === 'object' && 'default' in render$3 ? render$3['default'] : render$3);
+    var render$3 = (render$2 && typeof render$2 === 'object' && 'default' in render$2 ? render$2['default'] : render$2);
 
     var shadowIdCount = 0;
     function render$1 (opts) {
@@ -1714,19 +1714,19 @@
       // components of the shadow root.
       var internalShadowId = ++shadowIdCount;
 
-      return render$4(function (elem, shadowRoot) {
+      return render$3(function (elem, shadowRoot) {
         // Record the current shadow ID so we can restore it.
-        var shadowId = data$1.shadowId;
+        var shadowId = internalData.shadowId;
 
         // Set the new shadow ID so that the vDOM API can use it.
-        data$1.shadowId = internalShadowId;
+        internalData.shadowId = internalShadowId;
 
         // Patch once the shadow ID is set.
         patch(shadowRoot, internalRenderer, elem);
 
         // Restore to the previous ID so that any subsequent elements refer to the
         // proper scope.
-        data$1.shadowId = shadowId;
+        internalData.shadowId = shadowId;
       }, {
         shadowId: internalShadowId
       });
@@ -1761,14 +1761,14 @@
     });
     });
 
-    var require$$0$7 = (ignored && typeof ignored === 'object' && 'default' in ignored ? ignored['default'] : ignored);
+    var require$$0$4 = (ignored && typeof ignored === 'object' && 'default' in ignored ? ignored['default'] : ignored);
 
     var walkTree = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', './ignored'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$7);
+        factory(module, exports, require$$0$4);
       } else {
         var mod = {
           exports: {}
@@ -1826,7 +1826,7 @@
     });
     });
 
-    var require$$0 = (walkTree && typeof walkTree === 'object' && 'default' in walkTree ? walkTree['default'] : walkTree);
+    var require$$0$3 = (walkTree && typeof walkTree === 'object' && 'default' in walkTree ? walkTree['default'] : walkTree);
 
     var defineProperties = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -1867,9 +1867,9 @@
     });
     });
 
-    var require$$1 = (defineProperties && typeof defineProperties === 'object' && 'default' in defineProperties ? defineProperties['default'] : defineProperties);
+    var require$$1$1 = (defineProperties && typeof defineProperties === 'object' && 'default' in defineProperties ? defineProperties['default'] : defineProperties);
 
-    var debounce = __commonjs(function (module, exports, global) {
+    var debounce$1 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(["module", "exports"], factory);
@@ -1913,7 +1913,7 @@
     });
     });
 
-    var require$$2 = (debounce && typeof debounce === 'object' && 'default' in debounce ? debounce['default'] : debounce);
+    var require$$2 = (debounce$1 && typeof debounce$1 === 'object' && 'default' in debounce$1 ? debounce$1['default'] : debounce$1);
 
     var getOwnPropertyDescriptors = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -1946,7 +1946,7 @@
     });
     });
 
-    var require$$0$1 = (getOwnPropertyDescriptors && typeof getOwnPropertyDescriptors === 'object' && 'default' in getOwnPropertyDescriptors ? getOwnPropertyDescriptors['default'] : getOwnPropertyDescriptors);
+    var require$$0$5 = (getOwnPropertyDescriptors && typeof getOwnPropertyDescriptors === 'object' && 'default' in getOwnPropertyDescriptors ? getOwnPropertyDescriptors['default'] : getOwnPropertyDescriptors);
 
     var protos = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -1989,7 +1989,7 @@
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', './get-own-property-descriptors', './protos'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$1, require$$2$1);
+        factory(module, exports, require$$0$5, require$$2$1);
       } else {
         var mod = {
           exports: {}
@@ -2056,7 +2056,7 @@
     });
     });
 
-    var require$$0$4 = (registerElement && typeof registerElement === 'object' && 'default' in registerElement ? registerElement['default'] : registerElement);
+    var require$$0$7 = (registerElement && typeof registerElement === 'object' && 'default' in registerElement ? registerElement['default'] : registerElement);
 
     var createElement = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -2082,14 +2082,14 @@
     });
     });
 
-    var require$$0$5 = (createElement && typeof createElement === 'object' && 'default' in createElement ? createElement['default'] : createElement);
+    var require$$2$2 = (createElement && typeof createElement === 'object' && 'default' in createElement ? createElement['default'] : createElement);
 
-    var element$1 = __commonjs(function (module, exports, global) {
+    var element = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../native/create-element', '../native/register-element'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$5, require$$0$4);
+        factory(module, exports, require$$2$2, require$$0$7);
       } else {
         var mod = {
           exports: {}
@@ -2162,9 +2162,9 @@
     });
     });
 
-    var require$$0$2 = (element$1 && typeof element$1 === 'object' && 'default' in element$1 ? element$1['default'] : element$1);
+    var require$$0$6 = (element && typeof element === 'object' && 'default' in element ? element['default'] : element);
 
-    var version$1 = __commonjs(function (module, exports, global) {
+    var vars = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports'], factory);
@@ -2175,7 +2175,7 @@
           exports: {}
         };
         factory(mod, mod.exports);
-        global.version = mod.exports;
+        global.vars = mod.exports;
       }
     })(__commonjs_global, function (module, exports) {
       'use strict';
@@ -2183,42 +2183,11 @@
       Object.defineProperty(exports, "__esModule", {
         value: true
       });
-      exports.default = '0.15.3';
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$0$6 = (version$1 && typeof version$1 === 'object' && 'default' in version$1 ? version$1['default'] : version$1);
-
-    var vars = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', '../api/version'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$6);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.version);
-        global.vars = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _version) {
-      'use strict';
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-
-      var _version2 = _interopRequireDefault(_version);
-
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : {
-          default: obj
-        };
-      }
-
-      var VERSION = '__skate_' + _version2.default.replace(/[^\w]/g, '_');
+      // This should only be changed / incremented when the internal shared API
+      // changes in a backward incompatible way. It's designed to be shared with
+      // other Skate versions if it's compatible for performance reasons and also
+      // to align with the spec since in native there is a global registry.
+      var VERSION = '__skate_0_16_0';
 
       if (!window[VERSION]) {
         window[VERSION] = {
@@ -2302,7 +2271,7 @@
     });
     });
 
-    var require$$0$3 = (registry && typeof registry === 'object' && 'default' in registry ? registry['default'] : registry);
+    var require$$0$8 = (registry && typeof registry === 'object' && 'default' in registry ? registry['default'] : registry);
 
     var createEvent = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -2328,14 +2297,14 @@
     });
     });
 
-    var require$$0$12 = (createEvent && typeof createEvent === 'object' && 'default' in createEvent ? createEvent['default'] : createEvent);
+    var require$$1$2 = (createEvent && typeof createEvent === 'object' && 'default' in createEvent ? createEvent['default'] : createEvent);
 
     var innerhtml = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['../../native/create-event'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(require$$0$12);
+        factory(require$$1$2);
       } else {
         var mod = {
           exports: {}
@@ -2417,14 +2386,14 @@
     });
     });
 
-    var require$$0$8 = (innerhtml && typeof innerhtml === 'object' && 'default' in innerhtml ? innerhtml['default'] : innerhtml);
+    var require$$0$9 = (innerhtml && typeof innerhtml === 'object' && 'default' in innerhtml ? innerhtml['default'] : innerhtml);
 
     var getClosestIgnoredElement = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', './ignored'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$7);
+        factory(module, exports, require$$0$4);
       } else {
         var mod = {
           exports: {}
@@ -2470,7 +2439,7 @@
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../util/get-closest-ignored-element', './vars', './registry', '../util/walk-tree', '../fix/ie/innerhtml'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$4$1, require$$3, require$$0$3, require$$0, require$$0$8);
+        factory(module, exports, require$$4$1, require$$3, require$$0$8, require$$0$3, require$$0$9);
       } else {
         var mod = {
           exports: {}
@@ -2584,7 +2553,7 @@
 
     var require$$8 = (documentObserver && typeof documentObserver === 'object' && 'default' in documentObserver ? documentObserver['default'] : documentObserver);
 
-    var data$2 = __commonjs(function (module, exports, global) {
+    var data = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports'], factory);
@@ -2615,14 +2584,14 @@
     });
     });
 
-    var require$$1$2 = (data$2 && typeof data$2 === 'object' && 'default' in data$2 ? data$2['default'] : data$2);
+    var require$$1$3 = (data && typeof data === 'object' && 'default' in data ? data['default'] : data);
 
     var detached = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../util/data'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$1$2);
+        factory(module, exports, require$$1$3);
       } else {
         var mod = {
           exports: {}
@@ -2668,7 +2637,7 @@
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', './type/element'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$2);
+        factory(module, exports, require$$0$6);
       } else {
         var mod = {
           exports: {}
@@ -2742,14 +2711,14 @@
     });
     });
 
-    var require$$0$9 = (resolve && typeof resolve === 'object' && 'default' in resolve ? resolve['default'] : resolve);
+    var require$$0$10 = (resolve && typeof resolve === 'object' && 'default' in resolve ? resolve['default'] : resolve);
 
     var prototype = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../util/protos', '../util/define-properties', '../util/get-own-property-descriptors'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$2$1, require$$1, require$$0$1);
+        factory(module, exports, require$$2$1, require$$1$1, require$$0$5);
       } else {
         var mod = {
           exports: {}
@@ -2791,7 +2760,7 @@
     });
     });
 
-    var require$$1$3 = (prototype && typeof prototype === 'object' && 'default' in prototype ? prototype['default'] : prototype);
+    var require$$1$4 = (prototype && typeof prototype === 'object' && 'default' in prototype ? prototype['default'] : prototype);
 
     var propertiesReady = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -2822,7 +2791,7 @@
     });
     });
 
-    var require$$2$2 = (propertiesReady && typeof propertiesReady === 'object' && 'default' in propertiesReady ? propertiesReady['default'] : propertiesReady);
+    var require$$2$3 = (propertiesReady && typeof propertiesReady === 'object' && 'default' in propertiesReady ? propertiesReady['default'] : propertiesReady);
 
     var propertiesCreated = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -2900,7 +2869,7 @@
     });
     });
 
-    var require$$0$13 = (empty && typeof empty === 'object' && 'default' in empty ? empty['default'] : empty);
+    var require$$0$11 = (empty && typeof empty === 'object' && 'default' in empty ? empty['default'] : empty);
 
     var dashCase = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -2933,9 +2902,9 @@
     });
     });
 
-    var require$$2$5 = (dashCase && typeof dashCase === 'object' && 'default' in dashCase ? dashCase['default'] : dashCase);
+    var require$$2$4 = (dashCase && typeof dashCase === 'object' && 'default' in dashCase ? dashCase['default'] : dashCase);
 
-    var index$4 = __commonjs(function (module) {
+    var index$3 = __commonjs(function (module) {
     /* eslint-disable no-unused-vars */
     'use strict';
 
@@ -2978,14 +2947,14 @@
     };
     });
 
-    var require$$3$2 = (index$4 && typeof index$4 === 'object' && 'default' in index$4 ? index$4['default'] : index$4);
+    var assign = (index$3 && typeof index$3 === 'object' && 'default' in index$3 ? index$3['default'] : index$3);
 
     var propertiesInit = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', 'object-assign', '../util/dash-case', '../util/data', '../util/empty'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$3$2, require$$2$5, require$$1$2, require$$0$13);
+        factory(module, exports, assign, require$$2$4, require$$1$3, require$$0$11);
       } else {
         var mod = {
           exports: {}
@@ -3261,7 +3230,7 @@
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../native/create-element'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$5);
+        factory(module, exports, require$$2$2);
       } else {
         var mod = {
           exports: {}
@@ -3303,14 +3272,14 @@
     });
     });
 
-    var require$$0$14 = (matchesSelector && typeof matchesSelector === 'object' && 'default' in matchesSelector ? matchesSelector['default'] : matchesSelector);
+    var require$$0$12 = (matchesSelector && typeof matchesSelector === 'object' && 'default' in matchesSelector ? matchesSelector['default'] : matchesSelector);
 
     var events = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../util/matches-selector'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$14);
+        factory(module, exports, require$$0$12);
       } else {
         var mod = {
           exports: {}
@@ -3405,7 +3374,7 @@
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../util/data', './events', './patch-attribute-methods', './properties-init', './properties-created', './properties-ready', './prototype', './resolve'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$1$2, require$$6, require$$5, require$$4$2, require$$3$1, require$$2$2, require$$1$3, require$$0$9);
+        factory(module, exports, require$$1$3, require$$6, require$$5, require$$4$2, require$$3$1, require$$2$3, require$$1$4, require$$0$10);
       } else {
         var mod = {
           exports: {}
@@ -3591,7 +3560,7 @@
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../util/data'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$1$2);
+        factory(module, exports, require$$1$3);
       } else {
         var mod = {
           exports: {}
@@ -3632,12 +3601,38 @@
 
     var require$$14 = (attached && typeof attached === 'object' && 'default' in attached ? attached['default'] : attached);
 
-    var render$2 = __commonjs(function (module, exports, global) {
+    var version = __commonjs(function (module, exports, global) {
+    (function (global, factory) {
+      if (typeof define === "function" && define.amd) {
+        define(['module', 'exports'], factory);
+      } else if (typeof exports !== "undefined") {
+        factory(module, exports);
+      } else {
+        var mod = {
+          exports: {}
+        };
+        factory(mod, mod.exports);
+        global.version = mod.exports;
+      }
+    })(__commonjs_global, function (module, exports) {
+      'use strict';
+
+      Object.defineProperty(exports, "__esModule", {
+        value: true
+      });
+      exports.default = '0.15.3';
+      module.exports = exports['default'];
+    });
+    });
+
+    var require$$16 = (version && typeof version === 'object' && 'default' in version ? version['default'] : version);
+
+    var render$4 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../shared/registry'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$3);
+        factory(module, exports, require$$0$8);
       } else {
         var mod = {
           exports: {}
@@ -3671,14 +3666,14 @@
     });
     });
 
-    var require$$17 = (render$2 && typeof render$2 === 'object' && 'default' in render$2 ? render$2['default'] : render$2);
+    var require$$17 = (render$4 && typeof render$4 === 'object' && 'default' in render$4 ? render$4['default'] : render$4);
 
     var ready$1 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../util/data', '../shared/registry'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$1$2, require$$0$3);
+        factory(module, exports, require$$1$3, require$$0$8);
       } else {
         var mod = {
           exports: {}
@@ -3742,12 +3737,12 @@
 
     var require$$18 = (ready$1 && typeof ready$1 === 'object' && 'default' in ready$1 ? ready$1['default'] : ready$1);
 
-    var string$1 = __commonjs(function (module, exports, global) {
+    var string = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../../util/empty'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$13);
+        factory(module, exports, require$$0$11);
       } else {
         var mod = {
           exports: {}
@@ -3783,14 +3778,14 @@
     });
     });
 
-    var require$$0$10 = (string$1 && typeof string$1 === 'object' && 'default' in string$1 ? string$1['default'] : string$1);
+    var require$$0$13 = (string && typeof string === 'object' && 'default' in string ? string['default'] : string);
 
-    var number$1 = __commonjs(function (module, exports, global) {
+    var number = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../../util/empty'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$13);
+        factory(module, exports, require$$0$11);
       } else {
         var mod = {
           exports: {}
@@ -3826,9 +3821,9 @@
     });
     });
 
-    var require$$1$4 = (number$1 && typeof number$1 === 'object' && 'default' in number$1 ? number$1['default'] : number$1);
+    var require$$1$5 = (number && typeof number === 'object' && 'default' in number ? number['default'] : number);
 
-    var boolean$1 = __commonjs(function (module, exports, global) {
+    var boolean = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports'], factory);
@@ -3863,14 +3858,14 @@
     });
     });
 
-    var require$$2$3 = (boolean$1 && typeof boolean$1 === 'object' && 'default' in boolean$1 ? boolean$1['default'] : boolean$1);
+    var require$$2$5 = (boolean && typeof boolean === 'object' && 'default' in boolean ? boolean['default'] : boolean);
 
-    var index$1 = __commonjs(function (module, exports, global) {
+    var index$4 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', 'object-assign', './boolean', './number', './string'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$3$2, require$$2$3, require$$1$4, require$$0$10);
+        factory(module, exports, assign, require$$2$5, require$$1$5, require$$0$13);
       } else {
         var mod = {
           exports: {}
@@ -3919,7 +3914,7 @@
     });
     });
 
-    var require$$19 = (index$1 && typeof index$1 === 'object' && 'default' in index$1 ? index$1['default'] : index$1);
+    var require$$19 = (index$4 && typeof index$4 === 'object' && 'default' in index$4 ? index$4['default'] : index$4);
 
     var elementContains = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -3960,14 +3955,14 @@
     });
     });
 
-    var require$$0$11 = (elementContains && typeof elementContains === 'object' && 'default' in elementContains ? elementContains['default'] : elementContains);
+    var require$$0$14 = (elementContains && typeof elementContains === 'object' && 'default' in elementContains ? elementContains['default'] : elementContains);
 
     var init$1 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../util/element-contains', '../shared/registry', '../util/walk-tree'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$11, require$$0$3, require$$0);
+        factory(module, exports, require$$0$14, require$$0$8, require$$0$3);
       } else {
         var mod = {
           exports: {}
@@ -4020,7 +4015,7 @@
     });
     });
 
-    var require$$1$1 = (init$1 && typeof init$1 === 'object' && 'default' in init$1 ? init$1['default'] : init$1);
+    var require$$1$6 = (init$1 && typeof init$1 === 'object' && 'default' in init$1 ? init$1['default'] : init$1);
 
     var createDocumentFragment = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -4046,14 +4041,14 @@
     });
     });
 
-    var require$$2$4 = (createDocumentFragment && typeof createDocumentFragment === 'object' && 'default' in createDocumentFragment ? createDocumentFragment['default'] : createDocumentFragment);
+    var require$$2$6 = (createDocumentFragment && typeof createDocumentFragment === 'object' && 'default' in createDocumentFragment ? createDocumentFragment['default'] : createDocumentFragment);
 
     var fragment$1 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../native/create-document-fragment', '../native/create-element', './init'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$2$4, require$$0$5, require$$1$1);
+        factory(module, exports, require$$2$6, require$$2$2, require$$1$6);
       } else {
         var mod = {
           exports: {}
@@ -4158,7 +4153,7 @@
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../native/create-element', '../native/create-event', '../util/element-contains'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$5, require$$0$12, require$$0$11);
+        factory(module, exports, require$$2$2, require$$1$2, require$$0$14);
       } else {
         var mod = {
           exports: {}
@@ -4281,12 +4276,12 @@
 
     var require$$22 = (emit$1 && typeof emit$1 === 'object' && 'default' in emit$1 ? emit$1['default'] : emit$1);
 
-    var create$2 = __commonjs(function (module, exports, global) {
+    var create$1 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', 'object-assign', '../native/create-element', './init', '../shared/registry'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$3$2, require$$0$5, require$$1$1, require$$0$3);
+        factory(module, exports, assign, require$$2$2, require$$1$6, require$$0$8);
       } else {
         var mod = {
           exports: {}
@@ -4326,14 +4321,14 @@
     });
     });
 
-    var require$$23 = (create$2 && typeof create$2 === 'object' && 'default' in create$2 ? create$2['default'] : create$2);
+    var require$$23 = (create$1 && typeof create$1 === 'object' && 'default' in create$1 ? create$1['default'] : create$1);
 
-    var index = __commonjs(function (module, exports, global) {
+    var index$2 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', './api/create', './api/emit', './api/fragment', './api/init', './api/properties/index', './api/ready', './api/render', './api/version', 'object-assign', './lifecycle/attached', './lifecycle/attribute', './lifecycle/created', './native/create-element', './defaults', './lifecycle/detached', './shared/document-observer', './native/register-element', './shared/registry', './type/element', './util/get-all-property-descriptors', './util/get-own-property-descriptors', './util/debounce', './util/define-properties', './util/walk-tree'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$23, require$$22, require$$21, require$$1$1, require$$19, require$$18, require$$17, require$$0$6, require$$3$2, require$$14, require$$13, require$$12, require$$0$5, require$$10, require$$9, require$$8, require$$0$4, require$$0$3, require$$0$2, require$$4, require$$0$1, require$$2, require$$1, require$$0);
+        factory(module, exports, require$$23, require$$22, require$$21, require$$1$6, require$$19, require$$18, require$$17, require$$16, assign, require$$14, require$$13, require$$12, require$$2$2, require$$10, require$$9, require$$8, require$$0$7, require$$0$8, require$$0$6, require$$4, require$$0$5, require$$2, require$$1$1, require$$0$3);
       } else {
         var mod = {
           exports: {}
@@ -4513,7 +4508,7 @@
     });
     });
 
-    var skate = (index && typeof index === 'object' && 'default' in index ? index['default'] : index);
+    var skate = (index$2 && typeof index$2 === 'object' && 'default' in index$2 ? index$2['default'] : index$2);
 
     var $debounce = Symbol();
 
@@ -4527,7 +4522,7 @@
         var prop = props[name];
 
         // Ensure virtual-DOM knows to set this as a property.
-        data$1.applyProp[dataName] = true;
+        internalData.applyProp[dataName] = true;
 
         if (!prop) {
           prop = props[name] = {};
@@ -4605,7 +4600,7 @@
           set && set(elem, data);
           if (render(elem, data)) {
             var deb = elem[$debounce];
-            !deb && (deb = elem[$debounce] = debounce$1(skate.render, 1));
+            !deb && (deb = elem[$debounce] = debounce(skate.render, 1));
             deb(elem);
           }
         };
@@ -4628,51 +4623,6 @@
       wrapRender(opts);
       return skate(name, opts);
     }
-
-    var index$2 = __commonjs(function (module) {
-    /* eslint-disable no-unused-vars */
-    'use strict';
-
-    var hasOwnProperty = Object.prototype.hasOwnProperty;
-    var propIsEnumerable = Object.prototype.propertyIsEnumerable;
-
-    function toObject(val) {
-    	if (val === null || val === undefined) {
-    		throw new TypeError('Object.assign cannot be called with null or undefined');
-    	}
-
-    	return Object(val);
-    }
-
-    module.exports = Object.assign || function (target, source) {
-    	var from;
-    	var to = toObject(target);
-    	var symbols;
-
-    	for (var s = 1; s < arguments.length; s++) {
-    		from = Object(arguments[s]);
-
-    		for (var key in from) {
-    			if (hasOwnProperty.call(from, key)) {
-    				to[key] = from[key];
-    			}
-    		}
-
-    		if (Object.getOwnPropertySymbols) {
-    			symbols = Object.getOwnPropertySymbols(from);
-    			for (var i = 0; i < symbols.length; i++) {
-    				if (propIsEnumerable.call(from, symbols[i])) {
-    					to[symbols[i]] = from[symbols[i]];
-    				}
-    			}
-    		}
-    	}
-
-    	return to;
-    };
-    });
-
-    var assign = (index$2 && typeof index$2 === 'object' && 'default' in index$2 ? index$2['default'] : index$2);
 
     function get(elem) {
       var props = elem.constructor.properties;
@@ -4721,39 +4671,54 @@
 
     var props = skate.properties;
     var array = props.array;
-    var boolean = props.boolean;
-    var number = props.number;
-    var string = props.string;
+    var boolean$1 = props.boolean;
+    var number$1 = props.number;
+    var string$1 = props.string;
 
 
 
     var properties = Object.freeze({
     	default: props,
     	array: array,
-    	boolean: boolean,
-    	number: number,
-    	string: string
+    	boolean: boolean$1,
+    	number: number$1,
+    	string: string$1
     });
 
+    // Could import these, but we have to import all of IncrementalDOM anyways so
+    // so that we can export our configured IncrementalDOM.
+    var applyProp$1 = applyProp;
+    var attr$1 = attr;
+    var attributes$1 = attributes;
+    var elementClose$1 = elementClose;
+    var elementOpen$1 = elementOpen;
+    var elementOpenEnd$1 = elementOpenEnd;
+    var elementOpenStart$1 = elementOpenStart;
+    var skip$1 = skip;
+    var symbols$1 = symbols;
+    var text$1 = text;
+
     // Specify an environment for iDOM in case we haven't yet.
+
     if (typeof process === 'undefined') {
+      /* eslint no-undef: 0 */
       process = { env: { NODE_ENV: 'production' } };
     }
 
-    var applyDefault = attributes[symbols.default];
+    var applyDefault = attributes$1[symbols$1.default];
     var factories = {};
 
     // Attributes that are not handled by Incremental DOM.
-    attributes.key = attributes.skip = attributes.statics = function () {};
+    attributes$1.key = attributes$1.skip = attributes$1.statics = function () {};
 
     // Attributes that *must* be set via a property on all elements.
-    attributes.checked = attributes.className = attributes.disabled = attributes.value = applyProp;
+    attributes$1.checked = attributes$1.className = attributes$1.disabled = attributes$1.value = applyProp$1;
 
     // Default attribute applicator.
-    attributes[symbols.default] = function (element, name, value) {
+    attributes$1[symbols$1.default] = function (element, name, value) {
       var dataName = element.tagName + '.' + name;
-      if (data$1.applyProp[dataName]) {
-        applyProp(element, name, value);
+      if (internalData.applyProp[dataName]) {
+        applyProp$1(element, name, value);
       } else {
         applyDefault(element, name, value);
       }
@@ -4786,12 +4751,12 @@
 
       return factories[tname] = function (attrs, chren) {
         if (attrs && (typeof attrs === 'undefined' ? 'undefined' : babelHelpers.typeof(attrs)) === 'object') {
-          elementOpenStart(tname, attrs.key, attrs.statics);
+          elementOpenStart$1(tname, attrs.key, attrs.statics);
           for (var _a in attrs) {
             var val = attrs[_a];
             // Event binding using on* names.
-            if (!attributes[_a] && _a.indexOf('on') === 0) {
-              attributes[_a] = applyEvent(_a.substring(2));
+            if (!attributes$1[_a] && _a.indexOf('on') === 0) {
+              attributes$1[_a] = applyEvent(_a.substring(2));
               // Class attribute handling.
             } else if (_a === 'class') {
                 _a = 'className';
@@ -4799,32 +4764,32 @@
               } else if (val === false) {
                   continue;
                 }
-            attr(_a, val);
+            attr$1(_a, val);
           }
-          elementOpenEnd();
+          elementOpenEnd$1();
         } else {
-          elementOpen(tname);
+          elementOpen$1(tname);
           chren = attrs;
           attrs = {};
         }
 
         if (attrs.skip) {
-          skip();
+          skip$1();
         } else {
           var chrenType = typeof chren === 'undefined' ? 'undefined' : babelHelpers.typeof(chren);
           if (chrenType === 'function') {
             chren();
           } else if (chrenType === 'string' || chrenType === 'number') {
-            text(chren);
+            text$1(chren);
           }
         }
 
-        return elementClose(tname);
+        return elementClose$1(tname);
       };
     }
 
     // The default function requries a tag name.
-    function create$1(tname, attrs, chren) {
+    function create$2(tname, attrs, chren) {
       return (factories[tname] || bind(tname))(attrs, chren);
     }
 
@@ -4843,7 +4808,7 @@
       // slot API can pick it up. We must also prepend a shadowId if there is one
       // so that the named-slot API only finds slot elements that belong to its
       // shadow root, not descendant component shadow roots.
-      attrs['slot-name'] = data$1.shadowId + (attrs.name || '');
+      attrs['slot-name'] = internalData.shadowId + (attrs.name || '');
 
       // Since this is a slot we *must* skip it so that Incremental DOM doesn't
       // diff / patch the content of it.
@@ -4853,7 +4818,7 @@
       delete attrs.name;
       delete attrs.type;
 
-      return create$1(tname, attrs, chren);
+      return create$2(tname, attrs, chren);
     }
 
     // Create factories for all HTML elements except for ones that match keywords
@@ -4882,7 +4847,7 @@
     var colgroup = bind('colgroup');
     var command = bind('command');
     var content = bind('content');
-    var data = bind('data');
+    var data$1 = bind('data');
     var datalist = bind('datalist');
     var dd = bind('dd');
     var del = bind('del');
@@ -4892,7 +4857,7 @@
     var div = bind('div');
     var dl = bind('dl');
     var dt = bind('dt');
-    var element = bind('element');
+    var element$1 = bind('element');
     var em = bind('em');
     var embed = bind('embed');
     var fieldset = bind('fieldset');
@@ -4985,8 +4950,8 @@
     var wbr = bind('wbr');
 
 var vdom = Object.freeze({
-      default: create$1,
-      text: text,
+      default: create$2,
+      text: text$1,
       slot: slot,
       a: a,
       abbr: abbr,
@@ -5012,7 +4977,7 @@ var vdom = Object.freeze({
       colgroup: colgroup,
       command: command,
       content: content,
-      data: data,
+      data: data$1,
       datalist: datalist,
       dd: dd,
       del: del,
@@ -5022,7 +4987,7 @@ var vdom = Object.freeze({
       div: div,
       dl: dl,
       dt: dt,
-      element: element,
+      element: element$1,
       em: em,
       embed: embed,
       fieldset: fieldset,
@@ -5115,7 +5080,7 @@ var vdom = Object.freeze({
       wbr: wbr
     });
 
-    var version = '0.0.7';
+    var version$1 = '0.0.7';
 
     var create = skate.create;
     var emit = skate.emit;
@@ -5123,6 +5088,7 @@ var vdom = Object.freeze({
     var init = skate.init;
     var ready = skate.ready;
     var render = skate.render;
+
 
 
 
@@ -5138,7 +5104,7 @@ var vdom = Object.freeze({
     	render: render,
     	state: state,
     	vdom: vdom,
-    	version: version
+    	version: version$1
     });
 
     var previousGlobal = window.kickflip;
