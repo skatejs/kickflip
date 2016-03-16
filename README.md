@@ -381,7 +381,11 @@ div({ statics: ['attr1', 'prop2'] });
 
 If you specify `false` as any attribute value, the attribute will not be added, it will simply be ignored.
 
-### JSX and other templating languages
+### version
+
+Returns the current version of Kickflip.
+
+## JSX and other templating languages
 
 The `vdom` module is provided for a simple way to write virtual DOM without having to add a build step to your project. If you don't want to do that, you can use any templating language that compiles down to Incremental DOM calls.
 
@@ -422,7 +426,3 @@ And it could be used like:
   <p>Main paragraph 2.</p>
 </my-element>
 ```
-
-### version
-
-Returns the current version of Kickflip.
