@@ -32,12 +32,13 @@ Here's some examples of how to build web components with Kickflip.
 ```
 
 ```js
-import kickflip from 'kickflip';
+import { string } from 'kickflip/src/properties';
 import { div } from 'kickflip/src/vdom';
+import kickflip from 'kickflip';
 
 kickflip('x-hello', {
   properties: {
-    name: {}
+    name: string()
   },
   render (elem) {
     div(`Hello ${elem.name}!`);
@@ -52,21 +53,22 @@ kickflip('x-hello', {
 ```
 
 ```js
-import kickflip from 'kickflip';
+import { number } from 'kickflip/src/properties';
 import { div } from 'kickflip/src/vdom';
+import kickflip from 'kickflip';
 
-var intervals = new WeakMap();
+const intervals = new WeakMap();
 
 kickflip('x-counter', {
   properties: {
-    count: { default: 0 }
+    count: number({ default: 0 })
   },
-  attached: function (elem) {
+  attached (elem) {
     intervals.set(elem, setInterval(function () {
       ++elem.count;
     }, 1000));
   },
-  detached: function (elem) {
+  detached (elem) {
     clearInterval(intervals.get(elem));
   },
   render (elem) {
@@ -86,7 +88,6 @@ kickflip('x-counter', {
 ```
 
 ```js
-import './index.css';
 import kickflip, { emit, link, render } from '../../src/index';
 import create, { button, form, input, p, slot, text } from '../../src/vdom';
 
