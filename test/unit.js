@@ -1,8 +1,9 @@
 import { emit } from '../src/index';
 import { number } from '../src/properties';
+import * as IncrementalDOM from 'incremental-dom';
 import kickflip from '../src/kickflip';
 import state from '../src/state';
-import vdom from '../src/vdom';
+import vdom, { IncrementalDOM as VdomIncrementalDOM } from '../src/vdom';
 import version from '../src/version';
 
 describe('kickflip', function () {
@@ -66,5 +67,11 @@ describe('events (on*)', function () {
         done();
       }, 10);
     }, 10);
+  });
+});
+
+describe('IncrementalDOM', function () {
+  it('should export all the same members as the incremental-dom we consume', function () {
+    expect(VdomIncrementalDOM).to.contain(IncrementalDOM);
   });
 });

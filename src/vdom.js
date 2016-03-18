@@ -111,10 +111,6 @@ export default function create (tname, attrs, chren) {
   return (factories[tname] || bind(tname))(attrs, chren);
 }
 
-// Export the Incremental DOM text() function directly as we don't need to do
-// any special processing for it.
-export { text };
-
 // Creates an element that acts as a slot.
 export function slot (attrs, chren) {
   // Attributes must be an object so that we can add slot info.
@@ -142,6 +138,15 @@ export function slot (attrs, chren) {
 
   return create(tname, attrs, chren);
 }
+
+// Export the Incremental DOM text() function directly as we don't need to do
+// any special processing for it.
+export { text };
+
+// We export IncrementalDOM in its entirety because we want the user to be able
+// to user our configured version while still being able to use various other
+// templating languages and techniques that compile down to it.
+export { IncrementalDOM };
 
 // Create factories for all HTML elements except for ones that match keywords
 // such as "var".
