@@ -1281,17 +1281,43 @@
     };
     });
 
+    var incrementalDomCjs$1 = (incrementalDomCjs && typeof incrementalDomCjs === 'object' && 'default' in incrementalDomCjs ? incrementalDomCjs['default'] : incrementalDomCjs);
     var text = incrementalDomCjs.text;
+    var elementPlaceholder = incrementalDomCjs.elementPlaceholder;
+    var elementVoid = incrementalDomCjs.elementVoid;
     var elementClose = incrementalDomCjs.elementClose;
     var elementOpenEnd = incrementalDomCjs.elementOpenEnd;
     var attr = incrementalDomCjs.attr;
     var elementOpenStart = incrementalDomCjs.elementOpenStart;
     var elementOpen = incrementalDomCjs.elementOpen;
     var skip = incrementalDomCjs.skip;
+    var currentElement = incrementalDomCjs.currentElement;
     var patch = incrementalDomCjs.patch;
     var attributes = incrementalDomCjs.attributes;
     var applyProp = incrementalDomCjs.applyProp;
+    var applyAttr = incrementalDomCjs.applyAttr;
     var symbols = incrementalDomCjs.symbols;
+    var notifications = incrementalDomCjs.notifications;
+
+var IncrementalDOM = Object.freeze({
+      default: incrementalDomCjs$1,
+      text: text,
+      elementPlaceholder: elementPlaceholder,
+      elementVoid: elementVoid,
+      elementClose: elementClose,
+      elementOpenEnd: elementOpenEnd,
+      attr: attr,
+      elementOpenStart: elementOpenStart,
+      elementOpen: elementOpen,
+      skip: skip,
+      currentElement: currentElement,
+      patch: patch,
+      attributes: attributes,
+      applyProp: applyProp,
+      applyAttr: applyAttr,
+      symbols: symbols,
+      notifications: notifications
+    });
 
     var prop = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -4734,6 +4760,7 @@
 
         var eFunc = events[eName];
 
+        // This ensures events never double up.
         if (eFunc) {
           elem.removeEventListener(eName, eFunc);
         }
@@ -4951,8 +4978,9 @@
 
 var vdom = Object.freeze({
       default: create$2,
-      text: text$1,
       slot: slot,
+      text: text$1,
+      IncrementalDOM: IncrementalDOM,
       a: a,
       abbr: abbr,
       address: address,
