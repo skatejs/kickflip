@@ -101,13 +101,6 @@ const Xtodo = kickflip('x-todo', {
       this.removeChild(e.detail);
     }
   },
-  properties: {
-    items: {
-      default () {
-        return [];
-      }
-    }
-  },
   render (elem) {
     create('x-list');
   }
