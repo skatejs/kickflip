@@ -40,6 +40,6 @@
     "incremental-dom": "^0.3.0",
     "object-assign": "^4.0.1",
     "skatejs": "skatejs/skatejs#9db4a9f",
-    "skatejs-named-slots": "skatejs/named-slots#ad7a981"
+    "skatejs-named-slots": "skatejs/named-slots#14d7a87"
   }
 }
