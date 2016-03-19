@@ -45,14 +45,14 @@
     }
     });
 
-    var require$$0 = (index$1 && typeof index$1 === 'object' && 'default' in index$1 ? index$1['default'] : index$1);
+    var require$$0$1 = (index$1 && typeof index$1 === 'object' && 'default' in index$1 ? index$1['default'] : index$1);
 
     var index = __commonjs(function (module) {
     /**
      * Module dependencies.
      */
 
-    var now = require$$0;
+    var now = require$$0$1;
 
     /**
      * Returns a function, that, as long as it continues to be invoked, will not
@@ -102,7 +102,7 @@
     };
     });
 
-    var debounce = (index && typeof index === 'object' && 'default' in index ? index['default'] : index);
+    var require$$0 = (index && typeof index === 'object' && 'default' in index ? index['default'] : index);
 
     var incrementalDomCjs = __commonjs(function (module, exports) {
     /**
@@ -1343,12 +1343,12 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$0$2 = (prop && typeof prop === 'object' && 'default' in prop ? prop['default'] : prop);
+    var require$$0$3 = (prop && typeof prop === 'object' && 'default' in prop ? prop['default'] : prop);
 
-    var mapPolyfilled = __commonjs(function (module, exports, global) {
+    var weakMap = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
-        define(["module", "exports"], factory);
+        define(['module', 'exports'], factory);
       } else if (typeof exports !== "undefined") {
         factory(module, exports);
       } else {
@@ -1356,61 +1356,343 @@ var IncrementalDOM = Object.freeze({
           exports: {}
         };
         factory(mod, mod.exports);
-        global.mapPolyfilled = mod.exports;
+        global.weakMap = mod.exports;
       }
     })(__commonjs_global, function (module, exports) {
-      "use strict";
-
-      Object.defineProperty(exports, "__esModule", {
-        value: true
-      });
-      exports.default = new WeakMap();
-      module.exports = exports['default'];
-    });
-    });
-
-    var require$$1 = (mapPolyfilled && typeof mapPolyfilled === 'object' && 'default' in mapPolyfilled ? mapPolyfilled['default'] : mapPolyfilled);
-
-    var polyfill = __commonjs(function (module, exports, global) {
-    (function (global, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(['module', 'exports', './internal/map-polyfilled', './internal/prop'], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$1, require$$0$2);
-      } else {
-        var mod = {
-          exports: {}
-        };
-        factory(mod, mod.exports, global.mapPolyfilled, global.prop);
-        global.polyfill = mod.exports;
-      }
-    })(__commonjs_global, function (module, exports, _mapPolyfilled, _prop) {
       'use strict';
 
       Object.defineProperty(exports, "__esModule", {
         value: true
       });
 
-      exports.default = function (elem) {
-        if (_mapPolyfilled2.default.get(elem)) {
+      exports.default = window.WeakMap || function () {
+        var index = 0;
+        function Wm() {
+          this.key = '____weak_map_' + index++;
+        }
+        Wm.prototype = {
+          delete: function _delete(obj) {
+            delete obj[this.key];
+          },
+          get: function get(obj) {
+            return obj[this.key];
+          },
+          has: function has(obj) {
+            return typeof obj[this.key] !== 'undefined';
+          },
+          set: function set(obj, val) {
+            return obj[this.key] = val;
+          }
+        };
+        return Wm;
+      }();
+
+      module.exports = exports['default'];
+    });
+    });
+
+    var require$$0$4 = (weakMap && typeof weakMap === 'object' && 'default' in weakMap ? weakMap['default'] : weakMap);
+
+    var mapSlotChangeListeners = __commonjs(function (module, exports, global) {
+    (function (global, factory) {
+      if (typeof define === "function" && define.amd) {
+        define(['module', 'exports', './weak-map'], factory);
+      } else if (typeof exports !== "undefined") {
+        factory(module, exports, require$$0$4);
+      } else {
+        var mod = {
+          exports: {}
+        };
+        factory(mod, mod.exports, global.weakMap);
+        global.mapSlotChangeListeners = mod.exports;
+      }
+    })(__commonjs_global, function (module, exports, _weakMap) {
+      'use strict';
+
+      Object.defineProperty(exports, "__esModule", {
+        value: true
+      });
+
+      var _weakMap2 = _interopRequireDefault(_weakMap);
+
+      function _interopRequireDefault(obj) {
+        return obj && obj.__esModule ? obj : {
+          default: obj
+        };
+      }
+
+      exports.default = new _weakMap2.default();
+      module.exports = exports['default'];
+    });
+    });
+
+    var require$$1 = (mapSlotChangeListeners && typeof mapSlotChangeListeners === 'object' && 'default' in mapSlotChangeListeners ? mapSlotChangeListeners['default'] : mapSlotChangeListeners);
+
+    var mapPolyfilledParentNode = __commonjs(function (module, exports, global) {
+    (function (global, factory) {
+      if (typeof define === "function" && define.amd) {
+        define(['module', 'exports', './weak-map'], factory);
+      } else if (typeof exports !== "undefined") {
+        factory(module, exports, require$$0$4);
+      } else {
+        var mod = {
+          exports: {}
+        };
+        factory(mod, mod.exports, global.weakMap);
+        global.mapPolyfilledParentNode = mod.exports;
+      }
+    })(__commonjs_global, function (module, exports, _weakMap) {
+      'use strict';
+
+      Object.defineProperty(exports, "__esModule", {
+        value: true
+      });
+
+      var _weakMap2 = _interopRequireDefault(_weakMap);
+
+      function _interopRequireDefault(obj) {
+        return obj && obj.__esModule ? obj : {
+          default: obj
+        };
+      }
+
+      exports.default = new _weakMap2.default();
+      module.exports = exports['default'];
+    });
+    });
+
+    var require$$2 = (mapPolyfilledParentNode && typeof mapPolyfilledParentNode === 'object' && 'default' in mapPolyfilledParentNode ? mapPolyfilledParentNode['default'] : mapPolyfilledParentNode);
+
+    var mapPolyfilledLightNode = __commonjs(function (module, exports, global) {
+    (function (global, factory) {
+      if (typeof define === "function" && define.amd) {
+        define(['module', 'exports', './weak-map'], factory);
+      } else if (typeof exports !== "undefined") {
+        factory(module, exports, require$$0$4);
+      } else {
+        var mod = {
+          exports: {}
+        };
+        factory(mod, mod.exports, global.weakMap);
+        global.mapPolyfilledLightNode = mod.exports;
+      }
+    })(__commonjs_global, function (module, exports, _weakMap) {
+      'use strict';
+
+      Object.defineProperty(exports, "__esModule", {
+        value: true
+      });
+
+      var _weakMap2 = _interopRequireDefault(_weakMap);
+
+      function _interopRequireDefault(obj) {
+        return obj && obj.__esModule ? obj : {
+          default: obj
+        };
+      }
+
+      exports.default = new _weakMap2.default();
+      module.exports = exports['default'];
+    });
+    });
+
+    var require$$3 = (mapPolyfilledLightNode && typeof mapPolyfilledLightNode === 'object' && 'default' in mapPolyfilledLightNode ? mapPolyfilledLightNode['default'] : mapPolyfilledLightNode);
+
+    var mapPolyfilled = __commonjs(function (module, exports, global) {
+    (function (global, factory) {
+      if (typeof define === "function" && define.amd) {
+        define(['module', 'exports', './weak-map'], factory);
+      } else if (typeof exports !== "undefined") {
+        factory(module, exports, require$$0$4);
+      } else {
+        var mod = {
+          exports: {}
+        };
+        factory(mod, mod.exports, global.weakMap);
+        global.mapPolyfilled = mod.exports;
+      }
+    })(__commonjs_global, function (module, exports, _weakMap) {
+      'use strict';
+
+      Object.defineProperty(exports, "__esModule", {
+        value: true
+      });
+
+      var _weakMap2 = _interopRequireDefault(_weakMap);
+
+      function _interopRequireDefault(obj) {
+        return obj && obj.__esModule ? obj : {
+          default: obj
+        };
+      }
+
+      exports.default = new _weakMap2.default();
+      module.exports = exports['default'];
+    });
+    });
+
+    var require$$4 = (mapPolyfilled && typeof mapPolyfilled === 'object' && 'default' in mapPolyfilled ? mapPolyfilled['default'] : mapPolyfilled);
+
+    var mapNodeIsLightDom = __commonjs(function (module, exports, global) {
+    (function (global, factory) {
+      if (typeof define === "function" && define.amd) {
+        define(['module', 'exports', './weak-map'], factory);
+      } else if (typeof exports !== "undefined") {
+        factory(module, exports, require$$0$4);
+      } else {
+        var mod = {
+          exports: {}
+        };
+        factory(mod, mod.exports, global.weakMap);
+        global.mapNodeIsLightDom = mod.exports;
+      }
+    })(__commonjs_global, function (module, exports, _weakMap) {
+      'use strict';
+
+      Object.defineProperty(exports, "__esModule", {
+        value: true
+      });
+
+      var _weakMap2 = _interopRequireDefault(_weakMap);
+
+      function _interopRequireDefault(obj) {
+        return obj && obj.__esModule ? obj : {
+          default: obj
+        };
+      }
+
+      exports.default = new _weakMap2.default();
+      module.exports = exports['default'];
+    });
+    });
+
+    var require$$5 = (mapNodeIsLightDom && typeof mapNodeIsLightDom === 'object' && 'default' in mapNodeIsLightDom ? mapNodeIsLightDom['default'] : mapNodeIsLightDom);
+
+    var getSlot = __commonjs(function (module, exports, global) {
+    (function (global, factory) {
+      if (typeof define === "function" && define.amd) {
+        define(['module', 'exports', 'debounce'], factory);
+      } else if (typeof exports !== "undefined") {
+        factory(module, exports, require$$0);
+      } else {
+        var mod = {
+          exports: {}
+        };
+        factory(mod, mod.exports, global.debounce);
+        global.getSlot = mod.exports;
+      }
+    })(__commonjs_global, function (module, exports, _debounce) {
+      'use strict';
+
+      Object.defineProperty(exports, "__esModule", {
+        value: true
+      });
+
+      exports.default = function (host, node) {
+        if (!node) {
           return;
         }
 
-        // Polyfill properties.
-        for (var name in props) {
-          (0, _prop2.default)(elem, name, props[name]);
+        var slotName = node.getAttribute && node.getAttribute('slot');
+        var cacheKey = slotName || 'content';
+
+        if (!host.__slots) {
+          host.__slots = {};
         }
 
-        // Polyfill methods.
-        for (var name in funcs) {
-          elem[name] = funcs[name];
+        var slots = host.__slots;
+
+        // We check for a cached slot first because querying is slow.
+        if (slots[cacheKey]) {
+          var _slotElement = slots[cacheKey];
+
+          // However, we check to see if it was detached. If not, just return it.
+          if (_slotElement.parentNode) {
+            return _slotElement;
+          }
+
+          // if it was detached we should make sure it's cleaned up.
+          delete slots[cacheKey];
+          return null;
         }
 
-        _mapPolyfilled2.default.set(elem, true);
-        return elem;
+        var calculatedName = (host.__shadowId || '') + (slotName || '');
+        var slotElement = slotName ? queryForNamedSlot(host, calculatedName) : queryForUnnamedSlot(host);
+
+        // Cache it because querying is slow.
+        if (slotElement) {
+          slots[cacheKey] = polyfillSlot(slotElement);
+        }
+
+        return slots[cacheKey] || null;
       };
 
+      var _debounce2 = _interopRequireDefault(_debounce);
+
+      function _interopRequireDefault(obj) {
+        return obj && obj.__esModule ? obj : {
+          default: obj
+        };
+      }
+
+      function polyfillSlot(slot) {
+        slot.__triggerSlotChangeEvent = (0, _debounce2.default)(triggerSlotChangeEvent);
+        return slot;
+      }
+
+      function queryForNamedSlot(host, name) {
+        return host.querySelector('slot[name="' + name + '"], [slot-name="' + name + '"]');
+      }
+
+      function queryForUnnamedSlot(host) {
+        return host.querySelector('slot[name=""], slot:not([name]), [slot-name=""]');
+      }
+
+      function triggerSlotChangeEvent() {
+        this.dispatchEvent(new CustomEvent('slotchange', {
+          bubbles: false,
+          cancelable: false
+        }));
+      }
+
+      module.exports = exports['default'];
+    });
+    });
+
+    var require$$6 = (getSlot && typeof getSlot === 'object' && 'default' in getSlot ? getSlot['default'] : getSlot);
+
+    var polyfill = __commonjs(function (module, exports, global) {
+    (function (global, factory) {
+      if (typeof define === "function" && define.amd) {
+        define(['module', 'exports', './internal/get-slot', './internal/map-node-is-light-dom', './internal/map-polyfilled', './internal/map-polyfilled-light-node', './internal/map-polyfilled-parent-node', './internal/map-slot-change-listeners', './internal/prop'], factory);
+      } else if (typeof exports !== "undefined") {
+        factory(module, exports, require$$6, require$$5, require$$4, require$$3, require$$2, require$$1, require$$0$3);
+      } else {
+        var mod = {
+          exports: {}
+        };
+        factory(mod, mod.exports, global.getSlot, global.mapNodeIsLightDom, global.mapPolyfilled, global.mapPolyfilledLightNode, global.mapPolyfilledParentNode, global.mapSlotChangeListeners, global.prop);
+        global.polyfill = mod.exports;
+      }
+    })(__commonjs_global, function (module, exports, _getSlot, _mapNodeIsLightDom, _mapPolyfilled, _mapPolyfilledLightNode, _mapPolyfilledParentNode, _mapSlotChangeListeners, _prop) {
+      'use strict';
+
+      Object.defineProperty(exports, "__esModule", {
+        value: true
+      });
+      exports.default = polyfill;
+
+      var _getSlot2 = _interopRequireDefault(_getSlot);
+
+      var _mapNodeIsLightDom2 = _interopRequireDefault(_mapNodeIsLightDom);
+
       var _mapPolyfilled2 = _interopRequireDefault(_mapPolyfilled);
+
+      var _mapPolyfilledLightNode2 = _interopRequireDefault(_mapPolyfilledLightNode);
+
+      var _mapPolyfilledParentNode2 = _interopRequireDefault(_mapPolyfilledParentNode);
+
+      var _mapSlotChangeListeners2 = _interopRequireDefault(_mapSlotChangeListeners);
 
       var _prop2 = _interopRequireDefault(_prop);
 
@@ -1420,22 +1702,30 @@ var IncrementalDOM = Object.freeze({
         };
       }
 
+      var nodeProto = Node.prototype;
+      var elProto = Element.prototype;
+      var htmlElProto = HTMLElement.prototype;
+      var configurable = true;
+      var canPatchNativeAccessors = !!Object.getOwnPropertyDescriptor(Node.prototype, 'parentNode').get;
+
       function applyParentNode(node, parent) {
-        (0, _prop2.default)(node, 'parentNode', {
-          configurable: true,
-          get: function get() {
-            return parent;
+        _mapNodeIsLightDom2.default.set(node, true);
+
+        _mapPolyfilledParentNode2.default.set(node, parent);
+
+        if (!canPatchNativeAccessors && !_mapPolyfilledLightNode2.default.get(node)) {
+          _mapPolyfilledLightNode2.default.set(node, true);
+
+          for (var name in lightProps) {
+            (0, _prop2.default)(node, name, lightProps[name]);
           }
-        });
+        }
       }
 
       function removeParentNode(node) {
-        (0, _prop2.default)(node, 'parentNode', {
-          configurable: true,
-          get: function get() {
-            return null;
-          }
-        });
+        _mapNodeIsLightDom2.default.set(node, false);
+
+        _mapPolyfilledParentNode2.default.set(node, null);
       }
 
       function arrayItem(idx) {
@@ -1443,38 +1733,20 @@ var IncrementalDOM = Object.freeze({
       }
 
       function doForNodesIfSlot(elem, node, func) {
-        nodeToArray(node).forEach(function (node) {
-          var slot = getSlot(elem, node);
+        var nodes = nodeToArray(node);
+        var nodesLen = nodes.length;
+
+        for (var a = 0; a < nodesLen; a++) {
+          var _node = nodes[a];
+          var slot = (0, _getSlot2.default)(elem, _node);
 
           if (slot) {
-            func(elem, node, slot);
+            func(elem, _node, slot);
+
+            if (_mapSlotChangeListeners2.default.get(slot)) {
+              slot.__triggerSlotChangeEvent();
+            }
           }
-        });
-      }
-
-      function getSlot(elem, node) {
-        if (!node) {
-          return;
-        }
-
-        var name = node.getAttribute && node.getAttribute('slot') || 'content';
-
-        if (!elem.__slots) {
-          elem.__slots = {};
-        }
-
-        var slots = elem.__slots;
-
-        if (typeof slots[name] === 'undefined') {
-          var slot = elem.querySelector('[slot-name="' + (elem.__shadowId || '') + (name === 'content' ? '' : name) + '"]');
-
-          if (slot) {
-            slots[name] = slot;
-          }
-        }
-
-        if (slots[name]) {
-          return slots[name];
         }
       }
 
@@ -1491,8 +1763,9 @@ var IncrementalDOM = Object.freeze({
         return Array.prototype.slice.call(obj);
       }
 
-      var props = {
+      var hostProps = {
         childElementCount: {
+          configurable: configurable,
           get: function get() {
             return this.children.length;
           }
@@ -1584,9 +1857,110 @@ var IncrementalDOM = Object.freeze({
             }).join('');
           },
           set: function set(val) {
+            while (this.hasChildNodes()) {
+              this.removeChild(this.firstChild);
+            }
+
             doForNodesIfSlot(this, val.toString(), function (elem, node, slot) {
               slot.textContent = node;
             });
+          }
+        }
+      };
+      var lightProps = {
+        parentElement: {
+          configurable: configurable,
+          get: function get() {
+            if (_mapNodeIsLightDom2.default.get(this)) {
+              var parent = this.parentNode;
+              return parent.nodeType === 1 ? parent : null;
+            }
+
+            return this.__parentElement;
+          }
+        },
+        parentNode: {
+          configurable: configurable,
+          get: function get() {
+            return _mapPolyfilledParentNode2.default.get(this) || this.__parentNode || null;
+          }
+        },
+        nextSibling: {
+          configurable: configurable,
+          get: function get() {
+            if (_mapNodeIsLightDom2.default.get(this)) {
+              var index = undefined;
+              var parChs = this.parentNode.childNodes;
+              var parChsLen = parChs.length;
+
+              for (var a = 0; a < parChsLen; a++) {
+                if (parChs[a] === this) {
+                  index = a;
+                  continue;
+                }
+              }
+
+              return typeof index === 'number' ? parChs[index + 1] : null;
+            }
+
+            return this.__nextSibling;
+          }
+        },
+        nextElementSibling: {
+          configurable: configurable,
+          get: function get() {
+            if (_mapNodeIsLightDom2.default.get(this)) {
+              var next = undefined;
+
+              while (next = this.nextSibling) {
+                if (next.nodeType === 1) {
+                  return next;
+                }
+              }
+
+              return null;
+            }
+
+            return this.__nextElementSibling;
+          }
+        },
+        previousSibling: {
+          configurable: configurable,
+          get: function get() {
+            if (_mapNodeIsLightDom2.default.get(this)) {
+              var index = undefined;
+              var parChs = this.parentNode.childNodes;
+              var parChsLen = parChs.length;
+
+              for (var a = 0; a < parChsLen; a++) {
+                if (parChs[a] === this) {
+                  index = a;
+                  continue;
+                }
+              }
+
+              return typeof index === 'number' ? parChs[index - 1] : null;
+            }
+
+            return this.__previousSibling;
+          }
+        },
+        previousElementSibling: {
+          configurable: configurable,
+          get: function get() {
+            if (_mapNodeIsLightDom2.default.get(this)) {
+              var prev = undefined;
+
+              while (prev = this.previousSibling) {
+                if (prev.nodeType === 1) {
+                  return prev;
+                }
+              }
+
+              return null;
+            }
+
+            return this.__previousElementSibling;
           }
         }
       };
@@ -1616,26 +1990,81 @@ var IncrementalDOM = Object.freeze({
           return refNode;
         },
         replaceChild: function replaceChild(newNode, refNode) {
+          if (refNode.parentNode !== this) {
+            return refNode;
+          }
+
+          var insertBefore = refNode.nextSibling;
+          this.removeChild(refNode);
           doForNodesIfSlot(this, newNode, function (elem, node, slot) {
-            slot.replaceChild(node, refNode);
+            slot.insertBefore(node, insertBefore);
             applyParentNode(node, elem);
           });
-          removeParentNode(refNode);
           return refNode;
         }
       };
+
+      if (canPatchNativeAccessors) {
+        for (var name in lightProps) {
+          var proto = nodeProto.hasOwnProperty(name) ? nodeProto : elProto;
+          (0, _prop2.default)(proto, '__' + name, Object.getOwnPropertyDescriptor(proto, name));
+          (0, _prop2.default)(proto, name, lightProps[name]);
+        }
+      }
+
+      var addEventListener = htmlElProto.addEventListener;
+      var removeEventListener = htmlElProto.removeEventListener;
+
+      htmlElProto.addEventListener = function (name, func, opts) {
+        if (name === 'slotchange') {
+          var listeners = _mapSlotChangeListeners2.default.get(this) || 0;
+
+          _mapSlotChangeListeners2.default.set(this, ++listeners);
+        }
+
+        return addEventListener.call(this, name, func, opts);
+      };
+
+      htmlElProto.removeEventListener = function (name, func, opts) {
+        if (name === 'slotchange') {
+          var listeners = _mapSlotChangeListeners2.default.get(this) || 1;
+
+          _mapSlotChangeListeners2.default.set(this, --listeners);
+        }
+
+        return removeEventListener.call(this, name, func, opts);
+      };
+
+      function polyfill(elem) {
+        if (_mapPolyfilled2.default.get(elem)) {
+          return;
+        }
+
+        for (var name in hostProps) {
+          (0, _prop2.default)(elem, name, hostProps[name]);
+        }
+
+        for (var name in funcs) {
+          elem[name] = funcs[name];
+        }
+
+        _mapPolyfilled2.default.set(elem, true);
+
+        return elem;
+      }
+
       module.exports = exports['default'];
     });
     });
 
-    var require$$0$1 = (polyfill && typeof polyfill === 'object' && 'default' in polyfill ? polyfill['default'] : polyfill);
+    var require$$0$2 = (polyfill && typeof polyfill === 'object' && 'default' in polyfill ? polyfill['default'] : polyfill);
 
     var render$2 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', './polyfill'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$1);
+        factory(module, exports, require$$0$2);
       } else {
         var mod = {
           exports: {}
@@ -1695,8 +2124,6 @@ var IncrementalDOM = Object.freeze({
           default: obj
         };
       }
-
-      var shadowId = 0;
 
       function createFragmentFromChildNodes(elem) {
         var frag = document.createDocumentFragment();
@@ -1787,14 +2214,14 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$0$4 = (ignored && typeof ignored === 'object' && 'default' in ignored ? ignored['default'] : ignored);
+    var require$$0$6 = (ignored && typeof ignored === 'object' && 'default' in ignored ? ignored['default'] : ignored);
 
     var walkTree = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', './ignored'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$4);
+        factory(module, exports, require$$0$6);
       } else {
         var mod = {
           exports: {}
@@ -1852,7 +2279,7 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$0$3 = (walkTree && typeof walkTree === 'object' && 'default' in walkTree ? walkTree['default'] : walkTree);
+    var require$$0$5 = (walkTree && typeof walkTree === 'object' && 'default' in walkTree ? walkTree['default'] : walkTree);
 
     var defineProperties = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -1895,7 +2322,7 @@ var IncrementalDOM = Object.freeze({
 
     var require$$1$1 = (defineProperties && typeof defineProperties === 'object' && 'default' in defineProperties ? defineProperties['default'] : defineProperties);
 
-    var debounce$1 = __commonjs(function (module, exports, global) {
+    var debounce = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(["module", "exports"], factory);
@@ -1939,7 +2366,7 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$2 = (debounce$1 && typeof debounce$1 === 'object' && 'default' in debounce$1 ? debounce$1['default'] : debounce$1);
+    var require$$2$1 = (debounce && typeof debounce === 'object' && 'default' in debounce ? debounce['default'] : debounce);
 
     var getOwnPropertyDescriptors = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -1972,7 +2399,7 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$0$5 = (getOwnPropertyDescriptors && typeof getOwnPropertyDescriptors === 'object' && 'default' in getOwnPropertyDescriptors ? getOwnPropertyDescriptors['default'] : getOwnPropertyDescriptors);
+    var require$$0$7 = (getOwnPropertyDescriptors && typeof getOwnPropertyDescriptors === 'object' && 'default' in getOwnPropertyDescriptors ? getOwnPropertyDescriptors['default'] : getOwnPropertyDescriptors);
 
     var protos = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -2008,14 +2435,14 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$2$1 = (protos && typeof protos === 'object' && 'default' in protos ? protos['default'] : protos);
+    var require$$2$2 = (protos && typeof protos === 'object' && 'default' in protos ? protos['default'] : protos);
 
     var getAllPropertyDescriptors = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', './get-own-property-descriptors', './protos'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$5, require$$2$1);
+        factory(module, exports, require$$0$7, require$$2$2);
       } else {
         var mod = {
           exports: {}
@@ -2055,7 +2482,7 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$4 = (getAllPropertyDescriptors && typeof getAllPropertyDescriptors === 'object' && 'default' in getAllPropertyDescriptors ? getAllPropertyDescriptors['default'] : getAllPropertyDescriptors);
+    var require$$4$1 = (getAllPropertyDescriptors && typeof getAllPropertyDescriptors === 'object' && 'default' in getAllPropertyDescriptors ? getAllPropertyDescriptors['default'] : getAllPropertyDescriptors);
 
     var registerElement = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -2082,7 +2509,7 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$0$7 = (registerElement && typeof registerElement === 'object' && 'default' in registerElement ? registerElement['default'] : registerElement);
+    var require$$0$9 = (registerElement && typeof registerElement === 'object' && 'default' in registerElement ? registerElement['default'] : registerElement);
 
     var createElement = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -2108,14 +2535,14 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$2$2 = (createElement && typeof createElement === 'object' && 'default' in createElement ? createElement['default'] : createElement);
+    var require$$2$3 = (createElement && typeof createElement === 'object' && 'default' in createElement ? createElement['default'] : createElement);
 
     var element = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../native/create-element', '../native/register-element'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$2$2, require$$0$7);
+        factory(module, exports, require$$2$3, require$$0$9);
       } else {
         var mod = {
           exports: {}
@@ -2188,7 +2615,7 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$0$6 = (element && typeof element === 'object' && 'default' in element ? element['default'] : element);
+    var require$$0$8 = (element && typeof element === 'object' && 'default' in element ? element['default'] : element);
 
     var vars = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -2228,14 +2655,14 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$3 = (vars && typeof vars === 'object' && 'default' in vars ? vars['default'] : vars);
+    var require$$3$1 = (vars && typeof vars === 'object' && 'default' in vars ? vars['default'] : vars);
 
     var registry = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', './vars'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$3);
+        factory(module, exports, require$$3$1);
       } else {
         var mod = {
           exports: {}
@@ -2297,7 +2724,7 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$0$8 = (registry && typeof registry === 'object' && 'default' in registry ? registry['default'] : registry);
+    var require$$0$10 = (registry && typeof registry === 'object' && 'default' in registry ? registry['default'] : registry);
 
     var createEvent = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -2412,14 +2839,14 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$0$9 = (innerhtml && typeof innerhtml === 'object' && 'default' in innerhtml ? innerhtml['default'] : innerhtml);
+    var require$$0$11 = (innerhtml && typeof innerhtml === 'object' && 'default' in innerhtml ? innerhtml['default'] : innerhtml);
 
     var getClosestIgnoredElement = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', './ignored'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$4);
+        factory(module, exports, require$$0$6);
       } else {
         var mod = {
           exports: {}
@@ -2458,14 +2885,14 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$4$1 = (getClosestIgnoredElement && typeof getClosestIgnoredElement === 'object' && 'default' in getClosestIgnoredElement ? getClosestIgnoredElement['default'] : getClosestIgnoredElement);
+    var require$$4$2 = (getClosestIgnoredElement && typeof getClosestIgnoredElement === 'object' && 'default' in getClosestIgnoredElement ? getClosestIgnoredElement['default'] : getClosestIgnoredElement);
 
     var documentObserver = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../util/get-closest-ignored-element', './vars', './registry', '../util/walk-tree', '../fix/ie/innerhtml'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$4$1, require$$3, require$$0$8, require$$0$3, require$$0$9);
+        factory(module, exports, require$$4$2, require$$3$1, require$$0$10, require$$0$5, require$$0$11);
       } else {
         var mod = {
           exports: {}
@@ -2663,7 +3090,7 @@ var IncrementalDOM = Object.freeze({
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', './type/element'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$6);
+        factory(module, exports, require$$0$8);
       } else {
         var mod = {
           exports: {}
@@ -2737,14 +3164,14 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$0$10 = (resolve && typeof resolve === 'object' && 'default' in resolve ? resolve['default'] : resolve);
+    var require$$0$12 = (resolve && typeof resolve === 'object' && 'default' in resolve ? resolve['default'] : resolve);
 
     var prototype = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../util/protos', '../util/define-properties', '../util/get-own-property-descriptors'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$2$1, require$$1$1, require$$0$5);
+        factory(module, exports, require$$2$2, require$$1$1, require$$0$7);
       } else {
         var mod = {
           exports: {}
@@ -2817,7 +3244,7 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$2$3 = (propertiesReady && typeof propertiesReady === 'object' && 'default' in propertiesReady ? propertiesReady['default'] : propertiesReady);
+    var require$$2$4 = (propertiesReady && typeof propertiesReady === 'object' && 'default' in propertiesReady ? propertiesReady['default'] : propertiesReady);
 
     var propertiesCreated = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -2865,7 +3292,7 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$3$1 = (propertiesCreated && typeof propertiesCreated === 'object' && 'default' in propertiesCreated ? propertiesCreated['default'] : propertiesCreated);
+    var require$$3$2 = (propertiesCreated && typeof propertiesCreated === 'object' && 'default' in propertiesCreated ? propertiesCreated['default'] : propertiesCreated);
 
     var empty = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -2895,7 +3322,7 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$0$11 = (empty && typeof empty === 'object' && 'default' in empty ? empty['default'] : empty);
+    var require$$0$13 = (empty && typeof empty === 'object' && 'default' in empty ? empty['default'] : empty);
 
     var dashCase = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -2928,7 +3355,7 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$2$4 = (dashCase && typeof dashCase === 'object' && 'default' in dashCase ? dashCase['default'] : dashCase);
+    var require$$2$5 = (dashCase && typeof dashCase === 'object' && 'default' in dashCase ? dashCase['default'] : dashCase);
 
     var index$3 = __commonjs(function (module) {
     /* eslint-disable no-unused-vars */
@@ -2980,7 +3407,7 @@ var IncrementalDOM = Object.freeze({
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', 'object-assign', '../util/dash-case', '../util/data', '../util/empty'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, assign, require$$2$4, require$$1$3, require$$0$11);
+        factory(module, exports, assign, require$$2$5, require$$1$3, require$$0$13);
       } else {
         var mod = {
           exports: {}
@@ -3203,7 +3630,7 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$4$2 = (propertiesInit && typeof propertiesInit === 'object' && 'default' in propertiesInit ? propertiesInit['default'] : propertiesInit);
+    var require$$4$3 = (propertiesInit && typeof propertiesInit === 'object' && 'default' in propertiesInit ? propertiesInit['default'] : propertiesInit);
 
     var patchAttributeMethods = __commonjs(function (module, exports, global) {
     (function (global, factory) {
@@ -3249,14 +3676,14 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$5 = (patchAttributeMethods && typeof patchAttributeMethods === 'object' && 'default' in patchAttributeMethods ? patchAttributeMethods['default'] : patchAttributeMethods);
+    var require$$5$1 = (patchAttributeMethods && typeof patchAttributeMethods === 'object' && 'default' in patchAttributeMethods ? patchAttributeMethods['default'] : patchAttributeMethods);
 
     var matchesSelector = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../native/create-element'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$2$2);
+        factory(module, exports, require$$2$3);
       } else {
         var mod = {
           exports: {}
@@ -3298,14 +3725,14 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$0$12 = (matchesSelector && typeof matchesSelector === 'object' && 'default' in matchesSelector ? matchesSelector['default'] : matchesSelector);
+    var require$$0$14 = (matchesSelector && typeof matchesSelector === 'object' && 'default' in matchesSelector ? matchesSelector['default'] : matchesSelector);
 
     var events = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../util/matches-selector'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$12);
+        factory(module, exports, require$$0$14);
       } else {
         var mod = {
           exports: {}
@@ -3393,14 +3820,14 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$6 = (events && typeof events === 'object' && 'default' in events ? events['default'] : events);
+    var require$$6$1 = (events && typeof events === 'object' && 'default' in events ? events['default'] : events);
 
     var created = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../util/data', './events', './patch-attribute-methods', './properties-init', './properties-created', './properties-ready', './prototype', './resolve'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$1$3, require$$6, require$$5, require$$4$2, require$$3$1, require$$2$3, require$$1$4, require$$0$10);
+        factory(module, exports, require$$1$3, require$$6$1, require$$5$1, require$$4$3, require$$3$2, require$$2$4, require$$1$4, require$$0$12);
       } else {
         var mod = {
           exports: {}
@@ -3658,7 +4085,7 @@ var IncrementalDOM = Object.freeze({
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../shared/registry'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$8);
+        factory(module, exports, require$$0$10);
       } else {
         var mod = {
           exports: {}
@@ -3699,7 +4126,7 @@ var IncrementalDOM = Object.freeze({
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../util/data', '../shared/registry'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$1$3, require$$0$8);
+        factory(module, exports, require$$1$3, require$$0$10);
       } else {
         var mod = {
           exports: {}
@@ -3768,7 +4195,7 @@ var IncrementalDOM = Object.freeze({
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../../util/empty'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$11);
+        factory(module, exports, require$$0$13);
       } else {
         var mod = {
           exports: {}
@@ -3804,14 +4231,14 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$0$13 = (string && typeof string === 'object' && 'default' in string ? string['default'] : string);
+    var require$$0$15 = (string && typeof string === 'object' && 'default' in string ? string['default'] : string);
 
     var number = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../../util/empty'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$11);
+        factory(module, exports, require$$0$13);
       } else {
         var mod = {
           exports: {}
@@ -3884,14 +4311,14 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$2$5 = (boolean && typeof boolean === 'object' && 'default' in boolean ? boolean['default'] : boolean);
+    var require$$2$6 = (boolean && typeof boolean === 'object' && 'default' in boolean ? boolean['default'] : boolean);
 
     var index$4 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', 'object-assign', './boolean', './number', './string'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, assign, require$$2$5, require$$1$5, require$$0$13);
+        factory(module, exports, assign, require$$2$6, require$$1$5, require$$0$15);
       } else {
         var mod = {
           exports: {}
@@ -3981,14 +4408,14 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$0$14 = (elementContains && typeof elementContains === 'object' && 'default' in elementContains ? elementContains['default'] : elementContains);
+    var require$$0$16 = (elementContains && typeof elementContains === 'object' && 'default' in elementContains ? elementContains['default'] : elementContains);
 
     var init$1 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../util/element-contains', '../shared/registry', '../util/walk-tree'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$0$14, require$$0$8, require$$0$3);
+        factory(module, exports, require$$0$16, require$$0$10, require$$0$5);
       } else {
         var mod = {
           exports: {}
@@ -4067,14 +4494,14 @@ var IncrementalDOM = Object.freeze({
     });
     });
 
-    var require$$2$6 = (createDocumentFragment && typeof createDocumentFragment === 'object' && 'default' in createDocumentFragment ? createDocumentFragment['default'] : createDocumentFragment);
+    var require$$2$7 = (createDocumentFragment && typeof createDocumentFragment === 'object' && 'default' in createDocumentFragment ? createDocumentFragment['default'] : createDocumentFragment);
 
     var fragment$1 = __commonjs(function (module, exports, global) {
     (function (global, factory) {
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../native/create-document-fragment', '../native/create-element', './init'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$2$6, require$$2$2, require$$1$6);
+        factory(module, exports, require$$2$7, require$$2$3, require$$1$6);
       } else {
         var mod = {
           exports: {}
@@ -4179,7 +4606,7 @@ var IncrementalDOM = Object.freeze({
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', '../native/create-element', '../native/create-event', '../util/element-contains'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$2$2, require$$1$2, require$$0$14);
+        factory(module, exports, require$$2$3, require$$1$2, require$$0$16);
       } else {
         var mod = {
           exports: {}
@@ -4307,7 +4734,7 @@ var IncrementalDOM = Object.freeze({
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', 'object-assign', '../native/create-element', './init', '../shared/registry'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, assign, require$$2$2, require$$1$6, require$$0$8);
+        factory(module, exports, assign, require$$2$3, require$$1$6, require$$0$10);
       } else {
         var mod = {
           exports: {}
@@ -4354,7 +4781,7 @@ var IncrementalDOM = Object.freeze({
       if (typeof define === "function" && define.amd) {
         define(['module', 'exports', './api/create', './api/emit', './api/fragment', './api/init', './api/properties/index', './api/ready', './api/render', './api/version', 'object-assign', './lifecycle/attached', './lifecycle/attribute', './lifecycle/created', './native/create-element', './defaults', './lifecycle/detached', './shared/document-observer', './native/register-element', './shared/registry', './type/element', './util/get-all-property-descriptors', './util/get-own-property-descriptors', './util/debounce', './util/define-properties', './util/walk-tree'], factory);
       } else if (typeof exports !== "undefined") {
-        factory(module, exports, require$$23, require$$22, require$$21, require$$1$6, require$$19, require$$18, require$$17, require$$16, assign, require$$14, require$$13, require$$12, require$$2$2, require$$10, require$$9, require$$8, require$$0$7, require$$0$8, require$$0$6, require$$4, require$$0$5, require$$2, require$$1$1, require$$0$3);
+        factory(module, exports, require$$23, require$$22, require$$21, require$$1$6, require$$19, require$$18, require$$17, require$$16, assign, require$$14, require$$13, require$$12, require$$2$3, require$$10, require$$9, require$$8, require$$0$9, require$$0$10, require$$0$8, require$$4$1, require$$0$7, require$$2$1, require$$1$1, require$$0$5);
       } else {
         var mod = {
           exports: {}
@@ -4626,7 +5053,7 @@ var IncrementalDOM = Object.freeze({
           set && set(elem, data);
           if (render(elem, data)) {
             var deb = elem[$debounce];
-            !deb && (deb = elem[$debounce] = debounce(skate.render, 1));
+            !deb && (deb = elem[$debounce] = require$$0(skate.render, 1));
             deb(elem);
           }
         };
