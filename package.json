@@ -33,13 +33,16 @@
     "eslint": "1.10.3",
     "eslint-plugin-react": "^3.16.1",
     "gulp": "gulpjs/gulp#73eced0",
-    "skatejs-build": "skatejs/build#1f81a56"
+    "skatejs-build": "skatejs/build#1f81a56",
+    "skatejs-named-slots": "~0.1.0"
   },
   "dependencies": {
     "debounce": "^1.0.0",
     "incremental-dom": "^0.3.0",
     "object-assign": "^4.0.1",
-    "skatejs": "skatejs/skatejs#9db4a9f",
-    "skatejs-named-slots": "skatejs/named-slots#14d7a87"
+    "skatejs": "skatejs/skatejs#9db4a9f"
+  },
+  "optionalDependencies": {
+    "skatejs-named-slots": "~0.1.0"
   }
 }
