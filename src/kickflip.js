@@ -1,4 +1,5 @@
 import data from './data';
+import debounce from './util/debounce';
 import render from './render';
 import skate from '../node_modules/skatejs/lib/index';
 
