@@ -1,5 +1,6 @@
 import './index.css';
-import kickflip, { emit, link, render } from '../../src/index';
+import 'skatejs-named-slots';
+import kickflip, { emit, link } from '../../src/index';
 import create, { button, form, input, p, slot, text } from '../../src/vdom';
 
 const Xtodo = kickflip('x-todo', {
@@ -20,7 +21,7 @@ const Xtodo = kickflip('x-todo', {
       }
     }
   },
-  render (elem) {
+  render () {
     create('x-list');
   }
 });
@@ -40,18 +41,20 @@ const Xlist = kickflip('x-list', {
       input({ onkeyup: link(elem), value: elem.value });
       button({ type: 'submit' }, 'add');
     });
-    slot({ name: '' });
+    slot(function () {
+      p('There is nothing to do.');
+    });
   }
 });
 
 const Xitem = kickflip('x-item', {
   events: {
-    'click button' (e) {
+    'click button' () {
       emit(this, 'item-remove', { detail: this });
     }
   },
   render () {
-    slot({ name: '' });
+    slot();
     text(' ');
     button('remove');
   }
