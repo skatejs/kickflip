@@ -34,7 +34,7 @@
     "eslint-plugin-react": "^3.16.1",
     "gulp": "gulpjs/gulp#73eced0",
     "skatejs-build": "skatejs/build#1f81a56",
-    "skatejs-named-slots": "~0.1.0"
+    "skatejs-named-slots": "~0.1.5"
   },
   "dependencies": {
     "debounce": "^1.0.0",
