@@ -5,15 +5,15 @@ import create, { button, form, input, p, slot, text } from '../../src/vdom';
 
 const Xtodo = kickflip('x-todo', {
   events: {
-    'todo-value' (e) {
-      this.value = e.detail;
-    },
     'todo-add' (e) {
       this.items = this.items.concat(e.detail);
       this.value = '';
     },
     'todo-remove' (e) {
       this.items = this.items.filter(item => item !== e.detail);
+    },
+    'todo-value' (e) {
+      this.value = e.detail;
     }
   },
   properties: {
