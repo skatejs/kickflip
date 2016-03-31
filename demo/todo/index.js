@@ -28,7 +28,6 @@ const Xtodo = kickflip('x-todo', {
     }
   },
   render (elem) {
-    console.log('render');
     create('x-list', { value: elem.value }, function () {
       elem.items.forEach(item => create('x-item', item));
     });
