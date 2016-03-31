@@ -5,32 +5,43 @@ import create, { button, form, input, p, slot, text } from '../../src/vdom';
 
 const Xtodo = kickflip('x-todo', {
   events: {
-    'list-add' (e) {
-      const item = Xitem();
-      item.textContent = e.detail;
-      this.appendChild(item);
+    'todo-value' (e) {
+      this.value = e.detail;
     },
-    'item-remove' (e) {
-      this.removeChild(e.detail);
+    'todo-add' (e) {
+      this.items = this.items.concat(e.detail);
+      this.value = '';
+    },
+    'todo-remove' (e) {
+      this.items = this.items.filter(item => item !== e.detail);
     }
   },
   properties: {
     items: {
+      attribute: false,
       default () {
         return [];
       }
+    },
+    value: {
+      default: ''
     }
   },
-  render () {
-    create('x-list');
+  render (elem) {
+    create('x-list', { value: elem.value }, function () {
+      elem.items.forEach(item => create('x-item', item));
+    });
   }
 });
 
 const Xlist = kickflip('x-list', {
   events: {
+    keyup () {
+      emit(this, 'todo-value', { detail: this.value });
+    },
     submit (e) {
       e.preventDefault();
-      emit(this, 'list-add', { detail: this.value });
+      emit(this, 'todo-add', { detail: this.value });
     }
   },
   properties: {
@@ -50,7 +61,7 @@ const Xlist = kickflip('x-list', {
 const Xitem = kickflip('x-item', {
   events: {
     'click button' () {
-      emit(this, 'item-remove', { detail: this });
+      emit(this, 'todo-remove', { detail: this.textContent });
     }
   },
   render () {

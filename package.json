@@ -37,7 +37,6 @@
     "skatejs-named-slots": "~0.1.5"
   },
   "dependencies": {
-    "debounce": "^1.0.0",
     "incremental-dom": "^0.3.0",
     "object-assign": "^4.0.1",
     "skatejs": "skatejs/skatejs#9db4a9f"
