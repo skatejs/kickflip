@@ -21,6 +21,7 @@ function createAttributeLinks (elem, opts) {
       prop = props[name] = {};
     }
 
+    // Don't override the user's value.
     if (typeof prop.attribute === 'undefined') {
       prop.attribute = true;
     }
