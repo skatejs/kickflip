@@ -14,7 +14,7 @@ function createAttributeLinks (elem, opts) {
     const dataName = tname + '.' + name;
     let prop = props[name];
 
-    // Ensure virtual-DOM knows to set this as a property.
+    // Ensure Incremental DOM knows to set this as a property.
     data.applyProp[dataName] = true;
 
     if (!prop) {
