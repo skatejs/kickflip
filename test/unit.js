@@ -1,3 +1,4 @@
+import 'skatejs-named-slots';
 import { emit } from '../src/index';
 import { number } from '../src/properties';
 import * as IncrementalDOM from 'incremental-dom';
@@ -5,6 +6,11 @@ import kickflip from '../src/kickflip';
 import state from '../src/state';
 import vdom, { IncrementalDOM as VdomIncrementalDOM } from '../src/vdom';
 import version from '../src/version';
+
+let componentCount = 0;
+function component (opts) {
+  return kickflip(`my-el-${++componentCount}`, opts);
+}
 
 describe('kickflip', function () {
   it('kickflip', function () {
@@ -26,7 +32,7 @@ describe('kickflip', function () {
 
 describe('events (on*)', function () {
   it('should not duplicate listeners', function (done) {
-    const myel = kickflip('my-el1', {
+    const myel = component({
       properties: {
         test: number({ default: 0 })
       },
@@ -39,7 +45,7 @@ describe('events (on*)', function () {
     });
 
     const el = myel();
-    const shadowDiv = el.__shadowRoot.children[0];
+    const shadowDiv = el.shadowRoot.children[0];
 
     // Ensures that it rendered.
     expect(shadowDiv.textContent).to.equal('0');
@@ -67,6 +73,28 @@ describe('events (on*)', function () {
         done();
       }, 10);
     }, 10);
+  });
+
+  it('should not trigger events bubbled from descendants', function () {
+    let called = false;
+    const test = () => called = true;
+    const myel = component({
+      render () {
+        vdom('div', { ontest: test }, vdom.bind(null, 'span'));
+      }
+    })();
+
+    emit(myel.querySelector('span'), 'test');
+    expect(called).to.equal(false);
+  });
+
+  it('should not fail for listeners that are not functions', function () {
+    const myel = component({
+      render () {
+        vdom('div', { ontest: null });
+      }
+    })();
+    emit(myel.shadowRoot.firstChild, 'test');
   });
 });
 

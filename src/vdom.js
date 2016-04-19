@@ -51,13 +51,19 @@ function applyEvent (eName) {
 
     const eFunc = events[eName];
 
-    // This ensures events never double up.
+    // Remove old listener so they don't double up.
     if (eFunc) {
       elem.removeEventListener(eName, eFunc);
     }
 
-    events[eName] = value;
-    elem.addEventListener(eName, value);
+    // Bind new listener.
+    if (value) {
+      elem.addEventListener(eName, events[eName] = function (e) {
+        if (this === e.target) {
+          value.call(this, e);
+        }
+      });
+    }
   };
 }
 
