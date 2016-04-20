@@ -36,6 +36,8 @@ attributes[symbols.default] = function (element, name, value) {
   const dataName = element.tagName + '.' + name;
   if (internalData.applyProp[dataName]) {
     applyProp(element, name, value);
+  } else if (value === false) {
+    return;
   } else {
     applyDefault(element, name, value);
   }
@@ -81,8 +83,6 @@ function bind (tname) {
         // Event binding using on* names.
         if (!attributes[a] && a.indexOf('on') === 0) {
           attributes[a] = applyEvent(a.substring(2));
-        } else if (val === false) {
-          continue;
         }
         attr(a, val);
       }
