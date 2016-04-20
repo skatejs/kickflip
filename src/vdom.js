@@ -81,10 +81,6 @@ function bind (tname) {
         // Event binding using on* names.
         if (!attributes[a] && a.indexOf('on') === 0) {
           attributes[a] = applyEvent(a.substring(2));
-        // Class attribute handling.
-        } else if (a === 'class') {
-          a = 'className';
-        // False is not set at all.
         } else if (val === false) {
           continue;
         }

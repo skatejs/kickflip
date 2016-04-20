@@ -8,8 +8,13 @@ import vdom, { IncrementalDOM as VdomIncrementalDOM } from '../src/vdom';
 import version from '../src/version';
 
 let componentCount = 0;
+
 function component (opts) {
   return kickflip(`my-el-${++componentCount}`, opts);
+}
+
+function element (opts) {
+  return component(opts)();
 }
 
 describe('kickflip', function () {
@@ -101,5 +106,16 @@ describe('events (on*)', function () {
 describe('IncrementalDOM', function () {
   it('should export all the same members as the incremental-dom we consume', function () {
     expect(VdomIncrementalDOM).to.contain(IncrementalDOM);
+  });
+});
+
+describe('properties', function () {
+  it('class -> className', function () {
+    const elem = element({
+      render () {
+        vdom('div', { class: 'test' });
+      }
+    });
+    expect(elem.shadowRoot.firstChild.className).to.equal('test');
   });
 });
