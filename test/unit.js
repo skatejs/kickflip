@@ -71,8 +71,8 @@ describe('events (on*)', function () {
         emit(shadowDiv, 'event');
         expect(el._test).to.equal(3);
         done();
-      }, 10);
-    }, 10);
+      }, 100);
+    }, 100);
   });
 
   it('should not trigger events bubbled from descendants', function () {
