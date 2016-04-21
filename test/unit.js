@@ -45,7 +45,11 @@ describe('events (on*)', function () {
         elem._test = 0;
       },
       render (elem) {
-        vdom('div', { onevent () { elem._test++; } }, elem.test);
+        vdom('div', {
+          onevent () {
+            elem._test++;
+          }
+        }, elem.test);
       }
     });
 
