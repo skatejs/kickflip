@@ -36,6 +36,34 @@ describe('kickflip', function () {
 });
 
 describe('events (on*)', function () {
+  it('built-in events', function () {
+    let count = 0;
+    const el = element({
+      render () {
+        vdom('div', { onclick: () => ++count });
+      }
+    }).shadowRoot.firstChild;
+    expect(count).to.equal(0);
+    expect(el.onclick).to.be.a('function');
+    el.onclick();
+    expect(count).to.equal(1);
+    emit(el, 'click');
+    expect(count).to.equal(2);
+  });
+
+  it('custom events', function () {
+    let count = 0;
+    const el = element({
+      render () {
+        vdom('div', { ontest: () => ++count });
+      }
+    }).shadowRoot.firstChild;
+    expect(count).to.equal(0);
+    expect(el.test).to.equal(undefined)
+    emit(el, 'test');
+    expect(count).to.equal(1);
+  });
+
   it('should not duplicate listeners', function (done) {
     const myel = component({
       properties: {
