@@ -1,8 +1,8 @@
 import 'skatejs-named-slots';
 import { emit } from '../src/index';
-import { number } from '../src/properties';
+import { boolean, number } from '../src/properties';
 import * as IncrementalDOM from 'incremental-dom';
-import kickflip from '../src/kickflip';
+import kickflip, { render } from '../src/index';
 import state from '../src/state';
 import vdom, { IncrementalDOM as VdomIncrementalDOM } from '../src/vdom';
 import version from '../src/version';
@@ -36,34 +36,6 @@ describe('kickflip', function () {
 });
 
 describe('events (on*)', function () {
-  it('built-in events', function () {
-    let count = 0;
-    const el = element({
-      render () {
-        vdom('div', { onclick: () => ++count });
-      }
-    }).shadowRoot.firstChild;
-    expect(count).to.equal(0);
-    expect(el.onclick).to.be.a('function');
-    el.onclick();
-    expect(count).to.equal(1);
-    emit(el, 'click');
-    expect(count).to.equal(2);
-  });
-
-  it('custom events', function () {
-    let count = 0;
-    const el = element({
-      render () {
-        vdom('div', { ontest: () => ++count });
-      }
-    }).shadowRoot.firstChild;
-    expect(count).to.equal(0);
-    expect(el.test).to.equal(undefined)
-    emit(el, 'test');
-    expect(count).to.equal(1);
-  });
-
   it('should not duplicate listeners', function (done) {
     const myel = component({
       properties: {
@@ -126,12 +98,81 @@ describe('events (on*)', function () {
   });
 
   it('should not fail for listeners that are not functions', function () {
-    const myel = component({
+    const myel = element({
       render () {
         vdom('div', { ontest: null });
       }
-    })();
+    });
     emit(myel.shadowRoot.firstChild, 'test');
+  });
+
+  describe('built-in / custom', function () {
+    let count, div, el;
+
+    function inc () {
+      ++count;
+    }
+
+    beforeEach(function () {
+      count = 0;
+      el = element({
+        properties: {
+          unbind: boolean()
+        },
+        render (elem) {
+          if (elem.unbind) {
+            vdom('div');
+          } else {
+            vdom('div', { onclick: inc, ontest: inc });
+          }
+        }
+      });
+      div = el.shadowRoot.firstChild;
+    });
+
+    describe('built-in', function () {
+      it('binding', function () {
+        expect(div.onclick).to.be.a('function');
+      });
+
+      it('triggering via function', function () {
+        div.onclick();
+        expect(count).to.equal(1);
+      });
+
+      it('triggering via dispatchEvent()', function () {
+        emit(div, 'click');
+        expect(count).to.equal(1);
+      });
+
+      it('unbinding', function (done) {
+        el.unbind = true;
+        requestAnimationFrame(function () {
+          expect(div.onclick).to.equal(null);
+          done();
+        });
+      });
+    });
+
+    describe('custom', function () {
+      it('binding', function () {
+        expect(div.ontest).to.equal(undefined);
+      });
+
+      it('triggering via dispatchEvent()', function () {
+        emit(div, 'test');
+        expect(count).to.equal(1);
+      });
+
+      it('unbinding', function (done) {
+        el.unbind = true;
+        requestAnimationFrame(function () {
+          emit(div, 'test');
+          expect(count).to.equal(0);
+          done();
+        });
+      });
+    });
   });
 });
 
