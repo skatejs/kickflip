@@ -399,7 +399,7 @@ kickflip('my-element', {
   properties: {
     title: string()
   },
-  render () {
+  render (elem) {
     <div>
       <h1>{elem.title}</h1>
       <slot name="description" />
