@@ -55,7 +55,7 @@ attributes[symbols.default] = function (elem, name, value) {
     return applyProp(elem, name, value);
   }
 
-  // Fallbakc to default IncrementalDOM behaviour.
+  // Fallback to default IncrementalDOM behaviour.
   applyDefault(elem, name, value);
 };
 
