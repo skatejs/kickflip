@@ -294,29 +294,13 @@ This is very useful if you need to render text with other elements as siblings, 
 
 #### Named Slots
 
-The `vdom` API exports a `slot()` function that will create a slot element to distribute Light DOM to.
+The `vdom` API also exports a `slot()` function so that you can use [named slots](https://github.com/skatejs/named-slots/).
 
 ```js
 import { slot } from 'kickflip/src/vdom';
 
 slot();
 ```
-
-By default, it creates a `<slot />` element and sets the `slot-name` to an empty value. It uses `slot-name` instead of `name` because no browsers currently support the named-slot API natively and skatejs-named-slots uses that for [good reasons](https://github.com/skatejs/named-slots/#how) it specifies in its [README](https://github.com/skatejs/named-slots/). In the future we plan to make this use native if available and hope to make everything work without having to expose any implementation details.
-
-If you want to specify a name for the slot, you can use the `name` option that will automatically be handled under the hood:
-
-```js
-slot({ name: 'my-content' });
-```
-
-If you want have a slot within a `<ul />`, browsers might not like that. To make that work all you have to do is specify a `type` for the slot:
-
-```js
-slot({ type: 'ul' });
-```
-
-This makes it so that light DOM can be distributed to the `<ul />`. This also works for tables and any other elements that may have odd content requirements that aren't compatible with named-slots without native support.
 
 #### Special Attributes
 
