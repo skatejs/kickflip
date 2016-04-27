@@ -32,39 +32,56 @@ attributes.key = attributes.skip = attributes.statics = function () {};
 attributes.checked = attributes.className = attributes.disabled = attributes.value = applyProp;
 
 // Default attribute applicator.
-attributes[symbols.default] = function (element, name, value) {
-  const dataName = element.tagName + '.' + name;
-  if (internalData.applyProp[dataName]) {
-    applyProp(element, name, value);
-  } else {
-    applyDefault(element, name, value);
+attributes[symbols.default] = function (elem, name, value) {
+  // Boolean false values should not set attributes at all.
+  if (value === false) {
+    return;
   }
+
+  // Work with properties defined on the prototype chain. This includes event
+  // handlers that can be bound via properties.
+  if (name in elem) {
+    return applyProp(elem, name, value);
+  }
+
+  // Handle custom events.
+  if (name.indexOf('on') === 0) {
+    return applyEvent(elem, name.substring(2), name, value);
+  }
+
+  // Custom element properties should be set as properties.
+  const dataName = elem.tagName + '.' + name;
+  if (internalData.applyProp[dataName]) {
+    return applyProp(elem, name, value);
+  }
+
+  // Fallback to default IncrementalDOM behaviour.
+  applyDefault(elem, name, value);
 };
 
-function applyEvent (eName) {
-  return function (elem, name, value) {
-    let events = elem.__events;
+// Adds or removes an event listener for an element.
+function applyEvent (elem, ename, name, value) {
+  let events = elem.__events;
 
-    if (!events) {
-      events = elem.__events = {};
-    }
+  if (!events) {
+    events = elem.__events = {};
+  }
 
-    const eFunc = events[eName];
+  const eFunc = events[ename];
 
-    // Remove old listener so they don't double up.
-    if (eFunc) {
-      elem.removeEventListener(eName, eFunc);
-    }
+  // Remove old listener so they don't double up.
+  if (eFunc) {
+    elem.removeEventListener(ename, eFunc);
+  }
 
-    // Bind new listener.
-    if (value) {
-      elem.addEventListener(eName, events[eName] = function (e) {
-        if (this === e.target) {
-          value.call(this, e);
-        }
-      });
-    }
-  };
+  // Bind new listener.
+  if (value) {
+    elem.addEventListener(ename, events[ename] = function (e) {
+      if (this === e.target) {
+        value.call(this, e);
+      }
+    });
+  }
 }
 
 // Creates a factory and returns it.
@@ -77,18 +94,7 @@ function bind (tname) {
     if (attrs && typeof attrs === 'object') {
       elementOpenStart(tname, attrs.key, attrs.statics);
       for (let a in attrs) {
-        let val = attrs[a];
-        // Event binding using on* names.
-        if (!attributes[a] && a.indexOf('on') === 0) {
-          attributes[a] = applyEvent(a.substring(2));
-        // Class attribute handling.
-        } else if (a === 'class') {
-          a = 'className';
-        // False is not set at all.
-        } else if (val === false) {
-          continue;
-        }
-        attr(a, val);
+        attr(a, attrs[a]);
       }
       elementOpenEnd();
     } else {

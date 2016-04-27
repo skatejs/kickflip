@@ -365,9 +365,9 @@ Returns the current version of Kickflip.
 
 ## JSX and other templating languages
 
-The `vdom` module is provided for a simple way to write virtual DOM without having to add a build step to your project. If you don't want to do that, you can use any templating language that compiles down to Incremental DOM calls.
+The `vdom` module is provided for a simple way to write virtual DOM using only functions. If you don't want to do that, you can use any templating language that compiles down to Incremental DOM calls.
 
-If you wanted to use JSX, for example, you'd have to add support for compiling JSX down to Incremental DOM calls. This can be doen using the following modules:
+If you wanted to use JSX, for example, you'd have to add support for compiling JSX down to Incremental DOM calls. This can be done using the following modules:
 
 - https://github.com/thejameskyle/incremental-dom-react-helper
 - https://github.com/jridgewell/babel-plugin-incremental-dom
@@ -383,7 +383,7 @@ kickflip('my-element', {
   properties: {
     title: string()
   },
-  render () {
+  render (elem) {
     <div>
       <h1>{elem.title}</h1>
       <slot name="description" />

@@ -1,15 +1,20 @@
 import 'skatejs-named-slots';
 import { emit } from '../src/index';
-import { number } from '../src/properties';
+import { boolean, number } from '../src/properties';
 import * as IncrementalDOM from 'incremental-dom';
-import kickflip from '../src/kickflip';
+import kickflip, { render } from '../src/index';
 import state from '../src/state';
 import vdom, { IncrementalDOM as VdomIncrementalDOM } from '../src/vdom';
 import version from '../src/version';
 
 let componentCount = 0;
+
 function component (opts) {
   return kickflip(`my-el-${++componentCount}`, opts);
+}
+
+function element (opts) {
+  return component(opts)();
 }
 
 describe('kickflip', function () {
@@ -40,7 +45,11 @@ describe('events (on*)', function () {
         elem._test = 0;
       },
       render (elem) {
-        vdom('div', { onevent () { elem._test++; } }, elem.test);
+        vdom('div', {
+          onevent () {
+            elem._test++;
+          }
+        }, elem.test);
       }
     });
 
@@ -89,17 +98,106 @@ describe('events (on*)', function () {
   });
 
   it('should not fail for listeners that are not functions', function () {
-    const myel = component({
+    const myel = element({
       render () {
         vdom('div', { ontest: null });
       }
-    })();
+    });
     emit(myel.shadowRoot.firstChild, 'test');
+  });
+
+  describe('built-in / custom', function () {
+    let count, div, el;
+
+    function inc () {
+      ++count;
+    }
+
+    beforeEach(function () {
+      count = 0;
+      el = element({
+        properties: {
+          unbind: boolean()
+        },
+        render (elem) {
+          if (elem.unbind) {
+            vdom('div');
+          } else {
+            vdom('div', { onclick: inc, ontest: inc });
+          }
+        }
+      });
+      div = el.shadowRoot.firstChild;
+    });
+
+    describe('built-in', function () {
+      it('binding', function () {
+        expect(div.onclick).to.be.a('function');
+      });
+
+      it('triggering via function', function () {
+        div.onclick();
+        expect(count).to.equal(1);
+      });
+
+      it('triggering via dispatchEvent()', function () {
+        emit(div, 'click');
+        expect(count).to.equal(1);
+      });
+
+      it('unbinding', function (done) {
+        el.unbind = true;
+        requestAnimationFrame(function () {
+          expect(div.onclick).to.equal(null);
+          done();
+        });
+      });
+    });
+
+    describe('custom', function () {
+      it('binding', function () {
+        expect(div.ontest).to.equal(undefined);
+      });
+
+      it('triggering via dispatchEvent()', function () {
+        emit(div, 'test');
+        expect(count).to.equal(1);
+      });
+
+      it('unbinding', function (done) {
+        el.unbind = true;
+        requestAnimationFrame(function () {
+          emit(div, 'test');
+          expect(count).to.equal(0);
+          done();
+        });
+      });
+    });
   });
 });
 
 describe('IncrementalDOM', function () {
   it('should export all the same members as the incremental-dom we consume', function () {
     expect(VdomIncrementalDOM).to.contain(IncrementalDOM);
+  });
+});
+
+describe('properties', function () {
+  it('class -> className', function () {
+    const elem = element({
+      render () {
+        vdom('div', { class: 'test' });
+      }
+    });
+    expect(elem.shadowRoot.firstChild.className).to.equal('test');
+  });
+
+  it('false should remove the attribute', function () {
+    const elem = element({
+      render () {
+        vdom('div', { test: false });
+      }
+    });
+    expect(elem.shadowRoot.firstChild.hasAttribute('test')).to.equal(false);
   });
 });
