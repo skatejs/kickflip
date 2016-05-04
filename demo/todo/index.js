@@ -1,5 +1,5 @@
 import './index.css';
-import 'skatejs-named-slots/src/index';
+import 'skatejs-named-slots';
 import kickflip, { emit, link } from '../../src/index';
 import create, { button, form, input, p, slot, text } from '../../src/vdom';
 
