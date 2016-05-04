@@ -1,14 +1,7 @@
 import './index.css';
-import 'skatejs-named-slots';
+import 'skatejs-named-slots/src/index';
 import kickflip, { emit, link } from '../../src/index';
 import create, { button, form, input, p, slot, text } from '../../src/vdom';
-
-function sync (elem, target) {
-  const func = link(elem, target);
-  return function (e) {
-    elem.value = e.detail.newValue;
-  };
-}
 
 const Xtodo = kickflip('x-todo', {
   events: {
@@ -23,15 +16,14 @@ const Xtodo = kickflip('x-todo', {
   properties: {
     items: {
       attribute: false,
-      default () { return []; }
+      default () { return ['default item']; }
     },
     value: {
       default: ''
     }
   },
   render (elem) {
-    console.log(elem.value);
-    create('x-list', { onchange: sync(elem), value: elem.value }, function () {
+    create('x-list', { onchange: link(elem), value: elem.value }, function () {
       elem.items.forEach(function (val, key) {
         create('x-item', { key }, val);
       });
