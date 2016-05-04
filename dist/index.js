@@ -1369,8 +1369,8 @@ var IncrementalDOM = Object.freeze({
 
 	    var chren = elem.childNodes;
 	    var child = chren && chren[0];
-
 	    fn(elem);
+
 	    while (child) {
 	      walk(child, fn);
 	      child = child.nextSibling;
@@ -1671,7 +1671,6 @@ var IncrementalDOM = Object.freeze({
 
 	  var reservedNames = ['annotation-xml', 'color-profile', 'font-face', 'font-face-src', 'font-face-uri', 'font-face-format', 'font-face-name', 'missing-glyph'];
 	  var customElementCriteria = ['contain at least one dash', 'not start with a dash', 'not be one of: ' + reservedNames.join(', ')];
-
 	  exports.default = {
 	    create: function create(Ctor) {
 	      var elem = Ctor.extends ? (0, _createElement2.default)(Ctor.extends, Ctor.id) : (0, _createElement2.default)(Ctor.id);
@@ -1742,7 +1741,6 @@ var IncrementalDOM = Object.freeze({
 	  var map = [];
 	  var types = [];
 	  var hasOwn = Object.prototype.hasOwnProperty;
-
 	  exports.default = {
 	    get: function get(name) {
 	      return hasOwn.call(definitions, name) && definitions[name];
@@ -1834,8 +1832,6 @@ var IncrementalDOM = Object.freeze({
 	  var isIe = isIeUntil10 || isIe11;
 	  var elementPrototype = window.HTMLElement.prototype;
 
-	  // ! This walkTree method differs from the implementation in ../../utils/walk-tree
-	  // It invokes the callback only for the children, not the passed node and the second parameter to the callback is the parent node
 	  function walkTree(node, cb) {
 	    var childNodes = node.childNodes;
 
@@ -1858,10 +1854,8 @@ var IncrementalDOM = Object.freeze({
 	    var get = function get() {
 	      return originalInnerHTML.get.call(this);
 	    };
-	    get._hasBeenEnhanced = true;
 
-	    // This redefines the innerHTML property so that we can ensure that events
-	    // are properly triggered.
+	    get._hasBeenEnhanced = true;
 	    Object.defineProperty(elementPrototype, 'innerHTML', {
 	      get: get,
 	      set: function set(html) {
@@ -1876,13 +1870,11 @@ var IncrementalDOM = Object.freeze({
 	  }
 
 	  if (isIe) {
-	    // IE 9-11
 	    var propertyDescriptor = Object.getOwnPropertyDescriptor(elementPrototype, 'innerHTML');
 	    var hasBeenEnhanced = !!propertyDescriptor && propertyDescriptor.get._hasBeenEnhanced;
 
 	    if (!hasBeenEnhanced) {
 	      if (isIe11) {
-	        // IE11's native MutationObserver needs some help as well :()
 	        window.MutationObserver = window.JsMutationObserver || window.MutationObserver;
 	      }
 
@@ -1975,6 +1967,7 @@ var IncrementalDOM = Object.freeze({
 	  function triggerAddedNodes(addedNodes) {
 	    (0, _walkTree2.default)(addedNodes, function (element) {
 	      var component = _registry2.default.find(element);
+
 	      if (component) {
 	        if (component.prototype.createdCallback) {
 	          component.prototype.createdCallback.call(element);
@@ -1990,6 +1983,7 @@ var IncrementalDOM = Object.freeze({
 	  function triggerRemovedNodes(removedNodes) {
 	    (0, _walkTree2.default)(removedNodes, function (element) {
 	      var component = _registry2.default.find(element);
+
 	      if (component && component.prototype.detachedCallback) {
 	        component.prototype.detachedCallback.call(element);
 	      }
@@ -1998,18 +1992,15 @@ var IncrementalDOM = Object.freeze({
 
 	  function documentObserverHandler(mutations) {
 	    var mutationsLength = mutations.length;
+
 	    for (var a = 0; a < mutationsLength; a++) {
 	      var addedNodes = mutations[a].addedNodes;
 	      var removedNodes = mutations[a].removedNodes;
 
-	      // Since siblings are batched together, we check the first node's parent
-	      // node to see if it is ignored. If it is then we don't process any added
-	      // nodes. This prevents having to check every node.
 	      if (addedNodes && addedNodes.length && !(0, _getClosestIgnoredElement2.default)(addedNodes[0].parentNode)) {
 	        triggerAddedNodes(addedNodes);
 	      }
 
-	      // We can't check batched nodes here because they won't have a parent node.
 	      if (removedNodes && removedNodes.length) {
 	        triggerRemovedNodes(removedNodes);
 	      }
@@ -2023,6 +2014,7 @@ var IncrementalDOM = Object.freeze({
 	    if (!MutationObserver) {
 	      throw new Error('Mutation Observers are not supported by this browser. Skate requires them in order to polyfill the behaviour of Custom Elements. If you want to support this browser you should include a Mutation Observer polyfill before Skate.');
 	    }
+
 	    return new MutationObserver(documentObserverHandler);
 	  }
 
@@ -2165,7 +2157,6 @@ var IncrementalDOM = Object.freeze({
 	  }
 
 	  var nope = null;
-
 	  exports.default = {
 	    attached: nope,
 	    attribute: nope,
@@ -2207,10 +2198,12 @@ var IncrementalDOM = Object.freeze({
 	    value: true
 	  });
 	  exports.default = resolve;
+
 	  function resolve(elem, opts) {
 	    elem.removeAttribute(opts.unresolvedAttribute);
 	    elem.setAttribute(opts.resolvedAttribute, '');
 	  }
+
 	  module.exports = exports['default'];
 	});
 	});
@@ -2260,6 +2253,7 @@ var IncrementalDOM = Object.freeze({
 	      });
 	    };
 	  }
+
 	  module.exports = exports['default'];
 	});
 	});
@@ -2286,11 +2280,13 @@ var IncrementalDOM = Object.freeze({
 	    value: true
 	  });
 	  exports.default = propertiesApply;
+
 	  function propertiesApply(elem, properties) {
 	    Object.keys(properties).forEach(function (name) {
 	      properties[name].ready(elem);
 	    });
 	  }
+
 	  module.exports = exports['default'];
 	});
 	});
@@ -2317,28 +2313,16 @@ var IncrementalDOM = Object.freeze({
 	    value: true
 	  });
 	  exports.default = propertiesApply;
+
 	  function propertiesApply(elem, properties) {
 	    Object.keys(properties).forEach(function (name) {
 	      var prop = properties[name];
 	      var initialValue = prop.initial(elem);
-
-	      // https://bugs.webkit.org/show_bug.cgi?id=49739
-	      //
-	      // When Webkit fixes that bug so that native property accessors can be
-	      // retrieved, we can move defining the property to the prototype and away
-	      // from having to do if for every instance as all other browsers support
-	      // this.
 	      Object.defineProperty(elem, name, prop);
-
-	      // This will still be needed to do any setup for the property if it needs
-	      // any information from the element.
-	      //
-	      // Once that bug is fixed, the initial value being passed as the second
-	      // argument to prop.created() can use the overridden property definition to
-	      // get the initial value.
 	      prop.created(elem, initialValue);
 	    });
 	  }
+
 	  module.exports = exports['default'];
 	});
 	});
@@ -2375,6 +2359,180 @@ var IncrementalDOM = Object.freeze({
 
 	var require$$0$8 = (empty && typeof empty === 'object' && 'default' in empty ? empty['default'] : empty);
 
+	var elementContains = __commonjs(function (module, exports, global) {
+	(function (global, factory) {
+	  if (typeof define === "function" && define.amd) {
+	    define(["module", "exports"], factory);
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports);
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports);
+	    global.elementContains = mod.exports;
+	  }
+	})(__commonjs_global, function (module, exports) {
+	  "use strict";
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+
+	  exports.default = function (source, target) {
+	    // The document element does not have the contains method in IE.
+	    if (source === document && !source.contains) {
+	      return head.contains(target) || body.contains(target);
+	    }
+	    return source.contains ? source.contains(target) : elementPrototypeContains.call(source, target);
+	  };
+
+	  var _document = document;
+	  var body = _document.body;
+	  var head = _document.head;
+	  var elementPrototype = window.HTMLElement.prototype;
+	  var elementPrototypeContains = elementPrototype.contains;
+	  module.exports = exports['default'];
+	});
+	});
+
+	var require$$2$4 = (elementContains && typeof elementContains === 'object' && 'default' in elementContains ? elementContains['default'] : elementContains);
+
+	var emit$1 = __commonjs(function (module, exports, global) {
+	(function (global, factory) {
+	  if (typeof define === "function" && define.amd) {
+	    define(['module', 'exports', '../native/create-element', '../native/create-event', '../util/element-contains'], factory);
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require$$2$2, require$$1$1, require$$2$4);
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.createElement, global.createEvent, global.elementContains);
+	    global.emit = mod.exports;
+	  }
+	})(__commonjs_global, function (module, exports, _createElement, _createEvent, _elementContains) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+
+	  exports.default = function (elem, name) {
+	    var opts = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+
+	    var names = typeof name === 'string' ? name.split(' ') : name;
+	    return names.reduce(function (prev, curr) {
+	      if (emitOne(elem, curr, opts) === false) {
+	        prev.push(curr);
+	      }
+	      return prev;
+	    }, []);
+	  };
+
+	  var _createElement2 = _interopRequireDefault(_createElement);
+
+	  var _createEvent2 = _interopRequireDefault(_createEvent);
+
+	  var _elementContains2 = _interopRequireDefault(_elementContains);
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  var CustomEvent = function (CustomEvent) {
+	    if (CustomEvent) {
+	      try {
+	        new CustomEvent();
+	      } catch (e) {
+	        return undefined;
+	      }
+	    }
+
+	    return CustomEvent;
+	  }(window.CustomEvent);
+
+	  function createCustomEvent(name) {
+	    var opts = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+	    if (CustomEvent) {
+	      return new CustomEvent(name, opts);
+	    }
+
+	    var e = (0, _createEvent2.default)('CustomEvent');
+	    e.initCustomEvent(name, opts.bubbles, opts.cancelable, opts.detail);
+	    return e;
+	  }
+
+	  function dispatch(elem, cEvent) {
+	    if (!elem.disabled) {
+	      return elem.dispatchEvent(cEvent);
+	    }
+
+	    cEvent.isPropagationStopped = true;
+	  }
+
+	  var hasBubbleOnDetachedElements = function () {
+	    var parent = (0, _createElement2.default)('div');
+	    var child = (0, _createElement2.default)('div');
+	    var hasBubbleOnDetachedElements = false;
+	    parent.appendChild(child);
+	    parent.addEventListener('test', function () {
+	      return hasBubbleOnDetachedElements = true;
+	    });
+	    child.dispatchEvent(createCustomEvent('test', {
+	      bubbles: true
+	    }));
+	    return hasBubbleOnDetachedElements;
+	  }();
+
+	  function createReadableStopPropagation(oldStopPropagation) {
+	    return function () {
+	      this.isPropagationStopped = true;
+	      oldStopPropagation.call(this);
+	    };
+	  }
+
+	  function simulateBubbling(elem, cEvent) {
+	    var didPreventDefault = undefined;
+	    var currentElem = elem;
+	    cEvent.stopPropagation = createReadableStopPropagation(cEvent.stopPropagation);
+	    Object.defineProperty(cEvent, 'target', {
+	      get: function get() {
+	        return elem;
+	      }
+	    });
+
+	    while (currentElem && !cEvent.isPropagationStopped) {
+	      cEvent.currentTarget = currentElem;
+
+	      if (dispatch(currentElem, cEvent) === false) {
+	        didPreventDefault = false;
+	      }
+
+	      currentElem = currentElem.parentNode;
+	    }
+
+	    return didPreventDefault;
+	  }
+
+	  function emitOne(elem, name, opts) {
+	    var cEvent, shouldSimulateBubbling;
+	    opts.bubbles === undefined && (opts.bubbles = true);
+	    opts.cancelable === undefined && (opts.cancelable = true);
+	    cEvent = createCustomEvent(name, opts);
+	    shouldSimulateBubbling = opts.bubbles && !hasBubbleOnDetachedElements && !(0, _elementContains2.default)(document, elem);
+	    return shouldSimulateBubbling ? simulateBubbling(elem, cEvent) : dispatch(elem, cEvent);
+	  }
+
+	  module.exports = exports['default'];
+	});
+	});
+
+	var require$$1$4 = (emit$1 && typeof emit$1 === 'object' && 'default' in emit$1 ? emit$1['default'] : emit$1);
+
 	var dashCase = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
@@ -2406,7 +2564,7 @@ var IncrementalDOM = Object.freeze({
 	});
 	});
 
-	var require$$2$4 = (dashCase && typeof dashCase === 'object' && 'default' in dashCase ? dashCase['default'] : dashCase);
+	var require$$3$2 = (dashCase && typeof dashCase === 'object' && 'default' in dashCase ? dashCase['default'] : dashCase);
 
 	var index$1 = __commonjs(function (module) {
 	/* eslint-disable no-unused-vars */
@@ -2451,22 +2609,22 @@ var IncrementalDOM = Object.freeze({
 	};
 	});
 
-	var assign = (index$1 && typeof index$1 === 'object' && 'default' in index$1 ? index$1['default'] : index$1);
+	var require$$3$3 = (index$1 && typeof index$1 === 'object' && 'default' in index$1 ? index$1['default'] : index$1);
 
 	var propertiesInit = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
-	    define(['module', 'exports', 'object-assign', '../util/dash-case', '../util/data', '../util/empty'], factory);
+	    define(['module', 'exports', 'object-assign', '../util/dash-case', '../util/data', '../api/emit', '../util/empty'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(module, exports, assign, require$$2$4, require$$1$2, require$$0$8);
+	    factory(module, exports, require$$3$3, require$$3$2, require$$1$2, require$$1$4, require$$0$8);
 	  } else {
 	    var mod = {
 	      exports: {}
 	    };
-	    factory(mod, mod.exports, global.objectAssign, global.dashCase, global.data, global.empty);
+	    factory(mod, mod.exports, global.objectAssign, global.dashCase, global.data, global.emit, global.empty);
 	    global.propertiesInit = mod.exports;
 	  }
-	})(__commonjs_global, function (module, exports, _objectAssign, _dashCase, _data, _empty) {
+	})(__commonjs_global, function (module, exports, _objectAssign, _dashCase, _data, _emit, _empty) {
 	  'use strict';
 
 	  Object.defineProperty(exports, "__esModule", {
@@ -2497,6 +2655,8 @@ var IncrementalDOM = Object.freeze({
 	  var _dashCase2 = _interopRequireDefault(_dashCase);
 
 	  var _data2 = _interopRequireDefault(_data);
+
+	  var _emit2 = _interopRequireDefault(_emit);
 
 	  var _empty2 = _interopRequireDefault(_empty);
 
@@ -2533,22 +2693,16 @@ var IncrementalDOM = Object.freeze({
 	      info.linkedAttribute = getLinkedAttribute(name, opts.attribute);
 	      info.opts = opts;
 	      info.updatingProperty = false;
-
-	      // Ensure we can get the info from inside the attribute methods.
 	      getData(elem, info.linkedAttribute).linkedProperty = name;
 
 	      if (typeof opts.default === 'function') {
-	        info.defaultValue = opts.default(elem, { name: name });
+	        info.defaultValue = opts.default(elem, {
+	          name: name
+	        });
 	      } else if (!(0, _empty2.default)(opts.default)) {
 	        info.defaultValue = opts.default;
 	      }
 
-	      // TODO Refactor to be cleaner.
-	      //
-	      // We only override removeAttribute and setAttribute once. This means that
-	      // if you define 10 properties, they still only get overridden once. For
-	      // this reason, we must re-get info / opts from within the property methods
-	      // since the functions aren't recreated for each scope.
 	      if (info.linkedAttribute) {
 	        if (!info.attributeMap) {
 	          info.attributeMap = {};
@@ -2599,7 +2753,6 @@ var IncrementalDOM = Object.freeze({
 	        info.attributeMap[info.linkedAttribute] = name;
 	      }
 
-	      // Set up initial value if it wasn't specified.
 	      if ((0, _empty2.default)(initialValue)) {
 	        if (info.linkedAttribute && elem.hasAttribute(info.linkedAttribute)) {
 	          initialValue = opts.deserialize(elem.getAttribute(info.linkedAttribute));
@@ -2608,12 +2761,13 @@ var IncrementalDOM = Object.freeze({
 	        }
 	      }
 
-	      // We must coerce the initial value just in case it wasn't already.
 	      var internalValue = info.internalValue = opts.coerce ? opts.coerce(initialValue) : initialValue;
 
-	      // User-defined created callback.
 	      if (typeof opts.created === 'function') {
-	        opts.created(elem, { name: name, internalValue: internalValue });
+	        opts.created(elem, {
+	          name: name,
+	          internalValue: internalValue
+	        });
 	      }
 	    };
 
@@ -2622,14 +2776,19 @@ var IncrementalDOM = Object.freeze({
 	      var internalValue = info.internalValue;
 
 	      if (opts.get) {
-	        return opts.get(this, { name: name, internalValue: internalValue });
+	        return opts.get(this, {
+	          name: name,
+	          internalValue: internalValue
+	        });
 	      }
 
 	      return internalValue;
 	    };
 
 	    prop.initial = function (elem) {
-	      return typeof opts.initial === 'function' ? opts.initial(elem, { name: name }) : elem[name];
+	      return typeof opts.initial === 'function' ? opts.initial(elem, {
+	        name: name
+	      }) : elem[name];
 	    };
 
 	    prop.ready = function (elem) {
@@ -2655,10 +2814,30 @@ var IncrementalDOM = Object.freeze({
 	        newValue = opts.coerce(newValue);
 	      }
 
+	      var propertyHasChanged = newValue !== oldValue;
+
+	      if (propertyHasChanged && opts.event) {
+	        var cancelledEvents = (0, _emit2.default)(this, String(opts.event), {
+	          bubbles: false,
+	          cancelable: true,
+	          detail: {
+	            name: name,
+	            oldValue: oldValue,
+	            newValue: newValue
+	          }
+	        });
+
+	        if (cancelledEvents.length > 0) {
+	          info.updatingProperty = false;
+	          return;
+	        }
+	      }
+
 	      info.internalValue = newValue;
 
 	      if (info.linkedAttribute && !info.updatingAttribute) {
 	        var serializedValue = opts.serialize(newValue);
+
 	        if ((0, _empty2.default)(serializedValue)) {
 	          removeAttribute.call(this, info.linkedAttribute);
 	        } else {
@@ -2667,7 +2846,11 @@ var IncrementalDOM = Object.freeze({
 	      }
 
 	      if (typeof opts.set === 'function') {
-	        opts.set(this, { name: name, newValue: newValue, oldValue: oldValue });
+	        opts.set(this, {
+	          name: name,
+	          newValue: newValue,
+	          oldValue: oldValue
+	        });
 	      }
 
 	      info.oldValue = newValue;
@@ -2703,6 +2886,7 @@ var IncrementalDOM = Object.freeze({
 	    value: true
 	  });
 	  exports.default = patchAttributeMethods;
+
 	  function patchAttributeMethods(elem) {
 	    var removeAttribute = elem.removeAttribute;
 	    var setAttribute = elem.setAttribute;
@@ -2710,6 +2894,7 @@ var IncrementalDOM = Object.freeze({
 	    elem.removeAttribute = function (name) {
 	      var oldValue = this.getAttribute(name);
 	      removeAttribute.call(elem, name);
+
 	      if (elem.attributeChangedCallback) {
 	        elem.attributeChangedCallback(name, oldValue, null);
 	      }
@@ -2718,11 +2903,13 @@ var IncrementalDOM = Object.freeze({
 	    elem.setAttribute = function (name, newValue) {
 	      var oldValue = this.getAttribute(name);
 	      setAttribute.call(elem, name, newValue);
+
 	      if (elem.attributeChangedCallback) {
 	        elem.attributeChangedCallback(name, oldValue, String(newValue));
 	      }
 	    };
 	  }
+
 	  module.exports = exports['default'];
 	});
 	});
@@ -2768,10 +2955,7 @@ var IncrementalDOM = Object.freeze({
 
 	  var elProto = window.HTMLElement.prototype;
 	  var nativeMatchesSelector = elProto.matches || elProto.msMatchesSelector || elProto.webkitMatchesSelector || elProto.mozMatchesSelector || elProto.oMatchesSelector;
-
-	  // Only IE9 has this msMatchesSelector bug, but best to detect it.
 	  var hasNativeMatchesSelectorDetattachedBug = !nativeMatchesSelector.call((0, _createElement2.default)('div'), 'div');
-
 	  module.exports = exports['default'];
 	});
 	});
@@ -2831,12 +3015,14 @@ var IncrementalDOM = Object.freeze({
 	    return function (e) {
 	      var current = e.target;
 	      var selector = parsed.selector;
+
 	      while (current && current !== elem.parentNode) {
 	        if ((0, _matchesSelector2.default)(current, selector)) {
 	          readonly(e, 'currentTarget', current);
 	          readonly(e, 'delegateTarget', elem);
 	          return handler(e);
 	        }
+
 	        current = current.parentNode;
 	      }
 	    };
@@ -2853,7 +3039,6 @@ var IncrementalDOM = Object.freeze({
 	    var parsed = parseEvent(event);
 	    var name = parsed.name;
 	    var selector = parsed.selector;
-
 	    var capture = selector && (name === 'blur' || name === 'focus');
 	    handler = selector ? makeDelegateHandler(elem, handler, parsed) : makeNormalHandler(elem, handler);
 	    elem.addEventListener(name, handler, capture);
@@ -2867,6 +3052,7 @@ var IncrementalDOM = Object.freeze({
 	      }
 	    };
 	  }
+
 	  module.exports = exports['default'];
 	});
 	});
@@ -2990,16 +3176,16 @@ var IncrementalDOM = Object.freeze({
 	    };
 	  }
 
-	  // TODO Remove this when we no longer support the legacy definitions and only
-	  // support a superset of a native property definition.
 	  function ensurePropertyFunctions(opts) {
 	    var properties = opts.properties;
 	    var names = Object.keys(properties || {});
 	    return names.reduce(function (descriptors, descriptorName) {
 	      descriptors[descriptorName] = opts.properties[descriptorName];
+
 	      if (typeof descriptors[descriptorName] !== 'function') {
 	        descriptors[descriptorName] = (0, _propertiesInit2.default)(descriptors[descriptorName]);
 	      }
+
 	      return descriptors;
 	    }, {});
 	  }
@@ -3232,6 +3418,7 @@ var IncrementalDOM = Object.freeze({
 
 	  function ready(element) {
 	    var component = _registry2.default.find(element);
+
 	    return component && (0, _data2.default)(element).created;
 	  }
 
@@ -3325,7 +3512,7 @@ var IncrementalDOM = Object.freeze({
 	});
 	});
 
-	var require$$1$4 = (number && typeof number === 'object' && 'default' in number ? number['default'] : number);
+	var require$$1$5 = (number && typeof number === 'object' && 'default' in number ? number['default'] : number);
 
 	var boolean = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
@@ -3364,25 +3551,62 @@ var IncrementalDOM = Object.freeze({
 
 	var require$$2$5 = (boolean && typeof boolean === 'object' && 'default' in boolean ? boolean['default'] : boolean);
 
-	var index$2 = __commonjs(function (module, exports, global) {
+	var array = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
-	    define(['module', 'exports', 'object-assign', './boolean', './number', './string'], factory);
+	    define(["module", "exports"], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(module, exports, assign, require$$2$5, require$$1$4, require$$0$10);
+	    factory(module, exports);
 	  } else {
 	    var mod = {
 	      exports: {}
 	    };
-	    factory(mod, mod.exports, global.objectAssign, global.boolean, global.number, global.string);
+	    factory(mod, mod.exports);
+	    global.array = mod.exports;
+	  }
+	})(__commonjs_global, function (module, exports) {
+	  "use strict";
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+	  exports.default = {
+	    coerce: function coerce(val) {
+	      return Array.isArray(val) ? val : [val];
+	    },
+	    default: function _default() {
+	      return [];
+	    },
+	    deserialize: JSON.parse,
+	    serialize: JSON.stringify
+	  };
+	  module.exports = exports['default'];
+	});
+	});
+
+	var require$$4$2 = (array && typeof array === 'object' && 'default' in array ? array['default'] : array);
+
+	var index$2 = __commonjs(function (module, exports, global) {
+	(function (global, factory) {
+	  if (typeof define === "function" && define.amd) {
+	    define(['module', 'exports', './array', 'object-assign', './boolean', './number', './string'], factory);
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require$$4$2, require$$3$3, require$$2$5, require$$1$5, require$$0$10);
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.array, global.objectAssign, global.boolean, global.number, global.string);
 	    global.index = mod.exports;
 	  }
-	})(__commonjs_global, function (module, exports, _objectAssign, _boolean, _number, _string) {
+	})(__commonjs_global, function (module, exports, _array, _objectAssign, _boolean, _number, _string) {
 	  'use strict';
 
 	  Object.defineProperty(exports, "__esModule", {
 	    value: true
 	  });
+
+	  var _array2 = _interopRequireDefault(_array);
 
 	  var _objectAssign2 = _interopRequireDefault(_objectAssign);
 
@@ -3410,6 +3634,7 @@ var IncrementalDOM = Object.freeze({
 	  }
 
 	  exports.default = {
+	    array: prop(_array2.default),
 	    boolean: prop(_boolean2.default),
 	    number: prop(_number2.default),
 	    string: prop(_string2.default)
@@ -3420,53 +3645,12 @@ var IncrementalDOM = Object.freeze({
 
 	var require$$19 = (index$2 && typeof index$2 === 'object' && 'default' in index$2 ? index$2['default'] : index$2);
 
-	var elementContains = __commonjs(function (module, exports, global) {
-	(function (global, factory) {
-	  if (typeof define === "function" && define.amd) {
-	    define(["module", "exports"], factory);
-	  } else if (typeof exports !== "undefined") {
-	    factory(module, exports);
-	  } else {
-	    var mod = {
-	      exports: {}
-	    };
-	    factory(mod, mod.exports);
-	    global.elementContains = mod.exports;
-	  }
-	})(__commonjs_global, function (module, exports) {
-	  "use strict";
-
-	  Object.defineProperty(exports, "__esModule", {
-	    value: true
-	  });
-
-	  exports.default = function (source, target) {
-	    // The document element does not have the contains method in IE.
-	    if (source === document && !source.contains) {
-	      return head.contains(target) || body.contains(target);
-	    }
-	    return source.contains ? source.contains(target) : elementPrototypeContains.call(source, target);
-	  };
-
-	  var _document = document;
-	  var body = _document.body;
-	  var head = _document.head;
-
-	  var elementPrototype = window.HTMLElement.prototype;
-	  var elementPrototypeContains = elementPrototype.contains;
-
-	  module.exports = exports['default'];
-	});
-	});
-
-	var require$$0$11 = (elementContains && typeof elementContains === 'object' && 'default' in elementContains ? elementContains['default'] : elementContains);
-
 	var init$1 = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['module', 'exports', '../util/element-contains', '../shared/registry', '../util/walk-tree'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(module, exports, require$$0$11, require$$0$5, require$$0);
+	    factory(module, exports, require$$2$4, require$$0$5, require$$0);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -3519,7 +3703,7 @@ var IncrementalDOM = Object.freeze({
 	});
 	});
 
-	var require$$1$5 = (init$1 && typeof init$1 === 'object' && 'default' in init$1 ? init$1['default'] : init$1);
+	var require$$1$6 = (init$1 && typeof init$1 === 'object' && 'default' in init$1 ? init$1['default'] : init$1);
 
 	var createDocumentFragment = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
@@ -3552,7 +3736,7 @@ var IncrementalDOM = Object.freeze({
 	  if (typeof define === "function" && define.amd) {
 	    define(['module', 'exports', '../native/create-document-fragment', '../native/create-element', './init'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(module, exports, require$$2$6, require$$2$2, require$$1$5);
+	    factory(module, exports, require$$2$6, require$$2$2, require$$1$6);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -3583,7 +3767,6 @@ var IncrementalDOM = Object.freeze({
 	  var _window = window;
 	  var Node = _window.Node;
 	  var NodeList = _window.NodeList;
-
 	  var slice = Array.prototype.slice;
 	  var specialMap = {
 	    caption: 'table',
@@ -3608,11 +3791,12 @@ var IncrementalDOM = Object.freeze({
 	    }
 
 	    container.innerHTML = html;
-
 	    var parent = container;
+
 	    for (var a = 0; a < levels; a++) {
 	      parent = parent.firstElementChild;
 	    }
+
 	    return parent;
 	  }
 
@@ -3646,146 +3830,19 @@ var IncrementalDOM = Object.freeze({
 	      return frag;
 	    }, (0, _createDocumentFragment2.default)());
 	  }
+
 	  module.exports = exports['default'];
 	});
 	});
 
 	var require$$21 = (fragment$1 && typeof fragment$1 === 'object' && 'default' in fragment$1 ? fragment$1['default'] : fragment$1);
 
-	var emit$1 = __commonjs(function (module, exports, global) {
-	(function (global, factory) {
-	  if (typeof define === "function" && define.amd) {
-	    define(['module', 'exports', '../native/create-element', '../native/create-event', '../util/element-contains'], factory);
-	  } else if (typeof exports !== "undefined") {
-	    factory(module, exports, require$$2$2, require$$1$1, require$$0$11);
-	  } else {
-	    var mod = {
-	      exports: {}
-	    };
-	    factory(mod, mod.exports, global.createElement, global.createEvent, global.elementContains);
-	    global.emit = mod.exports;
-	  }
-	})(__commonjs_global, function (module, exports, _createElement, _createEvent, _elementContains) {
-	  'use strict';
-
-	  Object.defineProperty(exports, "__esModule", {
-	    value: true
-	  });
-
-	  exports.default = function (elem, name) {
-	    var opts = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
-
-	    var names = typeof name === 'string' ? name.split(' ') : name;
-	    return names.reduce(function (prev, curr) {
-	      if (emitOne(elem, curr, opts) === false) {
-	        prev.push(curr);
-	      }
-	      return prev;
-	    }, []);
-	  };
-
-	  var _createElement2 = _interopRequireDefault(_createElement);
-
-	  var _createEvent2 = _interopRequireDefault(_createEvent);
-
-	  var _elementContains2 = _interopRequireDefault(_elementContains);
-
-	  function _interopRequireDefault(obj) {
-	    return obj && obj.__esModule ? obj : {
-	      default: obj
-	    };
-	  }
-
-	  var CustomEvent = function (CustomEvent) {
-	    if (CustomEvent) {
-	      try {
-	        new CustomEvent();
-	      } catch (e) {
-	        return undefined;
-	      }
-	    }
-	    return CustomEvent;
-	  }(window.CustomEvent);
-
-	  function dispatch(elem, cEvent) {
-	    if (!elem.disabled) {
-	      return elem.dispatchEvent(cEvent);
-	    }
-	    cEvent.isPropagationStopped = true;
-	  }
-
-	  var hasBubbleOnDetachedElements = function () {
-	    var parent = (0, _createElement2.default)('div');
-	    var child = (0, _createElement2.default)('div');
-	    var hasBubbleOnDetachedElements = false;
-	    parent.appendChild(child);
-	    parent.addEventListener('test', function () {
-	      return hasBubbleOnDetachedElements = true;
-	    });
-	    child.dispatchEvent(createCustomEvent('test', { bubbles: true }));
-	    return hasBubbleOnDetachedElements;
-	  }();
-
-	  function createCustomEvent(name) {
-	    var opts = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-
-	    if (CustomEvent) {
-	      return new CustomEvent(name, opts);
-	    }
-
-	    var e = (0, _createEvent2.default)('CustomEvent');
-	    e.initCustomEvent(name, opts.bubbles, opts.cancelable, opts.detail);
-	    return e;
-	  }
-
-	  function createReadableStopPropagation(oldStopPropagation) {
-	    return function () {
-	      this.isPropagationStopped = true;
-	      oldStopPropagation.call(this);
-	    };
-	  }
-
-	  function simulateBubbling(elem, cEvent) {
-	    var didPreventDefault = void 0;
-	    var currentElem = elem;
-	    cEvent.stopPropagation = createReadableStopPropagation(cEvent.stopPropagation);
-	    Object.defineProperty(cEvent, 'target', { get: function get() {
-	        return elem;
-	      } });
-	    while (currentElem && !cEvent.isPropagationStopped) {
-	      cEvent.currentTarget = currentElem;
-	      if (dispatch(currentElem, cEvent) === false) {
-	        didPreventDefault = false;
-	      }
-	      currentElem = currentElem.parentNode;
-	    }
-	    return didPreventDefault;
-	  }
-
-	  function emitOne(elem, name, opts) {
-	    var cEvent, shouldSimulateBubbling;
-
-	    /* jshint expr: true */
-	    opts.bubbles === undefined && (opts.bubbles = true);
-	    opts.cancelable === undefined && (opts.cancelable = true);
-	    cEvent = createCustomEvent(name, opts);
-	    shouldSimulateBubbling = opts.bubbles && !hasBubbleOnDetachedElements && !(0, _elementContains2.default)(document, elem);
-
-	    return shouldSimulateBubbling ? simulateBubbling(elem, cEvent) : dispatch(elem, cEvent);
-	  }
-
-	  module.exports = exports['default'];
-	});
-	});
-
-	var require$$22 = (emit$1 && typeof emit$1 === 'object' && 'default' in emit$1 ? emit$1['default'] : emit$1);
-
 	var create$1 = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
 	    define(['module', 'exports', 'object-assign', '../native/create-element', './init', '../shared/registry'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(module, exports, assign, require$$2$2, require$$1$5, require$$0$5);
+	    factory(module, exports, require$$3$3, require$$2$2, require$$1$6, require$$0$5);
 	  } else {
 	    var mod = {
 	      exports: {}
@@ -3830,22 +3887,23 @@ var IncrementalDOM = Object.freeze({
 	var index = __commonjs(function (module, exports, global) {
 	(function (global, factory) {
 	  if (typeof define === "function" && define.amd) {
-	    define(['module', 'exports', './api/create', './api/emit', './api/fragment', './api/init', './api/properties/index', './api/ready', './api/render', './api/version', 'object-assign', './lifecycle/attached', './lifecycle/attribute', './lifecycle/created', './native/create-element', './defaults', './lifecycle/detached', './shared/document-observer', './native/register-element', './shared/registry', './type/element', './util/get-all-property-descriptors', './util/get-own-property-descriptors', './util/debounce', './util/define-properties', './util/walk-tree'], factory);
+	    define(['exports', './api/create', './api/emit', './api/fragment', './api/init', './api/properties/index', './api/ready', './api/render', './api/version', 'object-assign', './lifecycle/attached', './lifecycle/attribute', './lifecycle/created', './native/create-element', './defaults', './lifecycle/detached', './shared/document-observer', './native/register-element', './shared/registry', './type/element', './util/get-all-property-descriptors', './util/get-own-property-descriptors', './util/debounce', './util/define-properties', './util/walk-tree'], factory);
 	  } else if (typeof exports !== "undefined") {
-	    factory(module, exports, require$$23, require$$22, require$$21, require$$1$5, require$$19, require$$18, require$$17, require$$16, assign, require$$14, require$$13, require$$12, require$$2$2, require$$10, require$$9, require$$8, require$$0$4, require$$0$5, require$$0$3, require$$4, require$$0$2, require$$2, require$$1, require$$0);
+	    factory(exports, require$$23, require$$1$4, require$$21, require$$1$6, require$$19, require$$18, require$$17, require$$16, require$$3$3, require$$14, require$$13, require$$12, require$$2$2, require$$10, require$$9, require$$8, require$$0$4, require$$0$5, require$$0$3, require$$4, require$$0$2, require$$2, require$$1, require$$0);
 	  } else {
 	    var mod = {
 	      exports: {}
 	    };
-	    factory(mod, mod.exports, global.create, global.emit, global.fragment, global.init, global.index, global.ready, global.render, global.version, global.objectAssign, global.attached, global.attribute, global.created, global.createElement, global.defaults, global.detached, global.documentObserver, global.registerElement, global.registry, global.element, global.getAllPropertyDescriptors, global.getOwnPropertyDescriptors, global.debounce, global.defineProperties, global.walkTree);
+	    factory(mod.exports, global.create, global.emit, global.fragment, global.init, global.index, global.ready, global.render, global.version, global.objectAssign, global.attached, global.attribute, global.created, global.createElement, global.defaults, global.detached, global.documentObserver, global.registerElement, global.registry, global.element, global.getAllPropertyDescriptors, global.getOwnPropertyDescriptors, global.debounce, global.defineProperties, global.walkTree);
 	    global.index = mod.exports;
 	  }
-	})(__commonjs_global, function (module, exports, _create, _emit, _fragment, _init, _index, _ready, _render, _version, _objectAssign, _attached, _attribute, _created, _createElement, _defaults, _detached, _documentObserver, _registerElement, _registry, _element, _getAllPropertyDescriptors, _getOwnPropertyDescriptors, _debounce, _defineProperties, _walkTree) {
+	})(__commonjs_global, function (exports, _create, _emit, _fragment, _init, _index, _ready, _render, _version, _objectAssign, _attached, _attribute, _created, _createElement, _defaults, _detached, _documentObserver, _registerElement, _registry, _element, _getAllPropertyDescriptors, _getOwnPropertyDescriptors, _debounce, _defineProperties, _walkTree) {
 	  'use strict';
 
 	  Object.defineProperty(exports, "__esModule", {
 	    value: true
 	  });
+	  exports.version = exports.render = exports.ready = exports.properties = exports.init = exports.fragment = exports.emit = exports.create = undefined;
 
 	  var _create2 = _interopRequireDefault(_create);
 
@@ -3902,11 +3960,10 @@ var IncrementalDOM = Object.freeze({
 	  }
 
 	  var HTMLElement = window.HTMLElement;
-
-	  // A function that initialises the document once in a given event loop.
 	  var initDocument = (0, _debounce2.default)(function () {
 	    (0, _walkTree2.default)(document.documentElement.childNodes, function (element) {
 	      var component = _registry2.default.find(element);
+
 	      if (component) {
 	        if (component.prototype.createdCallback) {
 	          component.prototype.createdCallback.call(element);
@@ -3919,7 +3976,6 @@ var IncrementalDOM = Object.freeze({
 	    });
 	  });
 
-	  // Creates a configurable, non-writable, non-enumerable property.
 	  function fixedProp(obj, name, value) {
 	    Object.defineProperty(obj, name, {
 	      configurable: true,
@@ -3929,28 +3985,16 @@ var IncrementalDOM = Object.freeze({
 	    });
 	  }
 
-	  // Makes a function / constructor that can be called as either.
 	  function makeCtor(name, opts) {
 	    var func = _create2.default.bind(null, name);
 
-	    // Assigning defaults gives a predictable definition and prevents us from
-	    // having to do defaults checks everywhere.
 	    (0, _objectAssign2.default)(func, _defaults2.default);
-
-	    // Inherit all options. This takes into account object literals as well as
-	    // ES2015 classes that may have inherited static props which would not be
-	    // considered "own".
 	    (0, _defineProperties2.default)(func, (0, _getAllPropertyDescriptors2.default)(opts));
-
-	    // Fixed info.
 	    fixedProp(func.prototype, 'constructor', func);
 	    fixedProp(func, 'id', name);
 	    fixedProp(func, 'isNative', func.type === _element2.default && _registerElement2.default);
-
-	    // In native, the function name is the same as the custom element name, but
-	    // WebKit prevents this from being defined. We do this where possible and
-	    // still define `id` for cross-browser compatibility.
 	    var nameProp = Object.getOwnPropertyDescriptor(func, 'name');
+
 	    if (nameProp && nameProp.configurable) {
 	      fixedProp(func, 'name', name);
 	    }
@@ -3958,46 +4002,34 @@ var IncrementalDOM = Object.freeze({
 	    return func;
 	  }
 
-	  // The main skate() function.
 	  function skate(name, opts) {
 	    var Ctor = makeCtor(name, opts);
 
-	    // If the options don't inherit a native element prototype, we ensure it does
-	    // because native requires you explicitly do this. Here we solve the common
-	    // use case by defaulting to HTMLElement.prototype.
 	    if (!HTMLElement.prototype.isPrototypeOf(Ctor.prototype) && !SVGElement.prototype.isPrototypeOf(Ctor.prototype)) {
 	      var proto = (Ctor.extends ? (0, _createElement2.default)(Ctor.extends).constructor : HTMLElement).prototype;
 	      Ctor.prototype = Object.create(proto, (0, _getOwnPropertyDescriptors2.default)(Ctor.prototype));
 	    }
 
-	    // We not assign native callbacks to handle the callbacks specified in the
-	    // Skate definition. This allows us to abstract away any changes that may
-	    // occur in the spec.
 	    Ctor.prototype.createdCallback = (0, _created2.default)(Ctor);
 	    Ctor.prototype.attachedCallback = (0, _attached2.default)(Ctor);
 	    Ctor.prototype.detachedCallback = (0, _detached2.default)(Ctor);
 	    Ctor.prototype.attributeChangedCallback = (0, _attribute2.default)(Ctor);
 
-	    // In polyfill land we must emulate what the browser would normally do in
-	    // native.
 	    if (!Ctor.isNative) {
 	      initDocument();
+
 	      _documentObserver2.default.register();
 	    }
 
-	    // Call register hook. We could put this in the registry, but since the
-	    // registry is shared across versions, we try and churn that as little as
-	    // possible. It's fine here for now.
 	    var type = Ctor.type;
+
 	    if (type.register) {
 	      type.register(Ctor);
 	    }
 
-	    // We keep our own registry since we can't access the native one.
 	    return _registry2.default.set(name, Ctor);
 	  }
 
-	  // Public API.
 	  skate.create = _create2.default;
 	  skate.emit = _emit2.default;
 	  skate.fragment = _fragment2.default;
@@ -4006,9 +4038,15 @@ var IncrementalDOM = Object.freeze({
 	  skate.ready = _ready2.default;
 	  skate.render = _render2.default;
 	  skate.version = _version2.default;
-
 	  exports.default = skate;
-	  module.exports = exports['default'];
+	  exports.create = _create2.default;
+	  exports.emit = _emit2.default;
+	  exports.fragment = _fragment2.default;
+	  exports.init = _init2.default;
+	  exports.properties = _index2.default;
+	  exports.ready = _ready2.default;
+	  exports.render = _render2.default;
+	  exports.version = _version2.default;
 	});
 	});
 
@@ -4129,6 +4167,51 @@ var IncrementalDOM = Object.freeze({
 	  return skate(name, opts);
 	}
 
+	var index$3 = __commonjs(function (module) {
+	/* eslint-disable no-unused-vars */
+	'use strict';
+
+	var hasOwnProperty = Object.prototype.hasOwnProperty;
+	var propIsEnumerable = Object.prototype.propertyIsEnumerable;
+
+	function toObject(val) {
+		if (val === null || val === undefined) {
+			throw new TypeError('Object.assign cannot be called with null or undefined');
+		}
+
+		return Object(val);
+	}
+
+	module.exports = Object.assign || function (target, source) {
+		var from;
+		var to = toObject(target);
+		var symbols;
+
+		for (var s = 1; s < arguments.length; s++) {
+			from = Object(arguments[s]);
+
+			for (var key in from) {
+				if (hasOwnProperty.call(from, key)) {
+					to[key] = from[key];
+				}
+			}
+
+			if (Object.getOwnPropertySymbols) {
+				symbols = Object.getOwnPropertySymbols(from);
+				for (var i = 0; i < symbols.length; i++) {
+					if (propIsEnumerable.call(from, symbols[i])) {
+						to[symbols[i]] = from[symbols[i]];
+					}
+				}
+			}
+		}
+
+		return to;
+	};
+	});
+
+	var assign = (index$3 && typeof index$3 === 'object' && 'default' in index$3 ? index$3['default'] : index$3);
+
 	function get(elem) {
 	  var props = elem.constructor.properties;
 	  var state = {};
@@ -4175,7 +4258,7 @@ var IncrementalDOM = Object.freeze({
 	}
 
 	var props = skate.properties;
-	var array = props.array;
+	var array$1 = props.array;
 	var boolean$1 = props.boolean;
 	var number$1 = props.number;
 	var string$1 = props.string;
@@ -4184,7 +4267,7 @@ var IncrementalDOM = Object.freeze({
 
 	var properties = Object.freeze({
 		default: props,
-		array: array,
+		array: array$1,
 		boolean: boolean$1,
 		number: number$1,
 		string: string$1
@@ -4580,7 +4663,6 @@ var vdom = Object.freeze({
 	var init = skate.init;
 	var ready = skate.ready;
 	var render = skate.render;
-
 
 
 
