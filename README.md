@@ -1,5 +1,7 @@
 # Kickflip
 
+*Kickflip is now deprecated because all of its functionality has now been merged into the main Skate project.*
+
 Kickflip gives you a simple, opinionated wrapper around [Skate](https://github.com/skatejs/skatejs) to write functional web components against [W3C specs](https://github.com/w3c/webcomponents).
 
 - Custom elements backed by [SkateJS](https://github.com/skatejs/skatejs) that uses native Custom Element support if available.
