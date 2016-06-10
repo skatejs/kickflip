@@ -1,4 +1,6 @@
-# Kickflip
+# [DEPRECATED] Kickflip
+
+***PLEASE NOTE: All Kickflip functionality has been merged back in the main SkateJS project. Use that instead.***
 
 *Kickflip is now deprecated because all of its functionality has now been merged into the main Skate project.*
 
